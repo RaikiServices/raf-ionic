@@ -19,7 +19,7 @@ import { IconComponent } from '../../ui/icon.component';
         </div>
 
         <img class="logo pop-in" src="assets/logo-raf.png" alt="RAF" />
-        <h1 class="title-stroke tagline slide-up">Réponds. Grimpe.<br /><span class="text-gold">Gagne des HTG !</span></h1>
+        <h1 class="title-stroke tagline slide-up">Réponds. Monte au classement.<br /><span class="text-gold">Gagne !!!</span></h1>
 
         <div class="steps stagger">
           <div class="step glass">
@@ -32,13 +32,14 @@ import { IconComponent } from '../../ui/icon.component';
           </div>
           <div class="step glass">
             <raf-icon name="trophy" [size]="42" />
-            <div><strong>Grimpe au classement</strong><span>les meilleurs gagnent des HTG</span></div>
+            <div><strong>Monte au classement</strong><span>les meilleurs gagnent de l'argent</span></div>
           </div>
         </div>
 
         <div class="actions">
           <button class="btn3d lg block pulse" type="button" (click)="go('/inscription')">
-            <raf-icon name="play" [size]="24" /> Jouer
+            <!-- <raf-icon name="play" [size]="24" />  -->
+            Creer un compte
           </button>
           <button class="btn3d blue block" type="button" (click)="go('/connexion')">J'ai déjà un compte</button>
         </div>
