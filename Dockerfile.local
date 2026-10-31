@@ -1,7 +1,7 @@
 # =============================================================================
 # RAF - Image de l'app joueur, a partir du build fait sur la machine :
 #
-#   npm run build                    (configuration production : API sur /api)
+#   npm run build:docker             (production, API sur /api relaye par nginx)
 #   docker compose up -d --build     (depuis raf-deploy)
 # =============================================================================
 

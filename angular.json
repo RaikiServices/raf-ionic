@@ -73,6 +73,14 @@
               "outputHashing": "all",
               "serviceWorker": "ngsw-config.json"
             },
+            "docker": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.docker.ts"
+                }
+              ]
+            },
             "development": {
               "optimization": false,
               "extractLicenses": false,
@@ -84,6 +92,16 @@
             }
           },
           "defaultConfiguration": "production"
+        },
+        "deploy": {
+          "builder": "angular-cli-ghpages:deploy",
+          "options": {
+            "buildTarget": "app:build:production",
+            "baseHref": "/",
+            "cname": "app.rafhaiti.com",
+            "branch": "gh-pages",
+            "message": "Publication de l'app joueur"
+          }
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
