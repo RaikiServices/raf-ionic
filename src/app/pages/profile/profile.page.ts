@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
 import { IonContent, IonHeader, IonIcon, IonModal, IonToggle, IonToolbar, NavController } from '@ionic/angular/standalone';
 import { firstValueFrom } from 'rxjs';
 
@@ -8,6 +8,7 @@ import { FeedbackService } from '../../core/feedback.service';
 import { initials } from '../../core/format';
 import { SoundService } from '../../core/sound.service';
 import { IconComponent } from '../../ui/icon.component';
+import { closeModal } from '../../ui/modal';
 import { DatePipe } from '../../ui/pipes';
 import { TopBarComponent } from '../../ui/top-bar.component';
 
@@ -162,6 +163,7 @@ export class ProfilePage {
   protected readonly sound = inject(SoundService);
 
   protected readonly logoutOpen = signal(false);
+  private readonly logoutModal = viewChild(IonModal);
   protected readonly resending = signal(false);
   protected readonly initialsText = computed(() => initials(this.auth.user()?.firstName, this.auth.user()?.lastName));
 
@@ -170,6 +172,11 @@ export class ProfilePage {
     firstValueFrom(this.apiService.me())
       .then((user) => this.auth.setUser(user))
       .catch(() => undefined);
+  }
+
+  /** Changement d'onglet fenetre ouverte : elle ne doit pas reapparaitre par-dessus une autre page. */
+  ionViewWillLeave(): void {
+    void closeModal(this.logoutOpen, this.logoutModal());
   }
 
   protected async resendEmail(): Promise<void> {
@@ -189,7 +196,7 @@ export class ProfilePage {
   }
 
   protected async logout(): Promise<void> {
-    this.logoutOpen.set(false);
+    await closeModal(this.logoutOpen, this.logoutModal());
     await this.auth.logout();
   }
 }

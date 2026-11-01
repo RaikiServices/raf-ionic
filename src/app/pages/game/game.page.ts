@@ -12,6 +12,7 @@ import { SoundService } from '../../core/sound.service';
 import { storage } from '../../core/storage';
 import { IconComponent } from '../../ui/icon.component';
 import { InstagramCardComponent } from '../../ui/instagram-card.component';
+import { closeModal } from '../../ui/modal';
 import { NumPipe } from '../../ui/pipes';
 
 type Phase = 'loading' | 'intro' | 'countdown' | 'starting' | 'playing' | 'submitting' | 'result' | 'failed';
@@ -100,6 +101,7 @@ export class GamePage implements OnDestroy {
   protected readonly shownScore = signal(0);
 
   private readonly content = viewChild(IonContent);
+  private readonly quitModal = viewChild(IonModal);
 
   /**
    * Une question longue ou illustree peut depasser l'ecran : la page defile, et
@@ -181,6 +183,7 @@ export class GamePage implements OnDestroy {
       this.outlet.swipeGesture = true;
     }
     this.backButton?.unsubscribe();
+    void closeModal(this.quitOpen, this.quitModal());
   }
 
   ngOnDestroy(): void {
@@ -550,13 +553,14 @@ export class GamePage implements OnDestroy {
     }
   }
 
-  protected leave(): void {
-    this.quitOpen.set(false);
+  protected async leave(): Promise<void> {
     this.stopTimer();
+    await closeModal(this.quitOpen, this.quitModal());
     void this.nav.navigateBack(this.backUrl());
   }
 
-  protected goTopUp(): void {
+  protected async goTopUp(): Promise<void> {
+    await closeModal(this.quitOpen, this.quitModal());
     void this.nav.navigateForward('/portefeuille/recharger');
   }
 

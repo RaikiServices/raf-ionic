@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import {
   IonContent,
@@ -34,6 +34,7 @@ import {
 } from '../../core/quiz-rules';
 import { IconComponent } from '../../ui/icon.component';
 import { InstagramCardComponent } from '../../ui/instagram-card.component';
+import { closeModal } from '../../ui/modal';
 import { HtgPipe, NumPipe } from '../../ui/pipes';
 import { TopBarComponent } from '../../ui/top-bar.component';
 
@@ -73,6 +74,7 @@ export class QuizDetailPage {
 
   // Achat
   protected readonly buyOpen = signal(false);
+  private readonly buyModal = viewChild(IonModal);
   protected readonly buying = signal(false);
   protected readonly bought = signal<Ticket | null>(null);
   protected readonly buyError = signal<string | null>(null);
@@ -116,6 +118,11 @@ export class QuizDetailPage {
 
   ionViewWillEnter(): void {
     void this.load();
+  }
+
+  /** Filet de securite : quelle que soit la sortie (onglet, retour), la fenetre ne reste pas affichee. */
+  ionViewWillLeave(): void {
+    void closeModal(this.buyOpen, this.buyModal());
   }
 
   protected async load(): Promise<void> {
@@ -176,9 +183,9 @@ export class QuizDetailPage {
 
   // --- Actions -------------------------------------------------------------------
 
-  protected play(): void {
+  protected async play(): Promise<void> {
     this.feedback.tap();
-    this.buyOpen.set(false);
+    await closeModal(this.buyOpen, this.buyModal());
     void this.nav.navigateForward(`/quiz/${this.quizId}/jouer`);
   }
 
@@ -214,8 +221,8 @@ export class QuizDetailPage {
     }
   }
 
-  protected goTopUp(): void {
-    this.buyOpen.set(false);
+  protected async goTopUp(): Promise<void> {
+    await closeModal(this.buyOpen, this.buyModal());
     void this.nav.navigateForward('/portefeuille/recharger');
   }
 

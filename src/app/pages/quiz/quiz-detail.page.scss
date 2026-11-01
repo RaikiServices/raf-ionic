@@ -309,6 +309,11 @@
   margin-top: 8px;
 }
 
+// Fenetre plus etroite que l'ecran : « Jouer maintenant » tient sur une ligne.
+.popup .btn3d.lg {
+  font-size: clamp(18px, 5.4vw, 24px);
+}
+
 .center {
   text-align: center;
 }
