@@ -77,7 +77,7 @@ import { TopBarComponent } from '../../ui/top-bar.component';
         } @else {
           @if (featured(); as q) {
             <section class="hero pop-in" (click)="open(q)">
-              <div class="hero-art" [style.background]="q.bannerUrl ? null : gradient(q)">
+              <div class="hero-art" [class.has-banner]="!!q.bannerUrl" [style.background]="q.bannerUrl ? null : gradient(q)">
                 @if (q.bannerUrl; as url) {
                   <img [src]="url" alt="" />
                 } @else {
@@ -166,7 +166,8 @@ import { TopBarComponent } from '../../ui/top-bar.component';
     }
     .hero-skel { height: 380px; margin-bottom: 18px; }
     .row-skel { height: 118px; margin-bottom: 12px; }
-    .list { display: grid; gap: 14px; }
+    /* minmax(0, 1fr) : une carte au titre long retrecit au lieu d'elargir la colonne. */
+    .list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
 
     .hero {
       border-radius: 28px;
@@ -196,6 +197,12 @@ import { TopBarComponent } from '../../ui/top-bar.component';
         background: repeating-conic-gradient(from 0deg at 50% 60%, rgba(255, 255, 255, 0.12) 0deg 10deg, transparent 10deg 24deg);
         pointer-events: none;
       }
+    }
+    /* Banniere 16/9 (format du back-office) : entiere a toutes les largeurs,
+       au lieu d'une bande de 150px qui en rognait la moitie. */
+    .hero-art.has-banner {
+      height: auto;
+      aspect-ratio: 16 / 9;
     }
     .art-icon { position: relative; z-index: 1; filter: drop-shadow(0 6px 0 rgba(184, 106, 0, 0.25)); }
     .art-a { position: absolute; left: 22%; top: 22%; animation-delay: -1s; }

@@ -259,7 +259,9 @@ ion-header.raf-header::after {
 
   &.lg {
     min-height: 66px;
-    font-size: 28px;
+    // 28px des 440px de large ; moins sur un petit telephone, ou « Prendre un
+    // ticket » passait sur deux lignes et sortait du bouton.
+    font-size: clamp(20px, 6.4vw, 28px);
     border-radius: 22px;
   }
 

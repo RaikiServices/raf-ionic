@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { IonContent, IonIcon, IonModal, IonRouterOutlet, NavController, Platform } from '@ionic/angular/standalone';
 import { Subscription, firstValueFrom } from 'rxjs';
@@ -98,6 +98,18 @@ export class GamePage implements OnDestroy {
   protected readonly result = signal<GameResult | null>(null);
   protected readonly previousBest = signal<number | null>(null);
   protected readonly shownScore = signal(0);
+
+  private readonly content = viewChild(IonContent);
+
+  /**
+   * Une question longue ou illustree peut depasser l'ecran : la page defile, et
+   * chaque nouvelle question repart du haut (enonce visible avant les choix).
+   */
+  private readonly scrollOnQuestion = effect(() => {
+    if (this.question()) {
+      void this.content()?.scrollToTop(0);
+    }
+  });
 
   protected readonly solo = computed(() => this.quiz()?.gameMode === 'SOLO');
   protected readonly total = computed(() => this.game()?.totalQuestions ?? this.quiz()?.questionsPerGame ?? 0);

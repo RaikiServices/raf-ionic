@@ -110,7 +110,8 @@ import { TopBarComponent } from '../../ui/top-bar.component';
       div { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 14px; }
     }
     .card-skel { height: 120px; margin-bottom: 12px; }
-    .list { display: grid; gap: 14px; }
+    /* minmax(0, 1fr) : une carte au titre long retrecit au lieu de pousser le bouton Jouer hors de l'ecran. */
+    .list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
 
     .card {
       display: flex;
@@ -161,6 +162,13 @@ import { TopBarComponent } from '../../ui/top-bar.component';
     }
     .chips { display: flex; gap: 6px; flex-wrap: wrap; }
     .side { flex: none; }
+
+    /* Petit telephone : vignette reduite pour laisser la place au titre et au bouton. */
+    @media (max-width: 380px) {
+      .card { gap: 10px; padding: 8px; }
+      .thumb { width: 64px; height: 64px; }
+      .prize { font-size: 18px; }
+    }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

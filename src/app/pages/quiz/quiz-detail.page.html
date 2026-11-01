@@ -15,7 +15,7 @@
       </div>
     } @else if (quiz(); as q) {
       <!-- Banniere -->
-      <section class="banner pop-in" [style.background]="q.bannerUrl ? null : gradient(q)">
+      <section class="banner pop-in" [class.has-banner]="!!q.bannerUrl" [style.background]="q.bannerUrl ? null : gradient(q)">
         @if (q.bannerUrl; as url) {
           <img [src]="url" alt="" />
         } @else {

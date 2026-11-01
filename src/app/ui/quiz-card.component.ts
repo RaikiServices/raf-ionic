@@ -41,6 +41,12 @@ import { NumPipe } from './pipes';
     </article>
   `,
   styles: `
+    /* Element personnalise : inline par defaut, et case de grille qui refuserait
+       de retrecir sous la largeur du titre (nowrap) : la carte sortait de l'ecran. */
+    :host {
+      display: block;
+      min-width: 0;
+    }
     .card {
       display: flex;
       gap: 12px;

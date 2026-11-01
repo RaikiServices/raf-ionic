@@ -1,6 +1,13 @@
 .banner {
   position: relative;
   height: 170px;
+
+  // Banniere 16/9 (format du back-office) : entiere, sans rognage.
+  &.has-banner {
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
+
   border-radius: 26px;
   border: 4px solid #fff;
   box-shadow: 0 6px 0 var(--raf-p300), 0 14px 24px rgba(184, 106, 0, 0.2);
