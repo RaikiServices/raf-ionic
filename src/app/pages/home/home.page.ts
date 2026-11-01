@@ -114,17 +114,6 @@ import { TopBarComponent } from '../../ui/top-bar.component';
                     }
                   </div>
                 </div>
-                @if (canPlay(q)) {
-                  <button class="btn3d lg block pulse" type="button" (click)="play(q, $event)">
-                    <raf-icon name="play" [size]="26" /> Jouer
-                  </button>
-                } @else if (canBuy(q)) {
-                  <button class="btn3d orange lg block" type="button" (click)="open(q, $event)">
-                    <raf-icon name="ticket" [size]="30" /> Prendre un ticket
-                  </button>
-                } @else {
-                  <button class="btn3d blue block" type="button" (click)="open(q, $event)">Voir le quiz</button>
-                }
               </div>
             </section>
           }
@@ -260,7 +249,6 @@ import { TopBarComponent } from '../../ui/top-bar.component';
       align-items: center;
       gap: 10px;
       padding: 10px 14px;
-      margin-bottom: 18px;
       border-radius: 18px;
       background: linear-gradient(180deg, #ffad47, #ff8f00);
       border: 3px solid #a85f00;
@@ -308,8 +296,6 @@ export class HomePage {
   protected readonly error = signal<string | null>(null);
   /** Tickets encore utilisables, par quiz. */
   private readonly activeTickets = signal<Map<number, number>>(new Map());
-  /** Tickets pris, utilises ou non (hors rembourses) : c'est ce que compte le plafond par joueur. */
-  private readonly ownedTickets = signal<Map<number, number>>(new Map());
 
   private readonly sorted = computed(() =>
     [...(this.quizzes() ?? [])].sort((a, b) => statusRank(a.status) - statusRank(b.status)),
@@ -351,17 +337,12 @@ export class HomePage {
         firstValueFrom(this.apiService.myTickets(0, 100)),
       ]);
       const active = new Map<number, number>();
-      const owned = new Map<number, number>();
       for (const t of tickets.content) {
         if (t.status === 'ACTIVE') {
           active.set(t.quizId, (active.get(t.quizId) ?? 0) + 1);
         }
-        if (t.status !== 'REFUNDED') {
-          owned.set(t.quizId, (owned.get(t.quizId) ?? 0) + 1);
-        }
       }
       this.activeTickets.set(active);
-      this.ownedTickets.set(owned);
       this.quizzes.set(page.content);
     } catch (e) {
       if (!this.quizzes()) {
@@ -381,25 +362,10 @@ export class HomePage {
     return this.activeTickets().get(quizId) ?? 0;
   }
 
-  protected canPlay(q: Quiz): boolean {
-    return acceptsPlay(q, this.clock.now()) && this.ticketsFor(q.id) > 0;
-  }
-
-  protected canBuy(q: Quiz): boolean {
-    const max = q.maxTicketsPerPlayer;
-    return acceptsTickets(q) && (max == null || (this.ownedTickets().get(q.id) ?? 0) < max);
-  }
-
-  protected open(q: Quiz, event?: Event): void {
-    event?.stopPropagation();
+  /** Toute la carte ouvre le quiz : achat du ticket et lancement se font depuis sa page. */
+  protected open(q: Quiz): void {
     this.feedback.tap();
     void this.nav.navigateForward(`/quiz/${q.id}`);
-  }
-
-  protected play(q: Quiz, event: Event): void {
-    event.stopPropagation();
-    this.feedback.tap();
-    void this.nav.navigateForward(`/quiz/${q.id}/jouer`);
   }
 
   protected label(q: Quiz): string {

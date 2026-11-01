@@ -85,13 +85,12 @@ import { TopBarComponent } from '../../ui/top-bar.component';
                     <span class="chip"><raf-icon name="question" [size]="18" />{{ q.questionsPerGame }} × {{ q.questionDurationSeconds }} s</span>
                   </div>
                 </div>
-                <div class="side">
-                  @if (played(q)) {
+                <!-- La carte entiere lance la partie : pas de bouton en double. -->
+                @if (played(q)) {
+                  <div class="side">
                     <span class="status-tag finished">Demain</span>
-                  } @else {
-                    <button class="btn3d sm" type="button" (click)="open(q, $event)"><raf-icon name="play" [size]="18" /> Jouer</button>
-                  }
-                </div>
+                  </div>
+                }
               </article>
             }
           </div>
@@ -219,8 +218,7 @@ export class SoloPage {
     return q.selectedCategoryId != null && this.playedSubjects().has(q.selectedCategoryId);
   }
 
-  protected open(q: Quiz, event?: Event): void {
-    event?.stopPropagation();
+  protected open(q: Quiz): void {
     this.feedback.tap();
     void this.nav.navigateForward(`/quiz/${q.id}/jouer`);
   }
