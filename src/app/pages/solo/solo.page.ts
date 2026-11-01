@@ -114,7 +114,8 @@ import { TopBarComponent } from '../../ui/top-bar.component';
 
     .card {
       display: flex;
-      align-items: center;
+      /* Vignette calee en haut, comme les cartes des quiz en groupe. */
+      align-items: flex-start;
       gap: 12px;
       padding: 10px;
       border-radius: 22px;
@@ -160,7 +161,7 @@ import { TopBarComponent } from '../../ui/top-bar.component';
       color: var(--raf-edge-dark);
     }
     .chips { display: flex; gap: 6px; flex-wrap: wrap; }
-    .side { flex: none; }
+    .side { flex: none; align-self: center; }
 
     /* Petit telephone : vignette reduite pour laisser la place au titre et au bouton. */
     @media (max-width: 380px) {
