@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { api } from './api-url';
 import {
   AppNotification,
+  DepositNumbers,
   DeviceSession,
   GameAnswer,
   GameMode,
@@ -19,6 +20,7 @@ import {
   Quiz,
   Ticket,
   TopUp,
+  TopUpAvailability,
   Transaction,
   User,
   Wallet,
@@ -151,6 +153,14 @@ export class ApiService {
 
   topUps(page = 0, size = 20): Observable<Page<TopUp>> {
     return this.http.get<Page<TopUp>>(api('/wallet/topups'), { params: paging(page, size) });
+  }
+
+  depositNumbers(): Observable<DepositNumbers> {
+    return this.http.get<DepositNumbers>(api('/public/deposit-numbers'));
+  }
+
+  topUpAvailability(): Observable<TopUpAvailability> {
+    return this.http.get<TopUpAvailability>(api('/public/topup-availability'));
   }
 
   sendWithdrawalOtp(): Observable<MessageResponse> {

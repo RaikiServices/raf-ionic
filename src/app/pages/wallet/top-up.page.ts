@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { IonContent, IonHeader, IonToolbar } from '@ionic/angular/standalone';
 import { firstValueFrom } from 'rxjs';
 
 import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
-import { TopUp } from '../../core/models';
+import { FeedbackService } from '../../core/feedback.service';
+import { DepositNumbers, TopUp, TopUpAvailability } from '../../core/models';
 import { IconComponent } from '../../ui/icon.component';
 import { DateTimePipe, NumPipe } from '../../ui/pipes';
 import { TopBarComponent } from '../../ui/top-bar.component';
@@ -13,7 +14,35 @@ import { TopBarComponent } from '../../ui/top-bar.component';
  * Recharge. Les connecteurs MonCash et NatCash attendent leurs acces sandbox :
  * en attendant, un agent RAF credite le compte depuis le back-office (recharge
  * manuelle). La page dit comment faire et montre l'historique.
+ *
+ * A distance : le joueur envoie l'argent par MonCash ou NatCash, depuis le numero
+ * de son compte, au numero de l'agent (regle dans le back-office) ; l'agent
+ * reconnait l'expediteur et credite le montant recu. L'indicateur « agent en
+ * ligne » (comme sur WhatsApp) dit si ce sera fait tout de suite : l'agent
+ * l'allume depuis le back-office quand il est la pour crediter.
  */
+
+/** Frequence de mise a jour de l'indicateur tant que la page est affichee. */
+const AVAILABILITY_POLL_MS = 30_000;
+
+interface DepositNumber {
+  label: string;
+  css: string;
+  /** Tel que l'agent le recoit : +50937123456. */
+  value: string;
+  /** +509 3712 3456 */
+  display: string;
+}
+
+function depositNumber(label: string, value: string | null | undefined): DepositNumber[] {
+  if (!value) {
+    return [];
+  }
+  const match = value.match(/^\+509(\d{4})(\d{4})$/);
+  const display = match ? `+509 ${match[1]} ${match[2]}` : value;
+  return [{ label, css: label.toLowerCase(), value, display }];
+}
+
 @Component({
   selector: 'raf-top-up',
   imports: [IonHeader, IonToolbar, IonContent, TopBarComponent, IconComponent, NumPipe, DateTimePipe],
@@ -24,22 +53,55 @@ import { TopBarComponent } from '../../ui/top-bar.component';
 
     <ion-content class="raf-sky" [fullscreen]="true">
       <div class="page-pad">
-        <section class="option soon">
-          <div class="brand moncash">MonCash</div>
-          <div class="grow">
-            <div class="opt-title">Recharge MonCash</div>
-            <div class="opt-sub">Paiement depuis ton téléphone</div>
-          </div>
-          <span class="soon-tag">Bientôt</span>
-        </section>
-        <section class="option soon">
-          <div class="brand natcash">NatCash</div>
-          <div class="grow">
-            <div class="opt-title">Recharge NatCash</div>
-            <div class="opt-sub">Paiement depuis ton téléphone</div>
-          </div>
-          <span class="soon-tag">Bientôt</span>
-        </section>
+        @if (hasNumbers()) {
+          <section class="panel panel-with-ribbon">
+            <div class="ribbon">À distance</div>
+            @if (availability(); as a) {
+              <div class="presence" [class.on]="a.available" role="status">
+                <span class="dot"></span>
+                <div class="grow">
+                  @if (a.available) {
+                    <div class="opt-title">Agent en ligne</div>
+                    <div class="opt-sub">Ta recharge est créditée tout de suite.</div>
+                  } @else {
+                    <div class="opt-title">
+                      Aucun agent en ligne
+                      @if (a.lastSeenAt) {
+                        <span class="seen">· vu {{ a.lastSeenAt | dateTime }}</span>
+                      }
+                    </div>
+                    <div class="opt-sub">Ta recharge sera créditée dès le retour d'un agent.</div>
+                  }
+                </div>
+              </div>
+            }
+
+            <p class="lead">Envoie l'argent par MonCash ou NatCash, sans te déplacer.</p>
+            @for (n of numbers(); track n.label) {
+              <div class="option">
+                <div class="brand" [class]="n.css">{{ n.label }}</div>
+                <div class="grow">
+                  <div class="opt-sub">Numéro de l'agent RAF</div>
+                  <div class="number">{{ n.display }}</div>
+                </div>
+                <button type="button" class="copy" (click)="copy(n)">Copier</button>
+              </div>
+            }
+            <ol class="steps">
+              @if (auth.user(); as u) {
+                <li>Envoie le montant <strong>depuis le numéro de ton compte RAF ({{ u.phone }})</strong>.</li>
+              } @else {
+                <li>Envoie le montant <strong>depuis le numéro de ton compte RAF</strong>.</li>
+              }
+              <li>L'agent reconnaît ton numéro et crédite ton compte du montant reçu.</li>
+              <li>Tu reçois une notification dès que tes crédits arrivent.</li>
+            </ol>
+            <p class="warn">
+              Depuis un autre numéro, l'agent ne peut pas savoir à qui appartient l'argent :
+              ta recharge serait retardée.
+            </p>
+          </section>
+        }
 
         <section class="panel panel-with-ribbon">
           <div class="ribbon blue">Au guichet RAF</div>
@@ -55,6 +117,23 @@ import { TopBarComponent } from '../../ui/top-bar.component';
               <div><span>Téléphone</span><strong>{{ u.phone }}</strong></div>
             </div>
           }
+        </section>
+
+        <section class="option soon">
+          <div class="brand moncash">MonCash</div>
+          <div class="grow">
+            <div class="opt-title">Paiement automatique</div>
+            <div class="opt-sub">Directement depuis l'app, sans agent</div>
+          </div>
+          <span class="soon-tag">Bientôt</span>
+        </section>
+        <section class="option soon">
+          <div class="brand natcash">NatCash</div>
+          <div class="grow">
+            <div class="opt-title">Paiement automatique</div>
+            <div class="opt-sub">Directement depuis l'app, sans agent</div>
+          </div>
+          <span class="soon-tag">Bientôt</span>
         </section>
 
         @if (topUps().length > 0) {
@@ -76,6 +155,40 @@ import { TopBarComponent } from '../../ui/top-bar.component';
     </ion-content>
   `,
   styles: `
+    .presence {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      border-radius: 20px;
+      background: #fff;
+      border: 3px solid var(--raf-p100);
+      color: var(--raf-ink);
+      .dot {
+        width: 14px;
+        height: 14px;
+        flex: none;
+        border-radius: 50%;
+        background: #a3a3b5;
+      }
+      .seen { font-weight: 700; font-size: 12.5px; color: var(--raf-ink-soft); }
+      &.on {
+        border-color: #9fdc8a;
+        .dot {
+          background: #2fb344;
+          animation: pulse 2s ease-out infinite;
+        }
+      }
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(47, 179, 68, 0.55); }
+      70% { box-shadow: 0 0 0 10px rgba(47, 179, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(47, 179, 68, 0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .presence.on .dot { animation: none; }
+    }
     .option {
       display: flex;
       align-items: center;
@@ -115,6 +228,30 @@ import { TopBarComponent } from '../../ui/top-bar.component';
       text-transform: uppercase;
     }
     .lead { font-weight: 800; margin: 0 0 10px; }
+    .number {
+      font-family: var(--raf-font-display);
+      font-size: 20px;
+      user-select: all;
+    }
+    .copy {
+      flex: none;
+      padding: 8px 12px;
+      border-radius: 12px;
+      border: 2px solid var(--raf-p200);
+      background: var(--raf-p100);
+      color: var(--raf-ink);
+      font-weight: 900;
+      font-size: 13px;
+    }
+    .warn {
+      margin: 0;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: #fff4e0;
+      color: #8a4b00;
+      font-weight: 700;
+      font-size: 13px;
+    }
     .steps {
       margin: 0 0 14px;
       padding-left: 20px;
@@ -152,20 +289,65 @@ import { TopBarComponent } from '../../ui/top-bar.component';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TopUpPage {
+export class TopUpPage implements OnDestroy {
   protected readonly auth = inject(AuthService);
   private readonly apiService = inject(ApiService);
+  private readonly feedback = inject(FeedbackService);
 
   protected readonly topUps = signal<TopUp[]>([]);
+  private readonly depositNumbers = signal<DepositNumbers | null>(null);
+  protected readonly numbers = computed(() => {
+    const n = this.depositNumbers();
+    return n ? [...depositNumber('MonCash', n.moncashNumber), ...depositNumber('NatCash', n.natcashNumber)] : [];
+  });
+  protected readonly hasNumbers = computed(() => this.numbers().length > 0);
+  /** Null tant qu'on ne sait pas : mieux vaut ne rien montrer qu'un etat faux. */
+  protected readonly availability = signal<TopUpAvailability | null>(null);
+
+  private poll: ReturnType<typeof setInterval> | null = null;
 
   ionViewWillEnter(): void {
     firstValueFrom(this.apiService.topUps(0, 20))
       .then((page) => this.topUps.set(page.content))
       .catch(() => undefined);
+    firstValueFrom(this.apiService.depositNumbers())
+      .then((n) => this.depositNumbers.set(n))
+      .catch(() => undefined);
+    this.refreshAvailability();
+    this.stopPolling();
+    this.poll = setInterval(() => this.refreshAvailability(), AVAILABILITY_POLL_MS);
+  }
+
+  ionViewWillLeave(): void {
+    this.stopPolling();
+  }
+
+  ngOnDestroy(): void {
+    this.stopPolling();
+  }
+
+  protected copy(n: DepositNumber): void {
+    navigator.clipboard
+      .writeText(n.value)
+      .then(() => this.feedback.success(`Numéro ${n.label} copié`))
+      .catch(() => this.feedback.toast(`Numéro ${n.label} : ${n.display}`));
+  }
+
+  private refreshAvailability(): void {
+    firstValueFrom(this.apiService.topUpAvailability())
+      .then((a) => this.availability.set(a))
+      .catch(() => this.availability.set(null));
+  }
+
+  private stopPolling(): void {
+    if (this.poll !== null) {
+      clearInterval(this.poll);
+      this.poll = null;
+    }
   }
 
   protected provider(t: TopUp): string {
-    return t.provider === 'MANUAL' ? 'Guichet' : t.provider === 'MONCASH' ? 'MonCash' : 'NatCash';
+    return t.provider === 'MANUAL' ? 'Agent RAF' : t.provider === 'MONCASH' ? 'MonCash' : 'NatCash';
   }
 
   protected status(t: TopUp): string {

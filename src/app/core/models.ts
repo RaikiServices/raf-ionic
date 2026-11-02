@@ -321,6 +321,18 @@ export interface TopUp {
   confirmedAt: string | null;
 }
 
+/** Un agent est-il en ligne pour crediter les recharges ? `lastSeenAt` seulement hors ligne. */
+export interface TopUpAvailability {
+  available: boolean;
+  lastSeenAt?: string;
+}
+
+/** Numeros de l'agent pour les recharges a distance (+509XXXXXXXX), absents si desactives. */
+export interface DepositNumbers {
+  moncashNumber?: string | null;
+  natcashNumber?: string | null;
+}
+
 export type WithdrawalStatus = 'AWAITING_OTP' | 'PENDING' | 'APPROVED' | 'PAID' | 'REJECTED' | 'CANCELLED';
 
 export interface Withdrawal {
