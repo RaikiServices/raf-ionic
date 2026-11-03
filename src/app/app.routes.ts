@@ -90,6 +90,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/profile/change-password.page').then((m) => m.ChangePasswordPage),
   },
   {
+    path: 'profil/telephone/corriger',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/profile/change-phone.page').then((m) => m.ChangePhonePage),
+  },
+  {
     path: 'profil/email',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/profile/change-email.page').then((m) => m.ChangeEmailPage),

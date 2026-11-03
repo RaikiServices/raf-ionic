@@ -24,7 +24,10 @@ import { TopBarComponent } from '../../ui/top-bar.component';
         <section class="panel panel-with-ribbon center">
           <div class="ribbon purple">Vérification</div>
           <raf-icon class="float" name="phone" [size]="72" />
-          @if (!sent()) {
+          @if (!auth.user()?.emailVerified) {
+            <p class="text">Confirme d'abord ton adresse email avec le lien reçu, puis reviens vérifier ton numéro.</p>
+            <button class="btn3d blue block" type="button" (click)="nav.navigateBack('/profil')">Retour au profil</button>
+          } @else if (!sent()) {
             <p class="text">Nous allons envoyer un code par SMS au <strong>{{ auth.user()?.phone }}</strong>.</p>
             @if (error(); as message) {
               <div class="alert-box">{{ message }}</div>
@@ -43,7 +46,10 @@ import { TopBarComponent } from '../../ui/top-bar.component';
             </button>
             <button class="link-btn ink" type="button" [disabled]="busy()" (click)="send()">Renvoyer le code</button>
           }
-          <p class="hint">Mauvais numéro ? Contacte le support RAF pour le modifier.</p>
+          <p class="hint">
+            Mauvais numéro ?
+            <button class="link-btn ink" type="button" (click)="nav.navigateForward('/profil/telephone/corriger')">Corrige-le</button>
+          </p>
         </section>
       </div>
     </ion-content>
@@ -60,10 +66,17 @@ import { TopBarComponent } from '../../ui/top-bar.component';
 export class VerifyPhonePage {
   protected readonly auth = inject(AuthService);
   private readonly apiService = inject(ApiService);
-  private readonly nav = inject(NavController);
+  protected readonly nav = inject(NavController);
   private readonly feedback = inject(FeedbackService);
 
   protected code = '';
+
+  /** L'email a pu etre confirme depuis la boite mail : on relit le compte. */
+  ionViewWillEnter(): void {
+    firstValueFrom(this.apiService.me())
+      .then((user) => this.auth.setUser(user))
+      .catch(() => undefined);
+  }
   protected readonly sent = signal(false);
   protected readonly busy = signal(false);
   protected readonly error = signal<string | null>(null);

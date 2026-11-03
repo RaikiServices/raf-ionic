@@ -50,12 +50,19 @@ import { TopBarComponent } from '../../ui/top-bar.component';
               <raf-icon name="phone" [size]="32" />
               <div class="grow">
                 <div class="row-title">{{ u.phone }}</div>
-                <div class="row-sub">{{ u.phoneVerified ? 'Téléphone vérifié' : 'À vérifier pour retirer tes gains' }}</div>
+                <div class="row-sub">
+                  {{ u.phoneVerified ? 'Téléphone vérifié' : u.emailVerified ? 'À vérifier pour retirer tes gains' : "Confirme d'abord ton email" }}
+                </div>
               </div>
               @if (u.phoneVerified) {
                 <raf-icon name="check" [size]="26" />
               } @else {
-                <button class="btn3d purple sm" type="button" (click)="nav.navigateForward('/profil/telephone')">Vérifier</button>
+                <div class="email-actions">
+                  @if (u.emailVerified) {
+                    <button class="btn3d purple sm" type="button" (click)="nav.navigateForward('/profil/telephone')">Vérifier</button>
+                  }
+                  <button class="btn3d blue sm" type="button" (click)="nav.navigateForward('/profil/telephone/corriger')">Corriger</button>
+                </div>
               }
             </div>
           </section>

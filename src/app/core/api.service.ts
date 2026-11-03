@@ -55,6 +55,11 @@ export class ApiService {
     return this.http.post<MessageResponse>(api('/auth/password/change'), { currentPassword, newPassword });
   }
 
+  /** Corrige le numero, tant qu'il n'est pas verifie. */
+  correctPhone(password: string, phone: string): Observable<User> {
+    return this.http.post<User>(api('/me/phone'), { password, phone });
+  }
+
   /** Corrige l'email, tant qu'il n'est pas verifie : un nouveau lien part a la nouvelle adresse. */
   correctEmail(password: string, email: string): Observable<User> {
     return this.http.post<User>(api('/me/email'), { password, email });
