@@ -235,6 +235,8 @@
               <strong><raf-icon name="gift" [size]="28" /> Offert</strong>
             </div>
             <p class="center small ink">Ce quiz est gratuit : un ticket par joueur, et de vrais gains à la clé.</p>
+          } @else if (isTester()) {
+            <div class="alert-box info">Compte de test : ticket offert, sans limite et sans gain. Tes parties ne comptent pas pour les vrais joueurs.</div>
           } @else {
             <div class="price-row">
               <span>Prix</span>

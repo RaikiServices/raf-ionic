@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
+import { AuthService } from '../../core/auth.service';
 import { ActivatedRoute } from '@angular/router';
 import {
   IonContent,
@@ -64,6 +65,9 @@ export class QuizDetailPage {
   private readonly clock = inject(ClockService);
   private readonly feedback = inject(FeedbackService);
   protected readonly state = inject(PlayerStateService);
+  private readonly auth = inject(AuthService);
+  /** Compte de test : tickets offerts, sans limite ni capacite (le serveur applique la meme regle). */
+  protected readonly isTester = computed(() => !!this.auth.user()?.test);
 
   protected readonly quizId = Number(inject(ActivatedRoute).snapshot.paramMap.get('id'));
 
@@ -100,15 +104,15 @@ export class QuizDetailPage {
   protected readonly buyable = computed(() => !!this.quiz() && acceptsTickets(this.quiz()!));
   protected readonly ticketLimitReached = computed(() => {
     const max = this.quiz()?.maxTicketsPerPlayer;
-    return max != null && this.ownedTickets() >= max;
+    return !this.isTester() && max != null && this.ownedTickets() >= max;
   });
   protected readonly soldOut = computed(() => {
     const q = this.quiz();
-    return !!q && q.maxTicketsTotal != null && q.ticketsSold >= q.maxTicketsTotal;
+    return !this.isTester() && !!q && q.maxTicketsTotal != null && q.ticketsSold >= q.maxTicketsTotal;
   });
   protected readonly canAfford = computed(() => {
     const wallet = this.state.wallet();
-    return !!wallet && !!this.quiz() && wallet.creditBalance >= this.quiz()!.ticketPriceCredits;
+    return this.isTester() || (!!wallet && !!this.quiz() && wallet.creditBalance >= this.quiz()!.ticketPriceCredits);
   });
   protected readonly playersProgress = computed(() => {
     const q = this.quiz();

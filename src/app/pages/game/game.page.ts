@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, computed, effect, inject, signal, viewChild } from '@angular/core';
+import { AuthService } from '../../core/auth.service';
 import { ActivatedRoute } from '@angular/router';
 import { IonContent, IonIcon, IonModal, IonRouterOutlet, NavController, Platform } from '@ionic/angular/standalone';
 import { Subscription, firstValueFrom } from 'rxjs';
@@ -72,6 +73,9 @@ export class GamePage implements OnDestroy {
   private readonly feedback = inject(FeedbackService);
   private readonly sound = inject(SoundService);
   protected readonly state = inject(PlayerStateService);
+  private readonly auth = inject(AuthService);
+  /** Compte de test : parties offertes, sans limite d'une par jour, sans gain. */
+  protected readonly isTester = computed(() => !!this.auth.user()?.test);
   private readonly platform = inject(Platform);
   private readonly outlet = inject(IonRouterOutlet, { optional: true });
 
@@ -130,7 +134,7 @@ export class GamePage implements OnDestroy {
   protected readonly canAfford = computed(() => {
     const wallet = this.state.wallet();
     const quiz = this.quiz();
-    return !!wallet && !!quiz && wallet.creditBalance >= quiz.ticketPriceCredits;
+    return this.isTester() || (!!wallet && !!quiz && wallet.creditBalance >= quiz.ticketPriceCredits);
   });
   protected readonly stars = computed(() => {
     const r = this.result();

@@ -51,7 +51,10 @@
                 <div class="alert-box info">Une partie est déjà en cours : tu reprends là où tu t'étais arrêté.</div>
                 <button class="btn3d lg block pulse" type="button" (click)="launch()"><raf-icon name="play" [size]="26" /> Reprendre</button>
               } @else if (solo()) {
-                @if (playedToday()) {
+                @if (isTester()) {
+                  <p class="tickets-left"><raf-icon name="gift" [size]="26" /> Compte de test : partie offerte, sans gain</p>
+                  <button class="btn3d lg block pulse" type="button" (click)="launch()"><raf-icon name="play" [size]="26" /> C'est parti !</button>
+                } @else if (playedToday()) {
                   <div class="alert-box info">Tu as déjà joué ce sujet aujourd'hui. Reviens demain, ou essaie un autre sujet !</div>
                   <button class="btn3d blue block" type="button" (click)="leave()">Autres sujets</button>
                 } @else if (q.free) {

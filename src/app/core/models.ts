@@ -29,6 +29,8 @@ export interface User {
   status: UserStatus;
   emailVerified: boolean;
   phoneVerified: boolean;
+  /** Compte de test : joue gratuitement et sans limite, ne gagne rien. */
+  test?: boolean;
   roles: string[];
   createdAt: string;
 }
