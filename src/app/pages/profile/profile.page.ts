@@ -89,6 +89,10 @@ import { TopBarComponent } from '../../ui/top-bar.component';
           <button class="btn3d red block logout" type="button" (click)="logoutOpen.set(true)">
             <raf-icon name="logout" [size]="28" /> Se déconnecter
           </button>
+
+          <button class="delete-link" type="button" (click)="nav.navigateForward('/profil/supprimer')">
+            Supprimer mon compte
+          </button>
         }
       </div>
 
@@ -145,6 +149,19 @@ import { TopBarComponent } from '../../ui/top-bar.component';
       p { margin: 0; font-weight: 700; font-size: 13.5px; line-height: 1.4; }
     }
     .logout { margin-top: 22px; }
+    // Discret volontairement : action rare et sans retour, a ne pas confondre avec la deconnexion.
+    .delete-link {
+      display: block;
+      margin: 18px auto 6px;
+      padding: 8px 12px;
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 14px;
+      color: var(--raf-ink-soft);
+      text-decoration: underline;
+    }
     .popup {
       margin-top: 30px;
       display: grid;

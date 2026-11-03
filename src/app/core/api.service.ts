@@ -55,6 +55,11 @@ export class ApiService {
     return this.http.post<MessageResponse>(api('/auth/password/change'), { currentPassword, newPassword });
   }
 
+  /** Supprime (anonymise) le compte. forfeitBalance : le joueur renonce a son solde. */
+  deleteAccount(password: string, forfeitBalance: boolean): Observable<MessageResponse> {
+    return this.http.post<MessageResponse>(api('/me/delete'), { password, forfeitBalance });
+  }
+
   verifyEmail(token: string): Observable<MessageResponse> {
     return this.http.post<MessageResponse>(api('/auth/email/verify'), { token });
   }
