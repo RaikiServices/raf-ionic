@@ -40,7 +40,10 @@ import { TopBarComponent } from '../../ui/top-bar.component';
               @if (u.emailVerified) {
                 <raf-icon name="check" [size]="26" />
               } @else {
-                <button class="btn3d sm" type="button" [disabled]="resending()" (click)="resendEmail()">Renvoyer</button>
+                <div class="email-actions">
+                  <button class="btn3d sm" type="button" [disabled]="resending()" (click)="resendEmail()">Renvoyer</button>
+                  <button class="btn3d blue sm" type="button" (click)="nav.navigateForward('/profil/email')">Corriger</button>
+                </div>
               }
             </div>
             <div class="list-row">
@@ -149,6 +152,7 @@ import { TopBarComponent } from '../../ui/top-bar.component';
       p { margin: 0; font-weight: 700; font-size: 13.5px; line-height: 1.4; }
     }
     .logout { margin-top: 22px; }
+    .email-actions { display: flex; flex-direction: column; gap: 6px; }
     // Discret volontairement : action rare et sans retour, a ne pas confondre avec la deconnexion.
     .delete-link {
       display: block;

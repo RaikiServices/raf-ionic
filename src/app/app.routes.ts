@@ -90,6 +90,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/profile/change-password.page').then((m) => m.ChangePasswordPage),
   },
   {
+    path: 'profil/email',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/profile/change-email.page').then((m) => m.ChangeEmailPage),
+  },
+  {
     path: 'profil/supprimer',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/profile/delete-account.page').then((m) => m.DeleteAccountPage),
