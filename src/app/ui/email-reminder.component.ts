@@ -26,6 +26,9 @@ const QUIET_ROUTES = [/^\/quiz\/[^/]+\/jouer/, /^\/verification-email/, /^\/prof
  * toutes les 10 secondes apres sa fermeture. Le profil est relu a chaque passage :
  * des que le lien a ete ouvert (dans le navigateur, sur un autre appareil...),
  * la fenetre se ferme d'elle-meme et ne revient plus.
+ *
+ * Le rappel peut etre coupe depuis le back-office (App joueur) : le reglage est
+ * relu a chaque passage, une fenetre ouverte se ferme alors au passage suivant.
  */
 @Component({
   selector: 'raf-email-reminder',
@@ -110,6 +113,8 @@ export class EmailReminderComponent {
   });
 
   private timer: ReturnType<typeof setTimeout> | null = null;
+  /** Dernier reglage connu du back-office ; actif tant qu'il n'a pas pu etre lu. */
+  private reminderEnabled = true;
 
   constructor() {
     // Rappels actifs seulement pour un joueur connecte dont l'email n'est pas confirme.
@@ -198,6 +203,12 @@ export class EmailReminderComponent {
     if (!this.pending()) {
       return;
     }
+    if (!(await this.refreshEnabled())) {
+      // Rappel coupe dans le back-office : on continue de surveiller le reglage.
+      await closeModal(this.open, this.modal());
+      this.schedule();
+      return;
+    }
     const verified = await this.refresh();
     if (verified || !this.pending()) {
       return;
@@ -206,6 +217,16 @@ export class EmailReminderComponent {
       this.open.set(true);
     }
     this.schedule();
+  }
+
+  /** Relit le reglage du back-office ; hors ligne, garde le dernier connu. */
+  private async refreshEnabled(): Promise<boolean> {
+    try {
+      this.reminderEnabled = (await firstValueFrom(this.apiService.appConfig())).emailReminderEnabled;
+    } catch {
+      // Hors ligne : dernier reglage connu.
+    }
+    return this.reminderEnabled;
   }
 
   /** Vrai si l'email vient d'etre confirme (la fenetre est alors fermee et le joueur felicite). */

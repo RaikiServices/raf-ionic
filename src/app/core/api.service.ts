@@ -170,6 +170,11 @@ export class ApiService {
     return this.http.get<Page<TopUp>>(api('/wallet/topups'), { params: paging(page, size) });
   }
 
+  /** Comportements de l'app choisis dans le back-office (lu sans connexion). */
+  appConfig(): Observable<{ emailReminderEnabled: boolean }> {
+    return this.http.get<{ emailReminderEnabled: boolean }>(api('/public/app-config'));
+  }
+
   depositNumbers(): Observable<DepositNumbers> {
     return this.http.get<DepositNumbers>(api('/public/deposit-numbers'));
   }
