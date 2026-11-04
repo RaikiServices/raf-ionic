@@ -375,6 +375,7 @@ export type NotificationType =
   | 'WITHDRAWAL_APPROVED'
   | 'WITHDRAWAL_PAID'
   | 'WITHDRAWAL_REJECTED'
+  | 'ANNOUNCEMENT'
   | 'ADMIN_RECONCILIATION_ALERT';
 
 export interface AppNotification {
@@ -386,6 +387,9 @@ export interface AppNotification {
   read: boolean;
   createdAt: string;
   readAt: string | null;
+  /** Message de l'equipe a acquitter par « J'ai compris ». */
+  popup: boolean;
+  acknowledgedAt: string | null;
 }
 
 export type NotificationChannel = 'IN_APP' | 'EMAIL' | 'PUSH';

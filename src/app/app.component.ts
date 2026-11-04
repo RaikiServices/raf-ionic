@@ -7,6 +7,7 @@ import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 
 import { AuthService } from './core/auth.service';
 import { PlayerStateService } from './core/player-state.service';
+import { AnnouncementPopupComponent } from './ui/announcement-popup.component';
 import { EmailReminderComponent } from './ui/email-reminder.component';
 import { IconDefsComponent } from './ui/icon.component';
 
@@ -17,9 +18,10 @@ import { IconDefsComponent } from './ui/icon.component';
     <ion-app>
       <ion-router-outlet />
       <raf-email-reminder />
+      <raf-announcement-popup />
     </ion-app>
   `,
-  imports: [IonApp, IonRouterOutlet, IconDefsComponent, EmailReminderComponent],
+  imports: [IonApp, IonRouterOutlet, IconDefsComponent, EmailReminderComponent, AnnouncementPopupComponent],
 })
 export class AppComponent {
   private readonly auth = inject(AuthService);

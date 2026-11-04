@@ -13,6 +13,7 @@ const ICONS: Partial<Record<NotificationType, string>> = {
   WITHDRAWAL_APPROVED: 'check',
   WITHDRAWAL_PAID: 'cash',
   WITHDRAWAL_REJECTED: 'cross',
+  ANNOUNCEMENT: 'info',
   ADMIN_RECONCILIATION_ALERT: 'warning',
 };
 
@@ -43,7 +44,14 @@ export function notificationLink(n: AppNotification): string | null {
     case 'WITHDRAWAL_PAID':
     case 'WITHDRAWAL_REJECTED':
       return '/portefeuille/retraits';
+    case 'ANNOUNCEMENT':
+      return internalPath(data['path']);
     default:
       return null;
   }
+}
+
+/** Chemin interne a l'app uniquement : jamais d'adresse externe (//site, https://...). */
+function internalPath(value: unknown): string | null {
+  return typeof value === 'string' && /^\/(?![/\\])\S*$/.test(value) ? value : null;
 }

@@ -204,6 +204,16 @@ export class ApiService {
     return this.http.post<MessageResponse>(api(`/notifications/${id}/read`), {});
   }
 
+  /** Messages de l'equipe a afficher en popup, du plus ancien au plus recent. */
+  popups(): Observable<AppNotification[]> {
+    return this.http.get<AppNotification[]>(api('/notifications/popups'));
+  }
+
+  /** « J'ai compris » : le popup ne s'affichera plus. */
+  acknowledge(id: number): Observable<MessageResponse> {
+    return this.http.post<MessageResponse>(api(`/notifications/${id}/ack`), {});
+  }
+
   markAllRead(): Observable<{ marked: number }> {
     return this.http.post<{ marked: number }>(api('/notifications/read-all'), {});
   }
