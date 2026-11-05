@@ -13,6 +13,7 @@ import {
   GameResult,
   GameStart,
   GameTurn,
+  Invite,
   Leaderboard,
   MessageResponse,
   NotificationPreference,
@@ -41,6 +42,11 @@ export class ApiService {
 
   me(): Observable<User> {
     return this.http.get<User>(api('/me'));
+  }
+
+  /** Lien d'inscription a partager, avec ce joueur pour parrain. */
+  invite(): Observable<Invite> {
+    return this.http.get<Invite>(api('/me/invite'));
   }
 
   forgotPassword(email: string): Observable<MessageResponse> {

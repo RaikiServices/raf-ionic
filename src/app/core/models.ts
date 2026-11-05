@@ -62,6 +62,15 @@ export interface RegisterRequest {
   password: string;
   firstName: string;
   lastName: string;
+  /** Joueur dont le lien d'invitation a ete suivi (parametre « parrain »). */
+  inviterId?: number;
+}
+
+/** Lien d'invitation du joueur ; un leader offre un bonus a ses filleuls. */
+export interface Invite {
+  url: string;
+  leader: boolean;
+  signupBonusCredits: number;
 }
 
 // --- Quiz -----------------------------------------------------------------------
@@ -295,6 +304,8 @@ export type TransactionType =
   | 'PRIZE'
   /** Commission d'un leader sur les parties perdues de ses joueurs (solde des gains). */
   | 'COMMISSION'
+  /** Bonus offert a l'inscription avec le lien d'un leader (solde des credits). */
+  | 'INVITE_BONUS'
   | 'WITHDRAWAL'
   | 'REFUND'
   | 'ADJUSTMENT';

@@ -22,6 +22,7 @@
               "base": "www",
               "browser": ""
             },
+            "allowedCommonJsDependencies": ["qrcode"],
             "index": "src/index.html",
             "polyfills": [
               "src/polyfills.ts"

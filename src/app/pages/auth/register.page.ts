@@ -1,12 +1,25 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { IonIcon, NavController } from '@ionic/angular/standalone';
 
 import { AuthService } from '../../core/auth.service';
 import { errorMessage } from '../../core/errors';
 import { FeedbackService } from '../../core/feedback.service';
+import { storage } from '../../core/storage';
 import { IconComponent } from '../../ui/icon.component';
 import { AuthLayoutComponent } from './auth-layout.component';
+
+/** Parrain du lien d'invitation suivi, garde si le joueur quitte puis revient sur l'inscription. */
+const INVITER_KEY = 'raf.inviter';
+
+function parseInviter(raw: string | null): number | null {
+  if (!raw || !/^\d{1,18}$/.test(raw)) {
+    return null;
+  }
+  const id = Number(raw);
+  return Number.isSafeInteger(id) && id > 0 ? id : null;
+}
 
 /** Numero haitien par defaut : le joueur tape ses 8 chiffres, ou un numero complet en +XXX. */
 export function normalizePhone(raw: string): string {
@@ -133,6 +146,18 @@ export class RegisterPage {
   protected readonly busy = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly shake = signal(false);
+  private inviterId: number | null = null;
+
+  constructor() {
+    // Lien d'invitation : /inscription?parrain=<id du joueur qui l'a partage>.
+    const fromLink = parseInviter(inject(ActivatedRoute).snapshot.queryParamMap.get('parrain'));
+    if (fromLink) {
+      this.inviterId = fromLink;
+      void storage.set(INVITER_KEY, String(fromLink));
+    } else {
+      void storage.get(INVITER_KEY).then((saved) => (this.inviterId = parseInviter(saved)));
+    }
+  }
 
   protected async submit(): Promise<void> {
     const problem = this.check();
@@ -149,7 +174,9 @@ export class RegisterPage {
         email: this.email.trim(),
         phone: normalizePhone(this.phone),
         password: this.password,
+        ...(this.inviterId ? { inviterId: this.inviterId } : {}),
       });
+      void storage.remove(INVITER_KEY);
       await this.nav.navigateRoot('/accueil', { animationDirection: 'forward' });
       await this.feedback.success('Bienvenue dans RAF ! Un email de confirmation t’attend.');
     } catch (e) {

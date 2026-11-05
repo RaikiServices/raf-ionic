@@ -1,11 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
 import { IonContent, IonHeader, IonIcon, IonModal, IonToggle, IonToolbar, NavController } from '@ionic/angular/standalone';
+import QRCode from 'qrcode';
 import { firstValueFrom } from 'rxjs';
 
 import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
 import { FeedbackService } from '../../core/feedback.service';
 import { initials } from '../../core/format';
+import { Invite } from '../../core/models';
 import { SoundService } from '../../core/sound.service';
 import { IconComponent } from '../../ui/icon.component';
 import { closeModal } from '../../ui/modal';
@@ -28,6 +30,10 @@ import { TopBarComponent } from '../../ui/top-bar.component';
             <h1 class="title-stroke sm">{{ u.firstName }} {{ u.lastName }}</h1>
             <div class="since">Joueur depuis le {{ u.createdAt | date }}</div>
           </section>
+
+          <button class="btn3d green block invite-btn" type="button" [disabled]="inviteLoading()" (click)="openInvite()">
+            <raf-icon name="users" [size]="28" /> {{ inviteLoading() ? 'Chargement…' : 'Inviter un ami' }}
+          </button>
 
           <section class="panel panel-with-ribbon">
             <div class="ribbon blue">Mon compte</div>
@@ -106,7 +112,35 @@ import { TopBarComponent } from '../../ui/top-bar.component';
         }
       </div>
 
-      <ion-modal class="raf-popup" [isOpen]="logoutOpen()" (didDismiss)="logoutOpen.set(false)">
+      <ion-modal #inviteModal class="raf-popup" [isOpen]="inviteOpen()" (didDismiss)="inviteOpen.set(false)">
+        <ng-template>
+          <div class="panel popup">
+            <div class="ribbon gold">Inviter un ami</div>
+            @if (invite(); as i) {
+              <p>Fais scanner ce code à ton ami, ou envoie-lui le lien pour qu'il s'inscrive.</p>
+              @if (i.leader && i.signupBonusCredits > 0) {
+                <p class="bonus">
+                  <raf-icon name="gift" [size]="26" />
+                  Il recevra {{ i.signupBonusCredits }} crédits offerts dès qu'il aura confirmé son email.
+                </p>
+              }
+              @if (qrCode(); as src) {
+                <img class="qr" [src]="src" alt="Code QR du lien d'invitation" width="240" height="240" />
+              }
+              <div class="link">{{ i.url }}</div>
+              <button class="btn3d block" type="button" (click)="copyInvite(i.url)">
+                Copier le lien
+              </button>
+              @if (canShare) {
+                <button class="btn3d purple block" type="button" (click)="shareInvite(i.url)">Partager</button>
+              }
+            }
+            <button class="btn3d blue block" type="button" (click)="inviteOpen.set(false)">Fermer</button>
+          </div>
+        </ng-template>
+      </ion-modal>
+
+      <ion-modal #logoutModal class="raf-popup" [isOpen]="logoutOpen()" (didDismiss)="logoutOpen.set(false)">
         <ng-template>
           <div class="panel popup">
             <div class="ribbon">Déconnexion</div>
@@ -159,6 +193,31 @@ import { TopBarComponent } from '../../ui/top-bar.component';
       p { margin: 0; font-weight: 700; font-size: 13.5px; line-height: 1.4; }
     }
     .logout { margin-top: 22px; }
+    .invite-btn { margin: 4px 0 8px; }
+    .qr {
+      display: block;
+      width: 240px;
+      max-width: 100%;
+      height: auto;
+      margin: 0 auto;
+      padding: 10px;
+      border-radius: 18px;
+      background: #fff;
+      box-shadow: 0 4px 0 var(--raf-edge-dark);
+    }
+    .bonus {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      text-align: left;
+      color: var(--raf-green-dark);
+    }
+    .link {
+      font-weight: 800;
+      font-size: 13px;
+      word-break: break-all;
+      color: var(--raf-ink-soft);
+    }
     .email-actions { display: flex; flex-direction: column; gap: 6px; }
     // Discret volontairement : action rare et sans retour, a ne pas confondre avec la deconnexion.
     .delete-link {
@@ -191,7 +250,13 @@ export class ProfilePage {
   protected readonly sound = inject(SoundService);
 
   protected readonly logoutOpen = signal(false);
-  private readonly logoutModal = viewChild(IonModal);
+  private readonly logoutModal = viewChild<IonModal>('logoutModal');
+  protected readonly inviteOpen = signal(false);
+  private readonly inviteModal = viewChild<IonModal>('inviteModal');
+  protected readonly invite = signal<Invite | null>(null);
+  protected readonly qrCode = signal<string | null>(null);
+  protected readonly inviteLoading = signal(false);
+  protected readonly canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
   protected readonly resending = signal(false);
   protected readonly initialsText = computed(() => initials(this.auth.user()?.firstName, this.auth.user()?.lastName));
 
@@ -205,6 +270,38 @@ export class ProfilePage {
   /** Changement d'onglet fenetre ouverte : elle ne doit pas reapparaitre par-dessus une autre page. */
   ionViewWillLeave(): void {
     void closeModal(this.logoutOpen, this.logoutModal());
+    void closeModal(this.inviteOpen, this.inviteModal());
+  }
+
+  /** Lien d'invitation (avec ce joueur pour parrain) et son code QR, demandes une seule fois. */
+  protected async openInvite(): Promise<void> {
+    if (!this.invite()) {
+      this.inviteLoading.set(true);
+      try {
+        const invite = await firstValueFrom(this.apiService.invite());
+        this.qrCode.set(await QRCode.toDataURL(invite.url, { width: 480, margin: 1, errorCorrectionLevel: 'M' }));
+        this.invite.set(invite);
+      } catch (e) {
+        await this.feedback.error(e);
+        return;
+      } finally {
+        this.inviteLoading.set(false);
+      }
+    }
+    this.inviteOpen.set(true);
+  }
+
+  protected copyInvite(url: string): void {
+    navigator.clipboard
+      .writeText(url)
+      .then(() => this.feedback.success("Lien d'invitation copié"))
+      .catch(() => this.feedback.toast(url));
+  }
+
+  protected shareInvite(url: string): void {
+    navigator
+      .share({ title: 'RAF', text: 'Rejoins-moi sur RAF !', url })
+      .catch(() => undefined);
   }
 
   protected async resendEmail(): Promise<void> {

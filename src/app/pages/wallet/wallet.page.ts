@@ -29,6 +29,7 @@ const TYPES: Record<TransactionType, { label: string; icon: string }> = {
   SOLO_ENTRY: { label: 'Partie solo', icon: 'flame' },
   PRIZE: { label: 'Gain remporté', icon: 'trophy' },
   COMMISSION: { label: 'Commission leader', icon: 'users' },
+  INVITE_BONUS: { label: 'Bonus de bienvenue', icon: 'gift' },
   WITHDRAWAL: { label: 'Retrait', icon: 'bank' },
   REFUND: { label: 'Remboursement', icon: 'gift' },
   ADJUSTMENT: { label: 'Ajustement', icon: 'settings' },
