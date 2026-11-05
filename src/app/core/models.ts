@@ -293,6 +293,8 @@ export type TransactionType =
   | 'TICKET_PURCHASE'
   | 'SOLO_ENTRY'
   | 'PRIZE'
+  /** Commission d'un leader sur les parties perdues de ses joueurs (solde des gains). */
+  | 'COMMISSION'
   | 'WITHDRAWAL'
   | 'REFUND'
   | 'ADJUSTMENT';

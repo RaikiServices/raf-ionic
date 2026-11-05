@@ -28,6 +28,7 @@ const TYPES: Record<TransactionType, { label: string; icon: string }> = {
   TICKET_PURCHASE: { label: 'Ticket acheté', icon: 'ticket' },
   SOLO_ENTRY: { label: 'Partie solo', icon: 'flame' },
   PRIZE: { label: 'Gain remporté', icon: 'trophy' },
+  COMMISSION: { label: 'Commission leader', icon: 'users' },
   WITHDRAWAL: { label: 'Retrait', icon: 'bank' },
   REFUND: { label: 'Remboursement', icon: 'gift' },
   ADJUSTMENT: { label: 'Ajustement', icon: 'settings' },
