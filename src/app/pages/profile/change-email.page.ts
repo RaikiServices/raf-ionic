@@ -30,9 +30,10 @@ import { TopBarComponent } from '../../ui/top-bar.component';
             <div class="alert-box">{{ message }}</div>
           }
           @if (auth.user(); as u) {
-            <div class="alert-box info">
-              Le lien de confirmation a été envoyé à <strong>{{ u.email }}</strong>.
-              Si cette adresse est fausse, saisis la bonne : on t'enverra un nouveau lien.
+            <div class="alert-box info stack">
+              <span>Le lien de confirmation a été envoyé à</span>
+              <strong>{{ u.email }}</strong>
+              <span>Si cette adresse est fausse, saisis la bonne : on t'enverra un nouveau lien.</span>
             </div>
           }
           <label class="field">

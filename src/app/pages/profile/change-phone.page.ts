@@ -31,9 +31,10 @@ import { normalizePhone } from '../auth/register.page';
             <div class="alert-box">{{ message }}</div>
           }
           @if (auth.user(); as u) {
-            <div class="alert-box info">
-              Numéro enregistré : <strong>{{ u.phone }}</strong>. S'il est faux, saisis le bon : c'est à lui que
-              partiront le code de vérification et les codes de retrait.
+            <div class="alert-box info stack">
+              <span>Numéro enregistré :</span>
+              <strong>{{ u.phone }}</strong>
+              <span>S'il est faux, saisis le bon : c'est à lui que partiront le code de vérification et les codes de retrait.</span>
             </div>
           }
           <label class="field">

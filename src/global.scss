@@ -750,6 +750,16 @@ ion-header.raf-header::after {
   font-size: 14px;
   line-height: 1.35;
 
+  // Texte suivi d'une valeur (email, numero) : une info par ligne, jamais en colonnes.
+  &.stack {
+    flex-direction: column;
+    gap: 4px;
+
+    strong {
+      overflow-wrap: anywhere;
+    }
+  }
+
   &.info {
     background: var(--raf-p50);
     border-color: var(--raf-p200);
