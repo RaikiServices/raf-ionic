@@ -15,6 +15,9 @@ import {
   GameStart,
   GameTurn,
   Invite,
+  LeaderTransfer,
+  LeaderTransferConfig,
+  LeaderTransferPlayer,
   Leaderboard,
   MessageResponse,
   NewsItem,
@@ -167,6 +170,30 @@ export class ApiService {
     return this.http.post<GameTurn>(api(`/game/${sessionId}/answer`), { questionId, choiceId });
   }
 
+  // --- Recharge de ses joueurs par un leader ---------------------------------------
+
+  leaderTransferConfig(): Observable<LeaderTransferConfig> {
+    return this.http.get<LeaderTransferConfig>(api('/leader/transfers/config'));
+  }
+
+  /** Joueurs rattaches au leader ; recherche par nom ou chiffres du telephone. */
+  leaderTransferPlayers(query: string, page = 0, size = 20): Observable<Page<LeaderTransferPlayer>> {
+    let params = paging(page, size);
+    if (query.trim()) {
+      params = params.set('q', query.trim());
+    }
+    return this.http.get<Page<LeaderTransferPlayer>>(api('/leader/transfers/players'), { params });
+  }
+
+  leaderTransfers(page = 0, size = 10): Observable<Page<LeaderTransfer>> {
+    return this.http.get<Page<LeaderTransfer>>(api('/leader/transfers'), { params: paging(page, size) });
+  }
+
+  /** Irreversible. Meme requestKey = meme recharge : un double envoi n'est applique qu'une fois. */
+  leaderTransfer(playerId: number, credits: number, requestKey: string): Observable<LeaderTransfer> {
+    return this.http.post<LeaderTransfer>(api('/leader/transfers'), { playerId, credits, requestKey });
+  }
+
   /** Sujets deja joues en solo aujourd'hui : une partie par sujet et par jour. */
   soloPlayedToday(): Observable<number[]> {
     return this.http.get<number[]>(api('/game/solo/played-today'));
@@ -195,8 +222,8 @@ export class ApiService {
   }
 
   /** Comportements de l'app choisis dans le back-office (lu sans connexion). */
-  appConfig(): Observable<{ emailReminderEnabled: boolean }> {
-    return this.http.get<{ emailReminderEnabled: boolean }>(api('/public/app-config'));
+  appConfig(): Observable<{ emailReminderEnabled: boolean; leaderTransferEnabled: boolean }> {
+    return this.http.get<{ emailReminderEnabled: boolean; leaderTransferEnabled: boolean }>(api('/public/app-config'));
   }
 
   depositNumbers(): Observable<DepositNumbers> {

@@ -332,6 +332,35 @@ export interface Leaderboard {
 // --- Portefeuille ---------------------------------------------------------------
 
 /** Solde de jeu en credits ; solde de gains (retirable) directement en HTG. */
+/** Recharge d'un joueur par son leader (ecran reserve aux leaders). */
+export interface LeaderTransferConfig {
+  enabled: boolean;
+  minCredits: number;
+  maxCredits: number;
+  creditBalance: number;
+}
+
+export interface LeaderTransferPlayer {
+  id: number;
+  firstName: string;
+  lastName: string;
+  /** Quatre derniers chiffres du telephone. */
+  phoneEnd: string | null;
+  lastTransferAt: string | null;
+  lastTransferCredits: number | null;
+}
+
+export interface LeaderTransfer {
+  id: number;
+  playerId: number;
+  playerFirstName: string;
+  playerLastName: string;
+  credits: number;
+  createdAt: string;
+  /** Solde du leader apres la recharge (absent dans l'historique). */
+  leaderBalanceAfter: number | null;
+}
+
 export interface Wallet {
   creditBalance: number;
   creditBalanceHtg: number;
@@ -346,6 +375,8 @@ export type TransactionType =
   | 'PRIZE'
   /** Commission d'un leader sur les parties perdues de ses joueurs (solde des gains). */
   | 'COMMISSION'
+  | 'LEADER_TRANSFER_OUT'
+  | 'LEADER_TRANSFER_IN'
   /** Bonus offert a l'inscription avec le lien d'un leader (solde des credits). */
   | 'INVITE_BONUS'
   | 'WITHDRAWAL'

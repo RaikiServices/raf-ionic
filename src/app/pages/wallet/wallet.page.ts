@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import {
   InfiniteScrollCustomEvent,
   IonContent,
@@ -15,6 +15,7 @@ import {
 import { firstValueFrom } from 'rxjs';
 
 import { ApiService } from '../../core/api.service';
+import { AuthService } from '../../core/auth.service';
 import { errorMessage } from '../../core/errors';
 import { FeedbackService } from '../../core/feedback.service';
 import { Transaction, TransactionType } from '../../core/models';
@@ -30,6 +31,8 @@ const TYPES: Record<TransactionType, { label: string; icon: string }> = {
   PRIZE: { label: 'Gain remporté', icon: 'trophy' },
   COMMISSION: { label: 'Commission leader', icon: 'users' },
   INVITE_BONUS: { label: 'Bonus de bienvenue', icon: 'gift' },
+  LEADER_TRANSFER_OUT: { label: "Recharge d'un joueur", icon: 'users' },
+  LEADER_TRANSFER_IN: { label: 'Recharge par ton leader', icon: 'coin' },
   WITHDRAWAL: { label: 'Retrait', icon: 'bank' },
   REFUND: { label: 'Remboursement', icon: 'gift' },
   ADJUSTMENT: { label: 'Ajustement', icon: 'settings' },
@@ -92,6 +95,13 @@ const TYPES: Record<TransactionType, { label: string; icon: string }> = {
             <raf-icon name="bank" [size]="28" /> Retirer
           </button>
         </section>
+
+        <!-- Reserve aux leaders : ils rechargent leurs joueurs avec leurs propres credits. -->
+        @if (canTransfer()) {
+          <button class="btn3d purple block transfer" type="button" (click)="go('/portefeuille/recharger-joueur')">
+            <raf-icon name="users" [size]="26" /> Recharger un joueur
+          </button>
+        }
 
         <button class="list-row clickable link-row" type="button" (click)="go('/portefeuille/retraits')">
           <raf-icon name="bank" [size]="32" />
@@ -179,6 +189,7 @@ const TYPES: Record<TransactionType, { label: string; icon: string }> = {
       opacity: 0.95;
       margin-top: 4px;
     }
+    .transfer { margin: -4px 0 18px; }
     .link-row {
       width: 100%;
       text-align: left;
@@ -215,6 +226,7 @@ const TYPES: Record<TransactionType, { label: string; icon: string }> = {
 })
 export class WalletPage {
   protected readonly state = inject(PlayerStateService);
+  private readonly auth = inject(AuthService);
   private readonly apiService = inject(ApiService);
   private readonly nav = inject(NavController);
   private readonly feedback = inject(FeedbackService);
@@ -224,9 +236,25 @@ export class WalletPage {
   protected readonly hasMore = signal(false);
   private page = 0;
 
+  private readonly isLeader = computed(() => this.auth.user()?.roles.includes('LEADER') ?? false);
+  /** Coupee depuis le back-office : le bouton disparait. */
+  private readonly transferEnabled = signal(true);
+  protected readonly canTransfer = computed(() => this.isLeader() && this.transferEnabled());
+
   ionViewWillEnter(): void {
     void this.state.refreshWallet();
     void this.load();
+    if (this.isLeader()) {
+      void this.loadTransferFlag();
+    }
+  }
+
+  private async loadTransferFlag(): Promise<void> {
+    try {
+      this.transferEnabled.set((await firstValueFrom(this.apiService.appConfig())).leaderTransferEnabled !== false);
+    } catch {
+      // Sans reponse, le bouton reste : l'ecran de recharge dira si la fonction est coupee.
+    }
   }
 
   protected async refresh(event: RefresherCustomEvent): Promise<void> {
