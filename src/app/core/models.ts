@@ -366,6 +366,8 @@ export interface Wallet {
   creditBalanceHtg: number;
   winningsBalanceHtg: number;
   htgRate: number;
+  /** Gourdes de recharge qui ne formaient pas un credit entier, ajoutees a la prochaine recharge. */
+  retentionHtg: number;
 }
 
 export type TransactionType =
@@ -407,6 +409,10 @@ export interface TopUp {
   note: string | null;
   createdAt: string;
   confirmedAt: string | null;
+  /** Retenue precedente ajoutee a cette recharge. */
+  retentionUsedHtg: number;
+  /** Reste garde pour la recharge suivante. */
+  retentionKeptHtg: number;
 }
 
 /** Un agent est-il en ligne pour crediter les recharges ? `lastSeenAt` seulement hors ligne. */

@@ -145,6 +145,19 @@ function depositNumber(label: string, value: string | null | undefined): Deposit
                 <div class="grow">
                   <div class="opt-title">+{{ t.credits | num }} crédits</div>
                   <div class="opt-sub">{{ t.amountHtg | num }} HTG · {{ provider(t) }} · {{ t.createdAt | dateTime }}</div>
+                  @if (t.retentionUsedHtg > 0 || t.retentionKeptHtg > 0) {
+                    <div class="opt-sub">
+                      @if (t.retentionUsedHtg > 0) {
+                        + {{ t.retentionUsedHtg | num }} HTG repris de ta retenue
+                      }
+                      @if (t.retentionUsedHtg > 0 && t.retentionKeptHtg > 0) {
+                        ·
+                      }
+                      @if (t.retentionKeptHtg > 0) {
+                        {{ t.retentionKeptHtg | num }} HTG gardés pour la prochaine
+                      }
+                    </div>
+                  }
                 </div>
                 <span class="state" [class.ok]="t.status === 'CONFIRMED'">{{ status(t) }}</span>
               </div>

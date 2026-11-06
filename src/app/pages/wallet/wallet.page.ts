@@ -77,6 +77,13 @@ const TYPES: Record<TransactionType, { label: string; icon: string }> = {
               <div class="vault-sub">1 crédit = {{ state.creditHtgRate() ?? '…' }} HTG · pour acheter des tickets</div>
             </div>
           </div>
+          @if (w && w.retentionHtg > 0) {
+            <!-- Gourdes d'une recharge qui ne formaient pas un credit entier : rien n'est perdu. -->
+            <div class="retention">
+              <raf-icon name="hourglass" [size]="24" />
+              <span><strong>{{ w.retentionHtg | num }} HTG</strong> en attente, ajoutés à ta prochaine recharge</span>
+            </div>
+          }
           <button class="btn3d block" type="button" (click)="go('/portefeuille/recharger')">
             <raf-icon name="plus" [size]="22" /> Recharger
           </button>
@@ -190,6 +197,19 @@ const TYPES: Record<TransactionType, { label: string; icon: string }> = {
       margin-top: 4px;
     }
     .transfer { margin: -4px 0 18px; }
+    .retention {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 12px;
+      padding: 8px 12px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.22);
+      font-weight: 800;
+      font-size: 13.5px;
+      line-height: 1.3;
+      strong { font-family: var(--raf-font-display); font-weight: 400; font-size: 16px; }
+    }
     .link-row {
       width: 100%;
       text-align: left;
