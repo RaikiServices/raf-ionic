@@ -79,7 +79,10 @@ export class GamePage implements OnDestroy {
   private readonly platform = inject(Platform);
   private readonly outlet = inject(IonRouterOutlet, { optional: true });
 
-  protected readonly quizId = Number(inject(ActivatedRoute).snapshot.paramMap.get('id'));
+  private readonly route = inject(ActivatedRoute);
+  protected readonly quizId = Number(this.route.snapshot.paramMap.get('id'));
+  /** Solo : categorie ouverte dans l'onglet Solo, pour y revenir apres la partie. */
+  private readonly soloCategory = this.route.snapshot.queryParamMap.get('categorie');
   protected readonly letters = LETTERS;
 
   protected readonly phase = signal<Phase>('loading');
@@ -583,7 +586,12 @@ export class GamePage implements OnDestroy {
   }
 
   private backUrl(): string {
-    return this.solo() ? '/accueil?onglet=solo' : `/quiz/${this.quizId}`;
+    if (!this.solo()) {
+      return `/quiz/${this.quizId}`;
+    }
+    return this.soloCategory
+      ? `/accueil?onglet=solo&categorie=${encodeURIComponent(this.soloCategory)}`
+      : '/accueil?onglet=solo';
   }
 
   private fail(message: string, code: string | null = null): void {

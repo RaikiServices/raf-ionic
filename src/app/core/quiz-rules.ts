@@ -84,7 +84,8 @@ export function statusLine(quiz: Quiz, now: number): { text: string; urgent: boo
 }
 
 /** Couleurs de la carte quand le quiz n'a pas de banniere : des teintes de la palette orange -> blanc. */
-export function themeGradient(quiz: Quiz): string {
+/** Degrade de secours d'une vignette sans image, stable pour un meme id (quiz ou categorie). */
+export function themeGradient(item: { id: number }): string {
   const palettes = [
     ['#ffc078', '#ff9a1a'],
     ['#ffe7cc', '#ffad47'],
@@ -93,6 +94,6 @@ export function themeGradient(quiz: Quiz): string {
     ['#ffad47', '#e08816'],
     ['#ffffff', '#ffd4a3'],
   ];
-  const [a, b] = palettes[quiz.id % palettes.length];
+  const [a, b] = palettes[item.id % palettes.length];
   return `linear-gradient(135deg, ${a} 0%, ${b} 100%)`;
 }

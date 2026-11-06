@@ -134,6 +134,16 @@ export interface Reward {
   label: string | null;
 }
 
+/** Categorie de questions. Un sujet de quiz (Breaking Bad) peut avoir un parent (Series TV). */
+export interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  parentId: number | null;
+  imageUrl: string | null;
+}
+
 export interface Topic {
   id: number;
   categoryId: number;

@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { api } from './api-url';
 import {
   AppNotification,
+  Category,
   DepositNumbers,
   DeviceSession,
   GameAnswer,
@@ -120,6 +121,11 @@ export class ApiService {
 
   quizzes(page = 0, size = 30, mode: GameMode = 'GROUP'): Observable<Page<Quiz>> {
     return this.http.get<Page<Quiz>>(api('/quizzes'), { params: paging(page, size).set('mode', mode) });
+  }
+
+  /** Categories actives, tous modes confondus : un parent peut ne servir a aucun quiz. */
+  categories(): Observable<Category[]> {
+    return this.http.get<Category[]>(api('/categories'));
   }
 
   quiz(id: number): Observable<Quiz> {
