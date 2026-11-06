@@ -214,13 +214,14 @@ interface SoloGroup {
       line-height: 1.1;
     }
 
-    /* Categories : deux tuiles par ligne. */
-    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    /* Categories : une par ligne, chaque tuile en deux colonnes (image | infos). */
+    .grid { display: flex; flex-direction: column; gap: 12px; }
     .tile {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      padding: 8px;
+      display: grid;
+      grid-template-columns: 96px minmax(0, 1fr);
+      align-items: center;
+      gap: 12px;
+      padding: 10px;
       border-radius: 22px;
       background: linear-gradient(180deg, #ffffff, var(--raf-p50));
       border: 3px solid var(--raf-p200);
@@ -232,7 +233,7 @@ interface SoloGroup {
     .tile:active { transform: translateY(3px) scale(0.99); }
     .tile.done { filter: saturate(0.55); opacity: 0.85; }
     .tile-img {
-      aspect-ratio: 16 / 10;
+      aspect-ratio: 1;
       border-radius: 16px;
       border: 3px solid #fff;
       box-shadow: 0 3px 0 rgba(184, 106, 0, 0.25);
@@ -241,7 +242,7 @@ interface SoloGroup {
       overflow: hidden;
       img { width: 100%; height: 100%; object-fit: cover; }
     }
-    .tile-body { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 0 2px 2px; min-width: 0; }
+    .tile-body { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; }
     .tile-name {
       margin: 0;
       max-width: 100%;
@@ -269,6 +270,7 @@ interface SoloGroup {
     @media (max-width: 380px) {
       .card { gap: 10px; padding: 8px; }
       .thumb { width: 64px; height: 64px; }
+      .tile { grid-template-columns: 72px minmax(0, 1fr); gap: 10px; padding: 8px; }
       .prize { font-size: 18px; }
     }
   `,
