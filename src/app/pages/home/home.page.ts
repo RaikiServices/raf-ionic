@@ -1,38 +1,44 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal, viewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   IonContent,
   IonHeader,
   IonRefresher,
   IonRefresherContent,
   IonToolbar,
-  NavController,
   RefresherCustomEvent,
 } from '@ionic/angular/standalone';
-import { firstValueFrom } from 'rxjs';
 
-import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
-import { ClockService } from '../../core/clock.service';
-import { errorMessage } from '../../core/errors';
 import { FeedbackService } from '../../core/feedback.service';
-import { Quiz } from '../../core/models';
 import { PlayerStateService } from '../../core/player-state.service';
-import {
-  STATUS_LABELS,
-  acceptsPlay,
-  acceptsTickets,
-  statusClass,
-  statusLine,
-  statusRank,
-  themeGradient,
-  topPrizeHtg,
-} from '../../core/quiz-rules';
 import { IconComponent } from '../../ui/icon.component';
-import { NumPipe } from '../../ui/pipes';
-import { QuizCardComponent } from '../../ui/quiz-card.component';
 import { TopBarComponent } from '../../ui/top-bar.component';
+import { GroupTabComponent } from './group-tab.component';
+import { NewsTabComponent } from './news-tab.component';
+import { SoloTabComponent } from './solo-tab.component';
 
-/** Lobby : le quiz a ne pas manquer en grand, puis tous les quiz par etat. */
+/**
+ * Onglets de l'accueil, dans l'ordre d'affichage. La cle est celle du parametre
+ * ?onglet= de l'URL (ex. /accueil?onglet=solo) : ne pas la renommer sans les liens
+ * qui y menent. Pour ajouter un onglet : une entree ici et un cas dans le @switch.
+ */
+export const HOME_TABS = [
+  { key: 'actualite', label: 'Actualité', icon: 'bell' },
+  { key: 'groupe', label: 'En groupe', icon: 'users' },
+  { key: 'solo', label: 'Solo', icon: 'flame' },
+] as const;
+
+export type HomeTabKey = (typeof HOME_TABS)[number]['key'];
+
+const DEFAULT_TAB: HomeTabKey = 'actualite';
+
+function isTab(value: string | null): value is HomeTabKey {
+  return HOME_TABS.some((tab) => tab.key === value);
+}
+
+/** Accueil : un systeme d'onglets (Actualite, En groupe, Solo). */
 @Component({
   selector: 'raf-home',
   imports: [
@@ -42,9 +48,10 @@ import { TopBarComponent } from '../../ui/top-bar.component';
     IonRefresher,
     IonRefresherContent,
     TopBarComponent,
-    QuizCardComponent,
     IconComponent,
-    NumPipe,
+    GroupTabComponent,
+    SoloTabComponent,
+    NewsTabComponent,
   ],
   template: `
     <ion-header class="raf-header">
@@ -59,90 +66,25 @@ import { TopBarComponent } from '../../ui/top-bar.component';
       <div class="page-pad">
         <h1 class="hello title-stroke">Salut {{ auth.user()?.firstName }} !</h1>
 
-        @if (error(); as message) {
-          <div class="panel">
-            <div class="alert-box">{{ message }}</div>
-            <button class="btn3d blue block" type="button" (click)="load()">Réessayer</button>
-          </div>
-        } @else if (!quizzes()) {
-          <div class="skeleton hero-skel"></div>
-          <div class="skeleton row-skel"></div>
-          <div class="skeleton row-skel"></div>
-        } @else if (quizzes()!.length === 0) {
-          <div class="empty-state">
-            <raf-icon class="float" name="hourglass" [size]="80" />
-            <div class="empty-title">Aucun quiz pour le moment</div>
-            <div class="empty-text">Le prochain arrive bientôt. Active les notifications pour être prévenu !</div>
-          </div>
-        } @else {
-          @if (featured(); as q) {
-            <section class="hero pop-in" (click)="open(q)">
-              <div class="hero-art" [class.has-banner]="!!q.bannerUrl" [style.background]="q.bannerUrl ? null : gradient(q)">
-                @if (q.bannerUrl; as url) {
-                  <img [src]="url" alt="" />
-                } @else {
-                  <raf-icon class="float art-icon" name="trophy" [size]="96" />
-                  <raf-icon class="float art-a" name="question" [size]="40" />
-                  <raf-icon class="float art-b" name="star" [size]="30" />
-                }
-                <span class="status-tag hero-tag" [class]="'status-tag hero-tag ' + cls(q)">{{ label(q) }}</span>
-                @if (ticketsFor(q.id) > 0) {
-                  <span class="hero-tickets"><raf-icon name="ticket" [size]="24" />×{{ ticketsFor(q.id) }}</span>
-                }
-              </div>
-              <div class="hero-body">
-                <h2 class="hero-title">{{ q.title }}</h2>
-                @if (q.themeLabel) {
-                  <div class="hero-theme">{{ q.themeLabel }}</div>
-                }
-                <div class="hero-line" [class.urgent]="line(q).urgent">
-                  <raf-icon name="clock" [size]="22" /> {{ line(q).text }}
-                </div>
-                <div class="prize">
-                  <raf-icon name="crown" [size]="40" />
-                  <div>
-                    <div class="prize-label">1er prix</div>
-                    <div class="prize-value">{{ prize(q) | num }} HTG</div>
-                  </div>
-                  <div class="spacer"></div>
-                  <div class="prize-side">
-                    <div><raf-icon name="users" [size]="20" /> {{ q.playersRegistered }}</div>
-                    @if (q.free) {
-                      <div><raf-icon name="gift" [size]="20" /> Gratuit</div>
-                    } @else {
-                      <div><raf-icon name="coin" [size]="20" /> {{ q.ticketPriceCredits }} / ticket</div>
-                    }
-                  </div>
-                </div>
-              </div>
-            </section>
+        <nav class="home-tabs" role="tablist" aria-label="Accueil">
+          @for (tab of tabs; track tab.key) {
+            <button type="button" role="tab" class="home-tab" [class.active]="active() === tab.key"
+                    [attr.aria-selected]="active() === tab.key" (click)="select(tab.key)">
+              <raf-icon [name]="tab.icon" [size]="24" />
+              <span>{{ tab.label }}</span>
+            </button>
           }
+        </nav>
 
-          @if (live().length > 0) {
-            <h2 class="section-title"><raf-icon name="flame" [size]="30" /> À jouer maintenant</h2>
-            <div class="list stagger">
-              @for (q of live(); track q.id) {
-                <raf-quiz-card [quiz]="q" [tickets]="ticketsFor(q.id)" (click)="open(q)" />
-              }
-            </div>
+        @switch (active()) {
+          @case ('actualite') {
+            <raf-news-tab />
           }
-
-          @if (upcoming().length > 0) {
-            <h2 class="section-title"><raf-icon name="ticket" [size]="30" /> Inscriptions ouvertes</h2>
-            <div class="list stagger">
-              @for (q of upcoming(); track q.id) {
-                <raf-quiz-card [quiz]="q" [tickets]="ticketsFor(q.id)" (click)="open(q)" />
-              }
-            </div>
+          @case ('groupe') {
+            <raf-group-tab />
           }
-
-          @if (past().length > 0) {
-            <h2 class="section-title"><raf-icon name="trophy" [size]="30" /> Terminés</h2>
-            <div class="list stagger">
-              @for (q of past(); track q.id) {
-                <raf-quiz-card [quiz]="q" [tickets]="ticketsFor(q.id)" (click)="open(q)" />
-              }
-            </div>
+          @case ('solo') {
+            <raf-solo-tab />
           }
         }
       </div>
@@ -151,240 +93,113 @@ import { TopBarComponent } from '../../ui/top-bar.component';
   styles: `
     .hello {
       font-size: 28px;
-      margin: 6px 4px 16px;
+      margin: 6px 4px 14px;
     }
-    .hero-skel { height: 380px; margin-bottom: 18px; }
-    .row-skel { height: 118px; margin-bottom: 12px; }
-    /* minmax(0, 1fr) : une carte au titre long retrecit au lieu d'elargir la colonne. */
-    .list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
-
-    .hero {
-      border-radius: 28px;
-      background: linear-gradient(180deg, #ffffff, var(--raf-p50));
-      border: 4px solid var(--raf-p200);
-      box-shadow: inset 0 0 0 3px #fff, 0 7px 0 var(--raf-p300), 0 16px 28px rgba(184, 106, 0, 0.22);
-      color: var(--raf-ink);
-      overflow: hidden;
-      cursor: pointer;
+    // Onglets facon jeu : pastilles creme, l'active orange et soulevee. Defilement
+    // horizontal si d'autres onglets s'ajoutent.
+    .home-tabs {
+      display: flex;
+      gap: 8px;
+      margin: 0 -4px 18px;
+      padding: 4px 4px 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      &::-webkit-scrollbar { display: none; }
     }
-    .hero-art {
-      position: relative;
-      height: 150px;
-      display: grid;
-      place-items: center;
-      overflow: hidden;
-      border-bottom: 4px solid var(--raf-p200);
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-      &::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: repeating-conic-gradient(from 0deg at 50% 60%, rgba(255, 255, 255, 0.12) 0deg 10deg, transparent 10deg 24deg);
-        pointer-events: none;
-      }
-    }
-    /* Banniere 16/9 (format du back-office) : entiere a toutes les largeurs,
-       au lieu d'une bande de 150px qui en rognait la moitie. */
-    .hero-art.has-banner {
-      height: auto;
-      aspect-ratio: 16 / 9;
-    }
-    .art-icon { position: relative; z-index: 1; filter: drop-shadow(0 6px 0 rgba(184, 106, 0, 0.25)); }
-    .art-a { position: absolute; left: 22%; top: 22%; animation-delay: -1s; }
-    .art-b { position: absolute; right: 22%; top: 30%; animation-delay: -2s; }
-    .hero-tag {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      z-index: 2;
-      font-size: 15px;
-    }
-    .hero-tickets {
-      position: absolute;
-      top: 10px;
-      right: 12px;
-      z-index: 2;
+    .home-tab {
+      flex: 1 0 auto;
       display: inline-flex;
       align-items: center;
-      gap: 2px;
-      padding: 2px 10px 2px 4px;
-      border-radius: 12px;
-      background: rgba(184, 106, 0, 0.88);
-      color: #fff;
-      font-family: var(--raf-font-display);
-      font-size: 17px;
-    }
-    .hero-body {
-      padding: 14px 16px 22px;
-    }
-    .hero-title {
-      margin: 0;
-      font-family: var(--raf-font-display);
-      font-weight: 400;
-      font-size: 27px;
-      line-height: 1.1;
-    }
-    .hero-theme {
-      font-weight: 800;
-      color: var(--raf-ink-soft);
-      margin-top: 2px;
-    }
-    .hero-line {
-      display: flex;
-      align-items: center;
+      justify-content: center;
       gap: 6px;
-      margin: 10px 0 12px;
-      font-weight: 900;
-      font-size: 15px;
-      &.urgent {
-        color: var(--raf-red-dark);
-      }
-    }
-    .prize {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      border-radius: 18px;
-      background: linear-gradient(180deg, #ffad47, #ff8f00);
-      border: 3px solid #a85f00;
-      box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.35);
-      color: #fff;
-    }
-    .prize-label {
-      font-weight: 800;
-      font-size: 12px;
-      text-transform: uppercase;
-      opacity: 0.85;
-    }
-    .prize-value {
+      min-height: 46px;
+      padding: 6px 14px;
+      border-radius: 16px;
+      border: 3px solid var(--raf-p200);
+      background: linear-gradient(180deg, #ffffff, var(--raf-p50));
+      box-shadow: 0 4px 0 var(--raf-p300);
       font-family: var(--raf-font-display);
-      font-size: 26px;
-      color: #fff;
-      -webkit-text-stroke: 4px #a85f00;
-      paint-order: stroke fill;
-      line-height: 1;
-    }
-    .prize-side {
-      display: grid;
-      gap: 4px;
-      font-weight: 800;
-      font-size: 13px;
-      div {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        justify-content: flex-end;
+      font-size: 16px;
+      color: var(--raf-ink-soft);
+      white-space: nowrap;
+      transition: transform 0.15s ease;
+      &:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--raf-p300); }
+      &.active {
+        color: #fff;
+        border-color: #fff;
+        background: linear-gradient(180deg, #ffc078 0%, #ff9a1a 100%);
+        box-shadow: 0 4px 0 var(--raf-edge-dark), 0 0 16px rgba(255, 154, 26, 0.45);
+        -webkit-text-stroke: 3px var(--raf-edge-dark);
+        paint-order: stroke fill;
       }
+    }
+    @media (max-width: 360px) {
+      .home-tab { padding: 6px 10px; font-size: 14.5px; }
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HomePage {
   protected readonly auth = inject(AuthService);
-  private readonly apiService = inject(ApiService);
-  private readonly nav = inject(NavController);
-  private readonly clock = inject(ClockService);
   private readonly state = inject(PlayerStateService);
   private readonly feedback = inject(FeedbackService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
-  protected readonly quizzes = signal<Quiz[] | null>(null);
-  protected readonly error = signal<string | null>(null);
-  /** Tickets encore utilisables, par quiz. */
-  private readonly activeTickets = signal<Map<number, number>>(new Map());
+  protected readonly tabs = HOME_TABS;
+  protected readonly active = signal<HomeTabKey>(DEFAULT_TAB);
 
-  private readonly sorted = computed(() =>
-    [...(this.quizzes() ?? [])].sort((a, b) => statusRank(a.status) - statusRank(b.status)),
-  );
+  private readonly newsTab = viewChild(NewsTabComponent);
+  private readonly groupTab = viewChild(GroupTabComponent);
+  private readonly soloTab = viewChild(SoloTabComponent);
+  /** Le premier affichage charge deja l'onglet (a sa creation) : pas de second appel. */
+  private entered = false;
 
-  /** Le quiz mis en avant : jouable avec un ticket, sinon en cours, sinon a venir. */
-  protected readonly featured = computed<Quiz | null>(() => {
-    const now = this.clock.now();
-    const all = this.sorted();
-    return (
-      all.find((q) => acceptsPlay(q, now) && this.ticketsFor(q.id) > 0) ??
-      all.find((q) => acceptsPlay(q, now)) ??
-      all.find((q) => acceptsTickets(q)) ??
-      null
-    );
-  });
-
-  protected readonly live = computed(() =>
-    this.sorted().filter((q) => (q.status === 'RUNNING' || q.status === 'CLOSING') && q.id !== this.featured()?.id),
-  );
-  protected readonly upcoming = computed(() =>
-    this.sorted().filter((q) => (q.status === 'REGISTRATION' || q.status === 'SCHEDULED') && q.id !== this.featured()?.id),
-  );
-  protected readonly past = computed(() =>
-    this.sorted()
-      .filter((q) => q.status === 'COMPUTING' || q.status === 'FINISHED' || q.status === 'CANCELLED')
-      .slice(0, 6),
-  );
-
-  ionViewWillEnter(): void {
-    void this.load();
+  constructor() {
+    // /accueil?onglet=solo (retour d'une partie solo, lien) ouvre l'onglet demande.
+    this.route.queryParamMap.pipe(takeUntilDestroyed(inject(DestroyRef))).subscribe((params) => {
+      const requested = params.get('onglet');
+      if (isTab(requested)) {
+        this.active.set(requested);
+      }
+    });
   }
 
-  protected async load(): Promise<void> {
-    this.error.set(null);
-    try {
-      const [page, tickets] = await Promise.all([
-        firstValueFrom(this.apiService.quizzes(0, 50)),
-        firstValueFrom(this.apiService.myTickets(0, 100)),
-      ]);
-      const active = new Map<number, number>();
-      for (const t of tickets.content) {
-        if (t.status === 'ACTIVE') {
-          active.set(t.quizId, (active.get(t.quizId) ?? 0) + 1);
-        }
-      }
-      this.activeTickets.set(active);
-      this.quizzes.set(page.content);
-    } catch (e) {
-      if (!this.quizzes()) {
-        this.error.set(errorMessage(e));
-      } else {
-        void this.feedback.error(e);
-      }
+  /** Retour sur l'accueil : l'onglet affiche se met a jour. */
+  ionViewWillEnter(): void {
+    if (this.entered) {
+      void this.reloadActive();
     }
+    this.entered = true;
+  }
+
+  protected select(key: HomeTabKey): void {
+    if (key === this.active()) {
+      return;
+    }
+    this.feedback.tap();
+    this.active.set(key);
+    // Garde l'onglet dans l'URL sans empiler l'historique.
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { onglet: key === DEFAULT_TAB ? null : key },
+      replaceUrl: true,
+    });
   }
 
   protected async refresh(event: RefresherCustomEvent): Promise<void> {
-    await Promise.all([this.load(), this.state.refreshWallet()]);
+    await Promise.all([this.reloadActive(), this.state.refreshWallet()]);
     await event.target.complete();
   }
 
-  protected ticketsFor(quizId: number): number {
-    return this.activeTickets().get(quizId) ?? 0;
-  }
-
-  /** Toute la carte ouvre le quiz : achat du ticket et lancement se font depuis sa page. */
-  protected open(q: Quiz): void {
-    this.feedback.tap();
-    void this.nav.navigateForward(`/quiz/${q.id}`);
-  }
-
-  protected label(q: Quiz): string {
-    return STATUS_LABELS[q.status];
-  }
-
-  protected cls(q: Quiz): string {
-    return statusClass(q.status);
-  }
-
-  protected gradient(q: Quiz): string {
-    return themeGradient(q);
-  }
-
-  protected prize(q: Quiz): number {
-    return topPrizeHtg(q);
-  }
-
-  protected line(q: Quiz): { text: string; urgent: boolean } {
-    return statusLine(q, this.clock.now());
+  private reloadActive(): Promise<void> {
+    switch (this.active()) {
+      case 'actualite':
+        return this.newsTab()?.load() ?? Promise.resolve();
+      case 'groupe':
+        return this.groupTab()?.load() ?? Promise.resolve();
+      case 'solo':
+        return this.soloTab()?.load() ?? Promise.resolve();
+    }
   }
 }

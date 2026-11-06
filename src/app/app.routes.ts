@@ -1,4 +1,5 @@
-import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { Router, Routes } from '@angular/router';
 
 import { authGuard, guestGuard } from './core/guards';
 
@@ -123,7 +124,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/tabs/tabs.page').then((m) => m.TabsPage),
     children: [
       { path: 'accueil', loadComponent: () => import('./pages/home/home.page').then((m) => m.HomePage) },
-      { path: 'solo', loadComponent: () => import('./pages/solo/solo.page').then((m) => m.SoloPage) },
+      // L'ancien onglet Solo est un onglet de l'accueil : les anciens liens y menent.
+      {
+        path: 'solo',
+        redirectTo: () => inject(Router).createUrlTree(['/accueil'], { queryParams: { onglet: 'solo' } }),
+      },
       { path: 'tickets', loadComponent: () => import('./pages/tickets/tickets.page').then((m) => m.TicketsPage) },
       { path: 'portefeuille', loadComponent: () => import('./pages/wallet/wallet.page').then((m) => m.WalletPage) },
       {

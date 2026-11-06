@@ -583,7 +583,7 @@ export class GamePage implements OnDestroy {
   }
 
   private backUrl(): string {
-    return this.solo() ? '/solo' : `/quiz/${this.quizId}`;
+    return this.solo() ? '/accueil?onglet=solo' : `/quiz/${this.quizId}`;
   }
 
   private fail(message: string, code: string | null = null): void {

@@ -16,8 +16,10 @@ import {
   Invite,
   Leaderboard,
   MessageResponse,
+  NewsItem,
   NotificationPreference,
   Page,
+  PlayerStats,
   Quiz,
   Ticket,
   TopUp,
@@ -42,6 +44,16 @@ export class ApiService {
 
   me(): Observable<User> {
     return this.http.get<User>(api('/me'));
+  }
+
+  /** Statistiques personnelles (onglet Actualite). */
+  myStats(): Observable<PlayerStats> {
+    return this.http.get<PlayerStats>(api('/me/stats'));
+  }
+
+  /** Actualites publiees, epinglees d'abord. */
+  news(page = 0, size = 10): Observable<Page<NewsItem>> {
+    return this.http.get<Page<NewsItem>>(api('/news'), { params: paging(page, size) });
   }
 
   /** Lien d'inscription a partager, avec ce joueur pour parrain. */

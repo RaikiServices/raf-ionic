@@ -73,6 +73,38 @@ export interface Invite {
   signupBonusCredits: number;
 }
 
+// --- Actualite -------------------------------------------------------------------
+
+/** Statistiques personnelles du joueur : uniquement ses propres parties. */
+export interface PlayerStats {
+  gamesPlayed: number;
+  groupGames: number;
+  soloGames: number;
+  correctAnswers: number;
+  answeredQuestions: number;
+  /** En %, null avant la premiere reponse. */
+  accuracyPercent: number | null;
+  quizzesRanked: number;
+  /** Meilleure place a un classement final, null s'il n'a jamais ete classe. */
+  bestRank: number | null;
+  podiums: number;
+  perfectSoloGames: number;
+  totalWinningsHtg: number;
+  currentStreakDays: number;
+  bestStreakDays: number;
+  favoriteSubject: string | null;
+}
+
+/** Une actualite publiee par l'equipe. */
+export interface NewsItem {
+  id: number;
+  title: string;
+  body: string;
+  imageUrl: string | null;
+  pinned: boolean;
+  publishedAt: string;
+}
+
 // --- Quiz -----------------------------------------------------------------------
 
 export type QuizStatus =

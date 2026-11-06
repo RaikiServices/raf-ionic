@@ -1,44 +1,23 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import {
-  IonContent,
-  IonHeader,
-  IonRefresher,
-  IonRefresherContent,
-  IonToolbar,
-  NavController,
-  RefresherCustomEvent,
-} from '@ionic/angular/standalone';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { NavController } from '@ionic/angular/standalone';
 import { firstValueFrom } from 'rxjs';
 
 import { ApiService } from '../../core/api.service';
 import { errorMessage } from '../../core/errors';
 import { FeedbackService } from '../../core/feedback.service';
 import { Quiz } from '../../core/models';
-import { PlayerStateService } from '../../core/player-state.service';
 import { themeGradient } from '../../core/quiz-rules';
 import { IconComponent } from '../../ui/icon.component';
 import { NumPipe } from '../../ui/pipes';
-import { TopBarComponent } from '../../ui/top-bar.component';
 
 /**
- * Onglet Solo : les quiz solo ouverts. Chaque partie se paie au lancement, un
+ * Onglet Solo de l'accueil : les quiz solo ouverts. Chaque partie se paie au lancement, un
  * sans-faute rapporte le prix, et chaque sujet ne se joue qu'une fois par jour.
  */
 @Component({
-  selector: 'raf-solo',
-  imports: [IonHeader, IonToolbar, IonContent, IonRefresher, IonRefresherContent, TopBarComponent, IconComponent, NumPipe],
+  selector: 'raf-solo-tab',
+  imports: [IconComponent, NumPipe],
   template: `
-    <ion-header class="raf-header">
-      <ion-toolbar><raf-top-bar /></ion-toolbar>
-    </ion-header>
-
-    <ion-content class="raf-sky" [fullscreen]="true">
-      <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
-        <ion-refresher-content />
-      </ion-refresher>
-
-      <div class="page-pad">
-        <h1 class="title-stroke heading">Solo</h1>
         <p class="lead">Un sans-faute, et c'est gagné !</p>
 
         <section class="glass how">
@@ -95,11 +74,9 @@ import { TopBarComponent } from '../../ui/top-bar.component';
             }
           </div>
         }
-      </div>
-    </ion-content>
   `,
   styles: `
-    .heading { font-size: 32px; margin: 6px 4px 0; }
+    :host { display: block; }
     .lead { margin: 2px 4px 14px; font-weight: 800; color: var(--raf-ink-soft); }
     .how {
       display: grid;
@@ -172,10 +149,9 @@ import { TopBarComponent } from '../../ui/top-bar.component';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SoloPage {
+export class SoloTabComponent implements OnInit {
   private readonly apiService = inject(ApiService);
   private readonly nav = inject(NavController);
-  private readonly state = inject(PlayerStateService);
   private readonly feedback = inject(FeedbackService);
 
   protected readonly quizzes = signal<Quiz[] | null>(null);
@@ -188,11 +164,11 @@ export class SoloPage {
     [...(this.quizzes() ?? [])].sort((a, b) => Number(this.played(a)) - Number(this.played(b))),
   );
 
-  ionViewWillEnter(): void {
+  ngOnInit(): void {
     void this.load();
   }
 
-  protected async load(): Promise<void> {
+  async load(): Promise<void> {
     this.error.set(null);
     try {
       const [page, played] = await Promise.all([
@@ -208,11 +184,6 @@ export class SoloPage {
         void this.feedback.error(e);
       }
     }
-  }
-
-  protected async refresh(event: RefresherCustomEvent): Promise<void> {
-    await Promise.all([this.load(), this.state.refreshWallet()]);
-    await event.target.complete();
   }
 
   protected played(q: Quiz): boolean {

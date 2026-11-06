@@ -7,8 +7,8 @@ import { IconComponent } from '../../ui/icon.component';
 
 /**
  * Barre d'onglets du bas, facon jeu mobile : l'onglet actif se souleve et s'illumine.
- * Les deux modes de jeu (En groupe, Solo), au centre, ressemblent aux autres
- * onglets ; actifs, leur tuile est plus grande et son halo respire.
+ * L'Accueil, au centre (actualite, quiz en groupe et solo dans ses propres
+ * onglets), ressemble aux autres ; actif, sa tuile est plus grande et son halo respire.
  */
 @Component({
   selector: 'raf-tabs',
@@ -25,12 +25,8 @@ import { IconComponent } from '../../ui/icon.component';
           <span class="label">Tickets</span>
         </ion-tab-button>
         <ion-tab-button tab="accueil" class="raised">
-          <span class="tile"><raf-icon name="users" [size]="32" /></span>
-          <span class="label">En groupe</span>
-        </ion-tab-button>
-        <ion-tab-button tab="solo" class="raised">
-          <span class="tile"><raf-icon name="flame" [size]="32" /></span>
-          <span class="label">Solo</span>
+          <span class="tile"><raf-icon name="home" [size]="32" /></span>
+          <span class="label">Accueil</span>
         </ion-tab-button>
         <ion-tab-button tab="alertes">
           <span class="tile">
@@ -145,7 +141,7 @@ import { IconComponent } from '../../ui/icon.component';
       text-shadow: 0 2px 0 var(--raf-edge-dark);
     }
 
-    // --- Les deux modes de jeu, une fois actifs : tuile plus grande, plus haute, halo qui respire.
+    // --- L'Accueil, une fois actif : tuile plus grande, plus haute, halo qui respire.
     .raised.tab-selected .tile {
       width: 62px;
       height: 58px;
@@ -186,7 +182,7 @@ import { IconComponent } from '../../ui/icon.component';
       100% { transform: translateY(-4px) scale(1.08); }
     }
 
-    // Mode de jeu actif : halo qui respire doucement.
+    // Accueil actif : halo qui respire doucement.
     @keyframes tab-glow {
       0%, 100% { box-shadow: 0 5px 0 var(--raf-edge-dark), 0 10px 18px rgba(184, 106, 0, 0.3), 0 0 18px rgba(255, 154, 26, 0.35), inset 0 -3px 0 rgba(184, 106, 0, 0.35); }
       50% { box-shadow: 0 5px 0 var(--raf-edge-dark), 0 10px 18px rgba(184, 106, 0, 0.3), 0 0 32px rgba(255, 154, 26, 0.65), inset 0 -3px 0 rgba(184, 106, 0, 0.35); }
