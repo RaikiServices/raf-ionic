@@ -1,1 +1,0 @@
-import{C as i,o,r,z as a}from"./chunk-AJ7VDWVF.js";var d=(()=>{let t=class t{constructor(){this.now=a(Date.now());let e=r(i);e.runOutsideAngular(()=>{setInterval(()=>e.run(()=>this.now.set(Date.now())),1e3)})}};t.\u0275fac=function(s){return new(s||t)},t.\u0275prov=o({token:t,factory:t.\u0275fac,providedIn:"root"});let n=t;return n})();export{d as a};
