@@ -1,0 +1,1 @@
+import{tb as i}from"./chunk-S5WYJUMX.js";function r(e){let o=new URL(e?`/aide/${e}`:"/aide",i.siteUrl),n=navigator.userAgent,t=/iPhone|iPad|iPod/.test(n)||/Macintosh/.test(n)&&navigator.maxTouchPoints>1?"iphone":/Android/.test(n)?"android":null;return t&&o.searchParams.set("appareil",t),o.href}function s(e){window.open(r(e),"_blank","noopener")}export{s as a};
