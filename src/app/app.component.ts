@@ -6,6 +6,7 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 
 import { AuthService } from './core/auth.service';
+import { InstallService } from './core/install.service';
 import { PlayerStateService } from './core/player-state.service';
 import { AnnouncementPopupComponent } from './ui/announcement-popup.component';
 import { EmailReminderComponent } from './ui/email-reminder.component';
@@ -27,6 +28,8 @@ export class AppComponent {
   private readonly auth = inject(AuthService);
   private readonly state = inject(PlayerStateService);
   private readonly router = inject(Router);
+  // Cree des le demarrage pour capter beforeinstallprompt, que Chrome n'envoie qu'une fois.
+  private readonly install = inject(InstallService);
 
   constructor() {
     // Soldes et badge : charges a la connexion, oublies a la deconnexion.

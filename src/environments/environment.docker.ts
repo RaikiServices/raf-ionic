@@ -3,4 +3,6 @@
 export const environment = {
   production: true,
   apiUrl: '',
+  /** Site vitrine du docker-compose local (FRONTEND_HOST_PORT), pour le guide d'aide /aide. */
+  siteUrl: 'http://localhost:4000',
 };

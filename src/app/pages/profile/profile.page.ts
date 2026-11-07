@@ -7,6 +7,8 @@ import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
 import { FeedbackService } from '../../core/feedback.service';
 import { initials } from '../../core/format';
+import { openHelp } from '../../core/help';
+import { InstallService } from '../../core/install.service';
 import { Invite } from '../../core/models';
 import { SoundService } from '../../core/sound.service';
 import { IconComponent } from '../../ui/icon.component';
@@ -85,6 +87,13 @@ import { TopBarComponent } from '../../ui/top-bar.component';
               <span class="grow row-title">Notifications</span>
               <ion-icon name="chevron-forward" />
             </button>
+            @if (!installed()) {
+              <button class="list-row clickable" type="button" (click)="nav.navigateForward('/installer')">
+                <raf-icon name="phone" [size]="32" />
+                <span class="grow row-title">Installer l'application</span>
+                <ion-icon name="chevron-forward" />
+              </button>
+            }
             <button class="list-row clickable" type="button" (click)="nav.navigateForward('/profil/mot-de-passe')">
               <raf-icon name="key" [size]="32" />
               <span class="grow row-title">Mot de passe</span>
@@ -93,6 +102,18 @@ import { TopBarComponent } from '../../ui/top-bar.component';
             <button class="list-row clickable" type="button" (click)="nav.navigateForward('/profil/appareils')">
               <raf-icon name="device" [size]="32" />
               <span class="grow row-title">Appareils connectés</span>
+              <ion-icon name="chevron-forward" />
+            </button>
+          </section>
+
+          <section class="panel panel-with-ribbon">
+            <div class="ribbon green">Aide</div>
+            <button class="list-row clickable" type="button" (click)="openHelp()">
+              <raf-icon name="question" [size]="32" />
+              <div class="grow">
+                <div class="row-title">Aide et support</div>
+                <div class="row-sub">Guide pas à pas, en français et en kreyòl</div>
+              </div>
               <ion-icon name="chevron-forward" />
             </button>
           </section>
@@ -248,6 +269,8 @@ export class ProfilePage {
   private readonly apiService = inject(ApiService);
   private readonly feedback = inject(FeedbackService);
   protected readonly sound = inject(SoundService);
+  private readonly install = inject(InstallService);
+  protected readonly installed = computed(() => this.install.mode() === 'installed');
 
   protected readonly logoutOpen = signal(false);
   private readonly logoutModal = viewChild<IonModal>('logoutModal');
@@ -258,6 +281,7 @@ export class ProfilePage {
   protected readonly inviteLoading = signal(false);
   protected readonly canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
   protected readonly resending = signal(false);
+  protected readonly openHelp = openHelp;
   protected readonly initialsText = computed(() => initials(this.auth.user()?.firstName, this.auth.user()?.lastName));
 
   ionViewWillEnter(): void {

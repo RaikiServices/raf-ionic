@@ -12,7 +12,7 @@ import { AuthLayoutComponent } from './auth-layout.component';
   selector: 'raf-forgot-password',
   imports: [FormsModule, AuthLayoutComponent, IconComponent],
   template: `
-    <raf-auth-layout ribbon="Mot de passe oublié" ribbonColor="purple" backTo="/connexion">
+    <raf-auth-layout ribbon="Mot de passe oublié" ribbonColor="purple" backTo="/connexion" helpTopic="mot-de-passe">
       @if (sent(); as message) {
         <div class="center">
           <raf-icon class="pop-in" name="mail" [size]="72" />

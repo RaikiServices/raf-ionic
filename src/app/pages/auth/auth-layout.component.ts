@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { IonContent, NavController } from '@ionic/angular/standalone';
 
+import { HelpTopic, openHelp } from '../../core/help';
 import { IconComponent } from '../../ui/icon.component';
 
 /** Mise en page des ecrans sans compte : ciel, logo, panneau creme a ruban. */
@@ -21,10 +22,19 @@ import { IconComponent } from '../../ui/icon.component';
           <ng-content />
         </section>
         <ng-content select="[below]" />
+        <button class="link-btn ink help" type="button" (click)="openHelp(helpTopic())">
+          <raf-icon name="question" [size]="20" /> Besoin d'aide ?
+        </button>
       </div>
     </ion-content>
   `,
   styles: `
+    .help {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 22px auto 0;
+    }
     // L'element hote ne doit pas s'intercaler entre la page Ionic et son ion-content.
     :host { display: contents; }
     .wrap {
@@ -54,4 +64,7 @@ export class AuthLayoutComponent {
   readonly ribbon = input.required<string>();
   readonly ribbonColor = input<'' | 'blue' | 'green' | 'purple' | 'gold'>('');
   readonly backTo = input<string | null>(null);
+  /** Sujet du guide d'aide ouvert par « Besoin d'aide ? » ; sans sujet, la liste des sujets. */
+  readonly helpTopic = input<HelpTopic | undefined>(undefined);
+  protected readonly openHelp = openHelp;
 }

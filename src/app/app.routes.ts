@@ -40,6 +40,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/auth/reset-password.page').then((m) => m.ResetPasswordPage),
   },
   {
+    // Ouvert avec ou sans compte (accueil, profil, reglages des notifications).
+    path: 'installer',
+    loadComponent: () => import('./pages/install/install.page').then((m) => m.InstallPage),
+  },
+  {
     path: 'verification-email',
     loadComponent: () => import('./pages/auth/verify-email.page').then((m) => m.VerifyEmailPage),
   },

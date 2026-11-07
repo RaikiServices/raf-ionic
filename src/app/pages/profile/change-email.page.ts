@@ -6,7 +6,9 @@ import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
 import { errorMessage } from '../../core/errors';
+import { suggestEmail } from '../../core/email-typo';
 import { FeedbackService } from '../../core/feedback.service';
+import { EmailSuggestionComponent } from '../../ui/email-suggestion.component';
 import { IconComponent } from '../../ui/icon.component';
 import { TopBarComponent } from '../../ui/top-bar.component';
 
@@ -16,7 +18,7 @@ import { TopBarComponent } from '../../ui/top-bar.component';
  */
 @Component({
   selector: 'raf-change-email',
-  imports: [FormsModule, IonHeader, IonToolbar, IonContent, TopBarComponent, IconComponent],
+  imports: [FormsModule, IonHeader, IonToolbar, IonContent, TopBarComponent, IconComponent, EmailSuggestionComponent],
   template: `
     <ion-header class="raf-header">
       <ion-toolbar><raf-top-bar back="/profil" title="Mon email" [showWallet]="false" /></ion-toolbar>
@@ -40,8 +42,11 @@ import { TopBarComponent } from '../../ui/top-bar.component';
             <span class="field-label">Bonne adresse email</span>
             <span class="input-box">
               <raf-icon name="mail" [size]="24" />
-              <input type="email" name="email" [(ngModel)]="email" autocomplete="email" inputmode="email" />
+              <input type="email" name="email" [(ngModel)]="email" autocomplete="email" inputmode="email" (blur)="checkEmail()" />
             </span>
+            @if (emailSuggestion(); as suggestion) {
+              <raf-email-suggestion [suggestion]="suggestion" (accept)="acceptEmail($event)" (keep)="keepEmail()" />
+            }
           </label>
           <label class="field">
             <span class="field-label">Mot de passe</span>
@@ -67,9 +72,33 @@ export class ChangeEmailPage {
   protected password = '';
   protected readonly busy = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly emailSuggestion = signal<string | null>(null);
+  private keptEmail: string | null = null;
+
+  protected checkEmail(): void {
+    const email = this.email.trim();
+    this.emailSuggestion.set(email && email !== this.keptEmail ? suggestEmail(email) : null);
+  }
+
+  protected acceptEmail(suggestion: string): void {
+    this.email = suggestion;
+    this.emailSuggestion.set(null);
+    this.error.set(null);
+  }
+
+  protected keepEmail(): void {
+    this.keptEmail = this.email.trim();
+    this.emailSuggestion.set(null);
+    this.error.set(null);
+  }
 
   protected async submit(): Promise<void> {
     const email = this.email.trim();
+    this.checkEmail();
+    if (this.emailSuggestion()) {
+      this.error.set('Vérifie ton adresse email : elle contient peut-être une faute.');
+      return;
+    }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       this.error.set('Saisis une adresse email valide.');
       return;

@@ -7,6 +7,7 @@ import { filter, firstValueFrom, map } from 'rxjs';
 import { ApiService } from '../core/api.service';
 import { AuthService } from '../core/auth.service';
 import { FeedbackService } from '../core/feedback.service';
+import { openHelp } from '../core/help';
 import { IconComponent } from './icon.component';
 import { closeModal } from './modal';
 
@@ -60,12 +61,14 @@ const QUIET_ROUTES = [/^\/quiz\/[^/]+\/jouer/, /^\/verification-email/, /^\/prof
           </button>
           <button class="btn3d block" type="button" [disabled]="resending()" (click)="resend()">Renvoyer le lien</button>
           <button class="btn3d blue block" type="button" (click)="correct()">Mon email est faux</button>
+          <button class="link-btn ink help" type="button" (click)="help()">Besoin d'aide ?</button>
         </div>
       </ng-template>
     </ion-modal>
   `,
   styles: `
     .popup { margin-top: 30px; padding-top: 26px; }
+    .help { display: block; margin: 10px auto 0; }
     .popup-art { display: grid; place-items: center; margin: 4px 0 10px; }
     .lead { text-align: center; font-weight: 800; margin: 0; }
     .address { text-align: center; font-weight: 900; font-size: 17px; margin: 2px 0 12px; word-break: break-all; }
@@ -87,6 +90,10 @@ const QUIET_ROUTES = [/^\/quiz\/[^/]+\/jouer/, /^\/verification-email/, /^\/prof
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EmailReminderComponent {
+  protected help(): void {
+    openHelp('email');
+  }
+
   private readonly auth = inject(AuthService);
   private readonly apiService = inject(ApiService);
   private readonly feedback = inject(FeedbackService);

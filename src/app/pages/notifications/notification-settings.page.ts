@@ -1,10 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { IonContent, IonHeader, IonToggle, IonToolbar } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonToggle, IonToolbar, NavController } from '@ionic/angular/standalone';
 import { firstValueFrom } from 'rxjs';
 
 import { ApiService } from '../../core/api.service';
 import { errorMessage } from '../../core/errors';
 import { FeedbackService } from '../../core/feedback.service';
+import { openHelp } from '../../core/help';
+import { InstallService } from '../../core/install.service';
 import { NotificationPreference, NotificationType } from '../../core/models';
 import { PushService, PushState } from '../../core/push.service';
 import { IconComponent } from '../../ui/icon.component';
@@ -49,6 +51,14 @@ const PUSH_MESSAGES: Record<PushState, string> = {
               <ion-toggle [checked]="pushState() === 'enabled'" [disabled]="pushBusy()" (ionChange)="togglePush($event.detail.checked)" aria-label="Notifications push" />
             }
           </div>
+          @if (pushState() !== 'enabled') {
+            <button class="link-btn ink help" type="button" (click)="help()">Je n'arrive pas à les activer</button>
+          }
+          @if (pushState() === 'unsupported' && !installed()) {
+            <button class="btn3d green block install" type="button" (click)="nav.navigateForward('/installer')">
+              <raf-icon name="phone" [size]="24" /> Comment installer RAF
+            </button>
+          }
         </section>
 
         <section class="panel panel-with-ribbon">
@@ -87,6 +97,8 @@ const PUSH_MESSAGES: Record<PushState, string> = {
   styles: `
     .device { display: flex; align-items: center; gap: 12px; }
     .grow { flex: 1; min-width: 0; }
+    .install { margin-top: 12px; }
+    .help { display: block; margin: 8px auto 0; }
     .row-title { font-weight: 900; }
     .row-sub { font-size: 13px; font-weight: 700; color: var(--raf-ink-soft); }
     .head, .pref {
@@ -120,6 +132,9 @@ export class NotificationSettingsPage {
   private readonly apiService = inject(ApiService);
   private readonly feedback = inject(FeedbackService);
   private readonly push = inject(PushService);
+  protected readonly nav = inject(NavController);
+  private readonly install = inject(InstallService);
+  protected readonly installed = computed(() => this.install.mode() === 'installed');
 
   protected readonly prefs = signal<NotificationPreference[]>([]);
   protected readonly error = signal<string | null>(null);
@@ -159,6 +174,10 @@ export class NotificationSettingsPage {
     } catch (e) {
       await this.feedback.error(e);
     }
+  }
+
+  protected help(): void {
+    openHelp('notifications');
   }
 
   protected async togglePush(on: boolean): Promise<void> {

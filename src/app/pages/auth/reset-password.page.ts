@@ -15,7 +15,7 @@ import { AuthLayoutComponent } from './auth-layout.component';
   selector: 'raf-reset-password',
   imports: [FormsModule, AuthLayoutComponent, IconComponent],
   template: `
-    <raf-auth-layout ribbon="Nouveau mot de passe" ribbonColor="purple">
+    <raf-auth-layout ribbon="Nouveau mot de passe" ribbonColor="purple" helpTopic="mot-de-passe">
       @if (done()) {
         <div class="center">
           <raf-icon class="pop-in" name="check" [size]="72" />

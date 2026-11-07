@@ -5,4 +5,6 @@
 export const environment = {
   production: true,
   apiUrl: 'https://api.rafhaiti.com',
+  /** Site vitrine (raf-frontend-ssr), pour le guide d'aide /aide. */
+  siteUrl: 'https://rafhaiti.com',
 };

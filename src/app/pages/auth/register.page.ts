@@ -5,8 +5,10 @@ import { IonIcon, NavController } from '@ionic/angular/standalone';
 
 import { AuthService } from '../../core/auth.service';
 import { errorMessage } from '../../core/errors';
+import { suggestEmail } from '../../core/email-typo';
 import { FeedbackService } from '../../core/feedback.service';
 import { storage } from '../../core/storage';
+import { EmailSuggestionComponent } from '../../ui/email-suggestion.component';
 import { IconComponent } from '../../ui/icon.component';
 import { AuthLayoutComponent } from './auth-layout.component';
 
@@ -38,7 +40,7 @@ export function normalizePhone(raw: string): string {
 
 @Component({
   selector: 'raf-register',
-  imports: [FormsModule, IonIcon, AuthLayoutComponent, IconComponent],
+  imports: [FormsModule, IonIcon, AuthLayoutComponent, IconComponent, EmailSuggestionComponent],
   template: `
     <raf-auth-layout ribbon="Inscription" backTo="/bienvenue">
       <form (ngSubmit)="submit()" [class.shake]="shake()">
@@ -60,9 +62,13 @@ export function normalizePhone(raw: string): string {
           <span class="field-label">Email</span>
           <span class="input-box">
             <raf-icon name="mail" [size]="24" />
-            <input type="email" name="email" [(ngModel)]="email" autocomplete="email" inputmode="email" placeholder="toi@exemple.com" required />
+            <input type="email" name="email" [(ngModel)]="email" autocomplete="email" inputmode="email" placeholder="toi@exemple.com" required (blur)="checkEmail()" />
           </span>
-          <span class="field-hint">Pour te connecter et recevoir tes gains.</span>
+          @if (emailSuggestion(); as suggestion) {
+            <raf-email-suggestion [suggestion]="suggestion" (accept)="acceptEmail($event)" (keep)="keepEmail()" />
+          } @else {
+            <span class="field-hint">Pour te connecter et recevoir tes gains. Vérifie-la bien : on y envoie un lien de confirmation.</span>
+          }
         </label>
         <label class="field">
           <span class="field-label">Téléphone</span>
@@ -146,6 +152,10 @@ export class RegisterPage {
   protected readonly busy = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly shake = signal(false);
+  /** Correction proposee pour l'email saisi (faute de frappe probable), affichee sous le champ. */
+  protected readonly emailSuggestion = signal<string | null>(null);
+  /** Adresse que le joueur a confirmee malgre la suggestion : on ne la lui propose plus. */
+  private keptEmail: string | null = null;
   private inviterId: number | null = null;
 
   constructor() {
@@ -186,9 +196,30 @@ export class RegisterPage {
     }
   }
 
+  protected checkEmail(): void {
+    const email = this.email.trim();
+    this.emailSuggestion.set(email && email !== this.keptEmail ? suggestEmail(email) : null);
+  }
+
+  protected acceptEmail(suggestion: string): void {
+    this.email = suggestion;
+    this.emailSuggestion.set(null);
+    this.error.set(null);
+  }
+
+  protected keepEmail(): void {
+    this.keptEmail = this.email.trim();
+    this.emailSuggestion.set(null);
+    this.error.set(null);
+  }
+
   private check(): string | null {
     if (!this.firstName.trim() || !this.lastName.trim()) {
       return 'Indique ton prénom et ton nom.';
+    }
+    this.checkEmail();
+    if (this.emailSuggestion()) {
+      return 'Vérifie ton adresse email : elle contient peut-être une faute.';
     }
     if (!/^\S+@\S+\.\S+$/.test(this.email.trim())) {
       return 'Cette adresse email ne semble pas valide.';

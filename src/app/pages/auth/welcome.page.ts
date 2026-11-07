@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { IonContent, NavController } from '@ionic/angular/standalone';
 
+import { openHelp } from '../../core/help';
 import { FeedbackService } from '../../core/feedback.service';
 import { IconComponent } from '../../ui/icon.component';
 
@@ -43,11 +44,13 @@ import { IconComponent } from '../../ui/icon.component';
           </button>
           <button class="btn3d blue block" type="button" (click)="go('/connexion')">J'ai déjà un compte</button>
         </div>
+        <button class="link-btn ink help" type="button" (click)="help()">Besoin d'aide ?</button>
         <p class="legal">Réservé aux 18 ans et plus. Joue de façon responsable.</p>
       </div>
     </ion-content>
   `,
   styles: `
+    .help { display: block; margin: 14px auto 0; }
     .wrap {
       position: relative;
       max-width: 440px;
@@ -117,6 +120,10 @@ import { IconComponent } from '../../ui/icon.component';
 export class WelcomePage {
   private readonly nav = inject(NavController);
   private readonly feedback = inject(FeedbackService);
+
+  protected help(): void {
+    openHelp();
+  }
 
   protected go(url: string): void {
     this.feedback.tap();

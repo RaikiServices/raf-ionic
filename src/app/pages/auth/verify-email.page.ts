@@ -14,7 +14,7 @@ import { AuthLayoutComponent } from './auth-layout.component';
   selector: 'raf-verify-email',
   imports: [AuthLayoutComponent, IconComponent],
   template: `
-    <raf-auth-layout ribbon="Email">
+    <raf-auth-layout ribbon="Email" helpTopic="email">
       <div class="center">
         @switch (state()) {
           @case ('pending') {
