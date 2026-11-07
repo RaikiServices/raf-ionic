@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, computed, inject, signal } from '@angular/core';
-import { IonContent, IonHeader, IonToolbar } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonToolbar, NavController } from '@ionic/angular/standalone';
 import { firstValueFrom } from 'rxjs';
 
 import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
 import { FeedbackService } from '../../core/feedback.service';
 import { DepositNumbers, TopUp, TopUpAvailability } from '../../core/models';
+import { PlayerStateService } from '../../core/player-state.service';
 import { IconComponent } from '../../ui/icon.component';
 import { DateTimePipe, NumPipe } from '../../ui/pipes';
 import { TopBarComponent } from '../../ui/top-bar.component';
@@ -20,6 +21,10 @@ import { TopBarComponent } from '../../ui/top-bar.component';
  * reconnait l'expediteur et credite le montant recu. L'indicateur « agent en
  * ligne » (comme sur WhatsApp) dit si ce sera fait tout de suite : l'agent
  * l'allume depuis le back-office quand il est la pour crediter.
+ *
+ * Avec les gains : le joueur paie des credits avec son solde de gains (HTG). Le
+ * bouton n'apparait que si ses gains valent au moins un credit et que
+ * l'administrateur n'a pas coupe la fonctionnalite.
  */
 
 /** Frequence de mise a jour de l'indicateur tant que la page est affichee. */
@@ -53,6 +58,17 @@ function depositNumber(label: string, value: string | null | undefined): Deposit
 
     <ion-content class="raf-sky" [fullscreen]="true">
       <div class="page-pad">
+        @if (canConvert()) {
+          @let w = state.wallet()!;
+          <section class="panel panel-with-ribbon">
+            <div class="ribbon green">Avec mes gains</div>
+            <p class="lead">Tu as {{ w.winningsBalanceHtg | num }} HTG de gains : transforme-les en crédits, tout de suite.</p>
+            <button class="btn3d green block" type="button" (click)="nav.navigateForward('/portefeuille/recharger-avec-gains')">
+              <raf-icon name="coin" [size]="26" /> Recharger avec mes gains
+            </button>
+          </section>
+        }
+
         @if (hasNumbers()) {
           <section class="panel panel-with-ribbon">
             <div class="ribbon">À distance</div>
@@ -304,6 +320,8 @@ function depositNumber(label: string, value: string | null | undefined): Deposit
 })
 export class TopUpPage implements OnDestroy {
   protected readonly auth = inject(AuthService);
+  protected readonly state = inject(PlayerStateService);
+  protected readonly nav = inject(NavController);
   private readonly apiService = inject(ApiService);
   private readonly feedback = inject(FeedbackService);
 
@@ -314,6 +332,13 @@ export class TopUpPage implements OnDestroy {
     return n ? [...depositNumber('MonCash', n.moncashNumber), ...depositNumber('NatCash', n.natcashNumber)] : [];
   });
   protected readonly hasNumbers = computed(() => this.numbers().length > 0);
+  /** Recharge avec les gains autorisee par l'administrateur ; false tant qu'on ne sait pas. */
+  private readonly conversionEnabled = signal(false);
+  /** Le bouton ne s'affiche que si les gains valent au moins un credit. */
+  protected readonly canConvert = computed(() => {
+    const w = this.state.wallet();
+    return this.conversionEnabled() && !!w && w.htgRate > 0 && w.winningsBalanceHtg >= w.htgRate;
+  });
   /** Null tant qu'on ne sait pas : mieux vaut ne rien montrer qu'un etat faux. */
   protected readonly availability = signal<TopUpAvailability | null>(null);
 
@@ -323,6 +348,10 @@ export class TopUpPage implements OnDestroy {
     firstValueFrom(this.apiService.topUps(0, 20))
       .then((page) => this.topUps.set(page.content))
       .catch(() => undefined);
+    void this.state.refreshWallet();
+    firstValueFrom(this.apiService.appConfig())
+      .then((c) => this.conversionEnabled.set(c.winningsConversionEnabled === true))
+      .catch(() => this.conversionEnabled.set(false));
     firstValueFrom(this.apiService.depositNumbers())
       .then((n) => this.depositNumbers.set(n))
       .catch(() => undefined);
@@ -360,7 +389,16 @@ export class TopUpPage implements OnDestroy {
   }
 
   protected provider(t: TopUp): string {
-    return t.provider === 'MANUAL' ? 'Agent RAF' : t.provider === 'MONCASH' ? 'MonCash' : 'NatCash';
+    switch (t.provider) {
+      case 'MANUAL':
+        return 'Agent RAF';
+      case 'MONCASH':
+        return 'MonCash';
+      case 'NATCASH':
+        return 'NatCash';
+      case 'WINNINGS':
+        return 'Avec mes gains';
+    }
   }
 
   protected status(t: TopUp): string {

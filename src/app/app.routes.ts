@@ -71,6 +71,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/wallet/top-up.page').then((m) => m.TopUpPage),
   },
   {
+    path: 'portefeuille/recharger-avec-gains',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/wallet/convert-winnings.page').then((m) => m.ConvertWinningsPage),
+  },
+  {
     path: 'portefeuille/recharger-joueur',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/wallet/leader-transfer.page').then((m) => m.LeaderTransferPage),

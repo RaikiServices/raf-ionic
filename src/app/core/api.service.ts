@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 
 import { api } from './api-url';
 import {
+  AppConfig,
   AppNotification,
   Category,
   DepositNumbers,
@@ -33,6 +34,7 @@ import {
   Wallet,
   Withdrawal,
   WithdrawalRequest,
+  WinningsConversion,
 } from './models';
 
 function paging(page: number, size: number): HttpParams {
@@ -222,8 +224,13 @@ export class ApiService {
   }
 
   /** Comportements de l'app choisis dans le back-office (lu sans connexion). */
-  appConfig(): Observable<{ emailReminderEnabled: boolean; leaderTransferEnabled: boolean }> {
-    return this.http.get<{ emailReminderEnabled: boolean; leaderTransferEnabled: boolean }>(api('/public/app-config'));
+  appConfig(): Observable<AppConfig> {
+    return this.http.get<AppConfig>(api('/public/app-config'));
+  }
+
+  /** Recharge avec les gains : seules les gourdes formant des credits entiers sont debitees. */
+  convertWinnings(amountHtg: number, requestKey: string): Observable<WinningsConversion> {
+    return this.http.post<WinningsConversion>(api('/wallet/conversions'), { amountHtg, requestKey });
   }
 
   depositNumbers(): Observable<DepositNumbers> {

@@ -381,6 +381,8 @@ export type TransactionType =
   | 'LEADER_TRANSFER_IN'
   /** Bonus offert a l'inscription avec le lien d'un leader (solde des credits). */
   | 'INVITE_BONUS'
+  /** Recharge avec les gains : debit du solde des gains (le credit est un TOPUP). */
+  | 'WINNINGS_CONVERSION'
   | 'WITHDRAWAL'
   | 'REFUND'
   | 'ADJUSTMENT';
@@ -397,7 +399,8 @@ export interface Transaction {
   createdAt: string;
 }
 
-export type PaymentProvider = 'MONCASH' | 'NATCASH' | 'MANUAL';
+/** WINNINGS : recharge payee avec le solde des gains ; jamais un moyen de retrait. */
+export type PaymentProvider = 'MONCASH' | 'NATCASH' | 'MANUAL' | 'WINNINGS';
 
 export interface TopUp {
   id: number;
@@ -413,6 +416,20 @@ export interface TopUp {
   retentionUsedHtg: number;
   /** Reste garde pour la recharge suivante. */
   retentionKeptHtg: number;
+}
+
+/** Recharge avec les gains : la recharge creee et les deux soldes apres coup. */
+export interface WinningsConversion {
+  topUp: TopUp;
+  creditBalance: number;
+  winningsBalanceHtg: number;
+}
+
+/** Comportements de l'app choisis dans le back-office (lu sans connexion). */
+export interface AppConfig {
+  emailReminderEnabled: boolean;
+  leaderTransferEnabled: boolean;
+  winningsConversionEnabled: boolean;
 }
 
 /** Un agent est-il en ligne pour crediter les recharges ? `lastSeenAt` seulement hors ligne. */

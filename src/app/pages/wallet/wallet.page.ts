@@ -33,6 +33,7 @@ const TYPES: Record<TransactionType, { label: string; icon: string }> = {
   INVITE_BONUS: { label: 'Bonus de bienvenue', icon: 'gift' },
   LEADER_TRANSFER_OUT: { label: "Recharge d'un joueur", icon: 'users' },
   LEADER_TRANSFER_IN: { label: 'Recharge par ton leader', icon: 'coin' },
+  WINNINGS_CONVERSION: { label: 'Recharge avec tes gains', icon: 'coin' },
   WITHDRAWAL: { label: 'Retrait', icon: 'bank' },
   REFUND: { label: 'Remboursement', icon: 'gift' },
   ADJUSTMENT: { label: 'Ajustement', icon: 'settings' },
