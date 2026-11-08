@@ -28,6 +28,7 @@ import {
   Quiz,
   Ticket,
   OnlineTopUpConfig,
+  PayoutConfig,
   TopUp,
   TopUpAvailability,
   Transaction,
@@ -222,6 +223,11 @@ export class ApiService {
 
   topUps(page = 0, size = 20): Observable<Page<TopUp>> {
     return this.http.get<Page<TopUp>>(api('/wallet/topups'), { params: paging(page, size) });
+  }
+
+  /** Retraits MonCash / NatCash : envoi automatique actif et frais (lu sans connexion). */
+  payoutConfig(): Observable<PayoutConfig> {
+    return this.http.get<PayoutConfig>(api('/public/payouts'));
   }
 
   /** Une recharge ; une recharge en ligne en attente est reverifiee aupres de la passerelle. */

@@ -21,6 +21,7 @@ const STATUS: Record<WithdrawalStatus, { label: string; cls: string }> = {
   AWAITING_OTP: { label: 'Code attendu', cls: 'scheduled' },
   PENDING: { label: 'En attente', cls: 'computing' },
   APPROVED: { label: 'Approuvé', cls: 'registration' },
+  SENDING: { label: 'Envoi en cours', cls: 'registration' },
   PAID: { label: 'Versé', cls: 'running' },
   REJECTED: { label: 'Refusé', cls: 'closing' },
   CANCELLED: { label: 'Annulé', cls: 'cancelled' },

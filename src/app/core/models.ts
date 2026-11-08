@@ -460,7 +460,20 @@ export interface DepositNumbers {
   natcashNumber?: string | null;
 }
 
-export type WithdrawalStatus = 'AWAITING_OTP' | 'PENDING' | 'APPROVED' | 'PAID' | 'REJECTED' | 'CANCELLED';
+export type WithdrawalStatus =
+  | 'AWAITING_OTP'
+  | 'PENDING'
+  | 'APPROVED'
+  | 'SENDING'
+  | 'PAID'
+  | 'REJECTED'
+  | 'CANCELLED';
+
+/** Retraits MonCash / NatCash : envoi automatique a la validation, frais en points de base (350 = 3,5 %). */
+export interface PayoutConfig {
+  enabled: boolean;
+  feeBps: number;
+}
 
 export interface Withdrawal {
   id: number;
@@ -477,6 +490,8 @@ export interface Withdrawal {
   paidAt: string | null;
   initiatedByAdminId: number | null;
   note: string | null;
+  /** Envoi automatique par la passerelle a la validation. */
+  automaticPayout?: boolean;
 }
 
 export interface WithdrawalRequest {

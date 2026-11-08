@@ -7,7 +7,7 @@ import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
 import { errorMessage } from '../../core/errors';
 import { FeedbackService } from '../../core/feedback.service';
-import { PaymentProvider, Withdrawal } from '../../core/models';
+import { PaymentProvider, PayoutConfig, Withdrawal } from '../../core/models';
 import { PlayerStateService } from '../../core/player-state.service';
 import { IconComponent } from '../../ui/icon.component';
 import { HtgPipe, NumPipe } from '../../ui/pipes';
@@ -61,7 +61,11 @@ const PROVIDERS: { value: PaymentProvider; label: string; sub: string }[] = [
                     <input type="number" inputmode="numeric" name="amount" [(ngModel)]="amountHtg" step="1" min="0" placeholder="0" />
                     <span class="prefix">HTG</span>
                   </span>
-                  <span class="field-hint">Des frais de retrait s'appliquent ; le montant net est affiché à la confirmation.</span>
+                  @if (automatic()) {
+                    <span class="field-hint">Frais {{ providerLabel() }} : {{ feePercent() }}, retenus sur le montant. L'argent part dès la validation de ta demande.</span>
+                  } @else {
+                    <span class="field-hint">Des frais de retrait s'appliquent ; le montant net est affiché à la confirmation.</span>
+                  }
                 </label>
                 <div class="quick">
                   @for (p of [25, 50, 100]; track p) {
@@ -106,6 +110,9 @@ const PROVIDERS: { value: PaymentProvider; label: string; sub: string }[] = [
                 <div class="recap">
                   <div><span>Montant</span><strong>{{ amountHtg | htg }}</strong></div>
                   <div><span>Vers</span><strong>{{ providerLabel() }}{{ provider() !== 'MANUAL' ? ' · ' + destinationNormalized() : '' }}</strong></div>
+                  @if (estimatedNet(); as net) {
+                    <div><span>Tu recevras environ</span><strong>{{ net | htg }}</strong></div>
+                  }
                 </div>
                 <p class="text">Saisis le code reçu par SMS au {{ auth.user()?.phone }}.</p>
                 <input class="otp-input" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" name="otp" [(ngModel)]="otp" placeholder="······" />
@@ -136,7 +143,11 @@ const PROVIDERS: { value: PaymentProvider; label: string; sub: string }[] = [
                     @if (d.provider === 'MANUAL') {
                       Un administrateur valide ta demande. Ensuite, présente-toi au guichet RAF : l'agent t'enverra un code de remise par SMS.
                     } @else {
-                      Un administrateur valide ta demande, puis le montant est envoyé sur ton compte {{ providerLabel() }}. Tu seras notifié à chaque étape.
+                      @if (d.automaticPayout) {
+                        Dès qu'un administrateur valide ta demande, le montant part automatiquement sur ton compte {{ providerLabel() }}. Tu seras notifié à chaque étape.
+                      } @else {
+                        Un administrateur valide ta demande, puis le montant est envoyé sur ton compte {{ providerLabel() }}. Tu seras notifié à chaque étape.
+                      }
                     }
                   </p>
                   <button class="btn3d blue block" type="button" (click)="nav.navigateForward('/portefeuille/retraits')">Suivre mes retraits</button>
@@ -248,8 +259,29 @@ export class WithdrawPage {
 
   protected readonly providerLabel = computed(() => PROVIDERS.find((p) => p.value === this.provider())!.label);
 
+  /** Envoi automatique des retraits MonCash / NatCash ; null tant qu'on ne sait pas. */
+  private readonly payout = signal<PayoutConfig | null>(null);
+  protected readonly automatic = computed(() => !!this.payout()?.enabled && this.provider() !== 'MANUAL');
+  protected readonly feePercent = computed(() => {
+    const bps = this.payout()?.feeBps ?? 0;
+    return `${(bps / 100).toLocaleString('fr-FR', { maximumFractionDigits: 2 })} %`;
+  });
+
+  /** Meme calcul que le serveur : montant / (1 + frais), arrondi en dessous. */
+  protected estimatedNet(): number | null {
+    const amount = Math.round(Number(this.amountHtg) || 0);
+    const config = this.payout();
+    if (!this.automatic() || !config || amount <= 0) {
+      return null;
+    }
+    return Math.floor((amount * 10_000) / (10_000 + config.feeBps));
+  }
+
   ionViewWillEnter(): void {
     void this.state.refreshWallet();
+    firstValueFrom(this.apiService.payoutConfig())
+      .then((c) => this.payout.set(c))
+      .catch(() => this.payout.set(null));
   }
 
   protected destinationNormalized(): string {
