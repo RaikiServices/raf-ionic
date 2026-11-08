@@ -76,6 +76,23 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/wallet/top-up.page').then((m) => m.TopUpPage),
   },
   {
+    path: 'portefeuille/recharger-en-ligne',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/wallet/online-top-up.page').then((m) => m.OnlineTopUpPage),
+  },
+  // Retour de la page de paiement Tranzak (adresses reglees dans son tableau de bord).
+  {
+    path: 'recharge/retour',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/wallet/top-up-return.page').then((m) => m.TopUpReturnPage),
+  },
+  {
+    path: 'recharge/annulee',
+    canActivate: [authGuard],
+    data: { cancelled: true },
+    loadComponent: () => import('./pages/wallet/top-up-return.page').then((m) => m.TopUpReturnPage),
+  },
+  {
     path: 'portefeuille/recharger-avec-gains',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/wallet/convert-winnings.page').then((m) => m.ConvertWinningsPage),

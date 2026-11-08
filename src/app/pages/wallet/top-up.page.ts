@@ -5,16 +5,17 @@ import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
 import { FeedbackService } from '../../core/feedback.service';
-import { DepositNumbers, TopUp, TopUpAvailability } from '../../core/models';
+import { DepositNumbers, OnlineTopUpConfig, TopUp, TopUpAvailability } from '../../core/models';
 import { PlayerStateService } from '../../core/player-state.service';
 import { IconComponent } from '../../ui/icon.component';
 import { DateTimePipe, NumPipe } from '../../ui/pipes';
 import { TopBarComponent } from '../../ui/top-bar.component';
 
 /*
- * Recharge. Les connecteurs MonCash et NatCash attendent leurs acces sandbox :
- * en attendant, un agent RAF credite le compte depuis le back-office (recharge
- * manuelle). La page dit comment faire et montre l'historique.
+ * Recharge. En ligne : le joueur paie par MonCash ou NatCash via la passerelle
+ * Tranzak (page recharger-en-ligne), frais a sa charge ; l'option n'apparait que
+ * si le serveur la dit disponible. Sinon, un agent RAF credite le compte depuis
+ * le back-office (recharge manuelle). La page montre aussi l'historique.
  *
  * A distance : le joueur envoie l'argent par MonCash ou NatCash, depuis le numero
  * de son compte, au numero de l'agent (regle dans le back-office) ; l'agent
@@ -58,6 +59,21 @@ function depositNumber(label: string, value: string | null | undefined): Deposit
 
     <ion-content class="raf-sky" [fullscreen]="true">
       <div class="page-pad">
+        @if (online()?.enabled) {
+          <section class="panel panel-with-ribbon">
+            <div class="ribbon green">En ligne</div>
+            <p class="lead">Paie directement par MonCash ou NatCash : tes crédits arrivent tout de suite, sans agent.</p>
+            <div class="brands">
+              <div class="brand moncash">MonCash</div>
+              <div class="brand natcash">NatCash</div>
+            </div>
+            <button class="btn3d orange block" type="button" (click)="nav.navigateForward('/portefeuille/recharger-en-ligne')">
+              Payer en ligne
+            </button>
+            <p class="fee-note">Frais de paiement de {{ feePercent() }} en plus du montant.</p>
+          </section>
+        }
+
         @if (canConvert()) {
           @let w = state.wallet()!;
           <section class="panel panel-with-ribbon">
@@ -135,22 +151,24 @@ function depositNumber(label: string, value: string | null | undefined): Deposit
           }
         </section>
 
-        <section class="option soon">
-          <div class="brand moncash">MonCash</div>
-          <div class="grow">
-            <div class="opt-title">Paiement automatique</div>
-            <div class="opt-sub">Directement depuis l'app, sans agent</div>
-          </div>
-          <span class="soon-tag">Bientôt</span>
-        </section>
-        <section class="option soon">
-          <div class="brand natcash">NatCash</div>
-          <div class="grow">
-            <div class="opt-title">Paiement automatique</div>
-            <div class="opt-sub">Directement depuis l'app, sans agent</div>
-          </div>
-          <span class="soon-tag">Bientôt</span>
-        </section>
+        @if (online() && !online()!.enabled) {
+          <section class="option soon first-soon">
+            <div class="brand moncash">MonCash</div>
+            <div class="grow">
+              <div class="opt-title">Paiement automatique</div>
+              <div class="opt-sub">Directement depuis l'app, sans agent</div>
+            </div>
+            <span class="soon-tag">Bientôt</span>
+          </section>
+          <section class="option soon">
+            <div class="brand natcash">NatCash</div>
+            <div class="grow">
+              <div class="opt-title">Paiement automatique</div>
+              <div class="opt-sub">Directement depuis l'app, sans agent</div>
+            </div>
+            <span class="soon-tag">Bientôt</span>
+          </section>
+        }
 
         @if (topUps().length > 0) {
           <h2 class="section-title">Mes recharges</h2>
@@ -160,7 +178,7 @@ function depositNumber(label: string, value: string | null | undefined): Deposit
                 <raf-icon name="coin" [size]="30" />
                 <div class="grow">
                   <div class="opt-title">+{{ t.credits | num }} crédits</div>
-                  <div class="opt-sub">{{ t.amountHtg | num }} HTG · {{ provider(t) }} · {{ t.createdAt | dateTime }}</div>
+                  <div class="opt-sub">{{ t.chargedHtg ?? t.amountHtg | num }} HTG · {{ provider(t) }} · {{ t.createdAt | dateTime }}</div>
                   @if (t.retentionUsedHtg > 0 || t.retentionKeptHtg > 0) {
                     <div class="opt-sub">
                       @if (t.retentionUsedHtg > 0) {
@@ -175,7 +193,11 @@ function depositNumber(label: string, value: string | null | undefined): Deposit
                     </div>
                   }
                 </div>
-                <span class="state" [class.ok]="t.status === 'CONFIRMED'">{{ status(t) }}</span>
+                @if (t.status === 'PENDING' && t.paymentUrl) {
+                  <a class="resume" [href]="t.paymentUrl">Payer</a>
+                } @else {
+                  <span class="state" [class.ok]="t.status === 'CONFIRMED'">{{ status(t) }}</span>
+                }
               </div>
             }
           </div>
@@ -230,6 +252,7 @@ function depositNumber(label: string, value: string | null | undefined): Deposit
       box-shadow: 0 4px 0 var(--raf-p200);
       color: var(--raf-ink);
       &.soon { opacity: 0.8; }
+      &.first-soon { margin-top: 20px; }
     }
     .brand {
       width: 64px;
@@ -257,6 +280,17 @@ function depositNumber(label: string, value: string | null | undefined): Deposit
       text-transform: uppercase;
     }
     .lead { font-weight: 800; margin: 0 0 10px; }
+    .brands { display: flex; gap: 10px; margin-bottom: 12px; }
+    .fee-note { margin: 10px 0 0; font-size: 12.5px; font-weight: 700; color: var(--raf-ink-soft); text-align: center; }
+    .resume {
+      padding: 6px 12px;
+      border-radius: 12px;
+      background: var(--raf-p100);
+      color: var(--raf-ink);
+      font-weight: 900;
+      font-size: 13px;
+      text-decoration: none;
+    }
     .number {
       font-family: var(--raf-font-display);
       font-size: 20px;
@@ -339,6 +373,12 @@ export class TopUpPage implements OnDestroy {
     const w = this.state.wallet();
     return this.conversionEnabled() && !!w && w.htgRate > 0 && w.winningsBalanceHtg >= w.htgRate;
   });
+  /** Recharge en ligne (Tranzak) ; null tant qu'on ne sait pas. */
+  protected readonly online = signal<OnlineTopUpConfig | null>(null);
+  protected readonly feePercent = computed(() => {
+    const bps = this.online()?.feeBps ?? 0;
+    return `${(bps / 100).toLocaleString('fr-FR', { maximumFractionDigits: 2 })} %`;
+  });
   /** Null tant qu'on ne sait pas : mieux vaut ne rien montrer qu'un etat faux. */
   protected readonly availability = signal<TopUpAvailability | null>(null);
 
@@ -352,6 +392,9 @@ export class TopUpPage implements OnDestroy {
     firstValueFrom(this.apiService.appConfig())
       .then((c) => this.conversionEnabled.set(c.winningsConversionEnabled === true))
       .catch(() => this.conversionEnabled.set(false));
+    firstValueFrom(this.apiService.onlineTopUpConfig())
+      .then((c) => this.online.set(c))
+      .catch(() => this.online.set(null));
     firstValueFrom(this.apiService.depositNumbers())
       .then((n) => this.depositNumbers.set(n))
       .catch(() => undefined);
@@ -402,6 +445,15 @@ export class TopUpPage implements OnDestroy {
   }
 
   protected status(t: TopUp): string {
-    return t.status === 'CONFIRMED' ? 'Reçue' : t.status === 'PENDING' ? 'En attente' : 'Échouée';
+    switch (t.status) {
+      case 'CONFIRMED':
+        return 'Reçue';
+      case 'PENDING':
+        return 'En attente';
+      case 'EXPIRED':
+        return 'Expirée';
+      default:
+        return 'Échouée';
+    }
   }
 }

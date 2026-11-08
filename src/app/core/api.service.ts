@@ -27,6 +27,7 @@ import {
   PlayerStats,
   Quiz,
   Ticket,
+  OnlineTopUpConfig,
   TopUp,
   TopUpAvailability,
   Transaction,
@@ -221,6 +222,21 @@ export class ApiService {
 
   topUps(page = 0, size = 20): Observable<Page<TopUp>> {
     return this.http.get<Page<TopUp>>(api('/wallet/topups'), { params: paging(page, size) });
+  }
+
+  /** Une recharge ; une recharge en ligne en attente est reverifiee aupres de la passerelle. */
+  topUp(id: number): Observable<TopUp> {
+    return this.http.get<TopUp>(api(`/wallet/topups/${id}`));
+  }
+
+  /** Recharge en ligne MonCash / NatCash : disponibilite, frais et bornes (lu sans connexion). */
+  onlineTopUpConfig(): Observable<OnlineTopUpConfig> {
+    return this.http.get<OnlineTopUpConfig>(api('/public/online-topup'));
+  }
+
+  /** Lance une recharge en ligne ; le joueur paie ensuite sur `paymentUrl`. Frais en plus du montant. */
+  startOnlineTopUp(amountHtg: number, provider: 'MONCASH' | 'NATCASH'): Observable<TopUp> {
+    return this.http.post<TopUp>(api('/wallet/topups/online'), { amountHtg, provider });
   }
 
   /** Comportements de l'app choisis dans le back-office (lu sans connexion). */

@@ -416,6 +416,21 @@ export interface TopUp {
   retentionUsedHtg: number;
   /** Reste garde pour la recharge suivante. */
   retentionKeptHtg: number;
+  /** Recharge en ligne : frais de la passerelle payes par le joueur. */
+  feeHtg?: number;
+  /** Recharge en ligne : montant facture (montant + frais). */
+  chargedHtg?: number | null;
+  /** Recharge en ligne en attente : page ou terminer le paiement. */
+  paymentUrl?: string | null;
+}
+
+/** Recharge en ligne MonCash / NatCash : disponibilite, frais en points de base (450 = 4,5 %), bornes. */
+export interface OnlineTopUpConfig {
+  enabled: boolean;
+  feeBps: number;
+  minHtg: number;
+  maxHtg: number;
+  htgRate: number;
 }
 
 /** Recharge avec les gains : la recharge creee et les deux soldes apres coup. */
@@ -430,6 +445,7 @@ export interface AppConfig {
   emailReminderEnabled: boolean;
   leaderTransferEnabled: boolean;
   winningsConversionEnabled: boolean;
+  onlineTopUpEnabled?: boolean;
 }
 
 /** Un agent est-il en ligne pour crediter les recharges ? `lastSeenAt` seulement hors ligne. */
