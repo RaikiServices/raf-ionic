@@ -510,6 +510,8 @@ export type NotificationType =
   | 'QUIZ_CLOSING'
   | 'QUIZ_CANCELLED'
   | 'QUIZ_RESULTS'
+  | 'SOLO_QUIZ_OPENED'
+  | 'GROUP_QUIZ_OPENED'
   | 'PRIZE_WON'
   | 'TOPUP_CONFIRMED'
   | 'WITHDRAWAL_APPROVED'

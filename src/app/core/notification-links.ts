@@ -8,6 +8,8 @@ const ICONS: Partial<Record<NotificationType, string>> = {
   QUIZ_CLOSING: 'hourglass',
   QUIZ_CANCELLED: 'gift',
   QUIZ_RESULTS: 'trophy',
+  SOLO_QUIZ_OPENED: 'flame',
+  GROUP_QUIZ_OPENED: 'users',
   PRIZE_WON: 'crown',
   TOPUP_CONFIRMED: 'coin',
   WITHDRAWAL_APPROVED: 'check',
@@ -34,6 +36,9 @@ export function notificationLink(n: AppNotification): string | null {
     case 'QUIZ_STARTED':
     case 'QUIZ_CLOSING':
     case 'QUIZ_CANCELLED':
+    // Un quiz solo y est redirige vers son ecran de jeu.
+    case 'SOLO_QUIZ_OPENED':
+    case 'GROUP_QUIZ_OPENED':
       return quizId ? `/quiz/${quizId}` : null;
     case 'QUIZ_RESULTS':
     case 'PRIZE_WON':
