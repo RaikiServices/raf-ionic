@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal, viewChild } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import { IonModal, NavController } from '@ionic/angular/standalone';
@@ -6,6 +7,8 @@ import { filter, firstValueFrom, map } from 'rxjs';
 
 import { ApiService } from '../core/api.service';
 import { AuthService } from '../core/auth.service';
+import { confirmEmailCode } from '../core/email-verification';
+import { errorMessage } from '../core/errors';
 import { FeedbackService } from '../core/feedback.service';
 import { openHelp } from '../core/help';
 import { IconComponent } from './icon.component';
@@ -33,7 +36,7 @@ const QUIET_ROUTES = [/^\/quiz\/[^/]+\/jouer/, /^\/verification-email/, /^\/prof
  */
 @Component({
   selector: 'raf-email-reminder',
-  imports: [IonModal, IconComponent],
+  imports: [FormsModule, IonModal, IconComponent],
   template: `
     <ion-modal class="raf-popup" [isOpen]="open()" [backdropDismiss]="false" (didDismiss)="dismissed()">
       <ng-template>
@@ -45,21 +48,28 @@ const QUIET_ROUTES = [/^\/quiz\/[^/]+\/jouer/, /^\/verification-email/, /^\/prof
           <div class="popup-art">
             <raf-icon class="float" name="mail" [size]="88" />
           </div>
-          <p class="lead">Un lien de confirmation a été envoyé à</p>
+          <p class="lead">Un email de confirmation a été envoyé à</p>
           <p class="address">{{ email() }}</p>
 
           <ol class="steps">
-            <li><span class="num">1</span><span>Ouvre ta boîte mail sur ce téléphone.</span></li>
-            <li><span class="num">2</span><span>Ouvre l'email de <strong>RAF</strong> et touche le lien de confirmation.</span></li>
-            <li><span class="num">3</span><span>Pas d'email ? Regarde dans <strong>Spam</strong> ou <strong>Promotions</strong>, ou renvoie le lien.</span></li>
+            <li><span class="num">1</span><span>Ouvre l'email de <strong>RAF</strong> dans ta boîte mail.</span></li>
+            <li><span class="num">2</span><span>Saisis ici le <strong>code à 6 chiffres</strong>, ou touche le lien de confirmation.</span></li>
+            <li><span class="num">3</span><span>Pas d'email ? Regarde dans <strong>Spam</strong> ou <strong>Promotions</strong>, ou renvoie-le.</span></li>
           </ol>
+
+          <input class="otp-input" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" name="code"
+                 aria-label="Code reçu par email" [(ngModel)]="code" placeholder="······" (keyup.enter)="submitCode()" />
+          @if (codeError(); as message) {
+            <div class="alert-box code-error">{{ message }}</div>
+          }
+          <button class="btn3d green block code-btn" type="button" [disabled]="verifying()" (click)="submitCode()">
+            <raf-icon name="check" [size]="24" /> {{ verifying() ? 'Vérification…' : 'Valider le code' }}
+          </button>
 
           <div class="alert-box info">Sans email confirmé, tu ne pourras pas vérifier ton téléphone ni retirer tes gains.</div>
 
-          <button class="btn3d green block" type="button" [disabled]="checking()" (click)="checkNow()">
-            <raf-icon name="check" [size]="24" /> J'ai confirmé
-          </button>
-          <button class="btn3d block" type="button" [disabled]="resending()" (click)="resend()">Renvoyer le lien</button>
+          <button class="btn3d block" type="button" [disabled]="checking()" (click)="checkNow()">J'ai touché le lien</button>
+          <button class="btn3d block" type="button" [disabled]="resending()" (click)="resend()">Renvoyer l'email</button>
           <button class="btn3d blue block" type="button" (click)="correct()">Mon email est faux</button>
           <button class="link-btn ink help" type="button" (click)="help()">Besoin d'aide ?</button>
         </div>
@@ -86,6 +96,8 @@ const QUIET_ROUTES = [/^\/quiz\/[^/]+\/jouer/, /^\/verification-email/, /^\/prof
       font-size: 13px;
     }
     button.block + button.block { margin-top: 10px; }
+    .code-error { margin-top: 10px; }
+    .code-btn { margin: 12px 0; }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -104,6 +116,9 @@ export class EmailReminderComponent {
   protected readonly open = signal(false);
   protected readonly checking = signal(false);
   protected readonly resending = signal(false);
+  protected readonly verifying = signal(false);
+  protected readonly codeError = signal<string | null>(null);
+  protected code = '';
   protected readonly email = computed(() => this.auth.user()?.email ?? '');
 
   private readonly url = toSignal(
@@ -161,9 +176,30 @@ export class EmailReminderComponent {
       if (await this.refresh()) {
         return;
       }
-      await this.feedback.toast("Ton email n'est pas encore confirmé. Touche le lien reçu par email.", 'error');
+      await this.feedback.toast("Ton email n'est pas encore confirmé. Saisis le code ou touche le lien reçu par email.", 'error');
     } finally {
       this.checking.set(false);
+    }
+  }
+
+  protected async submitCode(): Promise<void> {
+    const code = this.code.replace(/\s/g, '');
+    if (!/^\d{6}$/.test(code)) {
+      this.codeError.set('Saisis les 6 chiffres reçus par email.');
+      return;
+    }
+    this.verifying.set(true);
+    this.codeError.set(null);
+    try {
+      await confirmEmailCode(this.apiService, this.auth, code);
+      this.code = '';
+      await closeModal(this.open, this.modal());
+      await this.feedback.success('Email confirmé, merci !');
+    } catch (e) {
+      this.codeError.set(errorMessage(e));
+      void this.feedback.buzz('error');
+    } finally {
+      this.verifying.set(false);
     }
   }
 

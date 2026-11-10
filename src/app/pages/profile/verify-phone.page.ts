@@ -25,8 +25,9 @@ import { TopBarComponent } from '../../ui/top-bar.component';
           <div class="ribbon purple">Vérification</div>
           <raf-icon class="float" name="phone" [size]="72" />
           @if (!auth.user()?.emailVerified) {
-            <p class="text">Confirme d'abord ton adresse email avec le lien reçu, puis reviens vérifier ton numéro.</p>
-            <button class="btn3d blue block" type="button" (click)="nav.navigateBack('/profil')">Retour au profil</button>
+            <p class="text">Confirme d'abord ton adresse email avec le code ou le lien reçu, puis reviens vérifier ton numéro.</p>
+            <button class="btn3d green block" type="button" (click)="nav.navigateForward('/profil/email/code')">Saisir le code reçu par email</button>
+            <button class="btn3d blue block back" type="button" (click)="nav.navigateBack('/profil')">Retour au profil</button>
           } @else if (!sent()) {
             <p class="text">Nous allons envoyer un code par SMS au <strong>{{ auth.user()?.phone }}</strong>.</p>
             @if (error(); as message) {
@@ -59,6 +60,7 @@ import { TopBarComponent } from '../../ui/top-bar.component';
     .text { font-weight: 700; line-height: 1.45; margin: 12px 0 16px; }
     .otp-error { margin-top: 12px; text-align: left; }
     .confirm { margin: 16px 0 6px; }
+    .back { margin-top: 10px; }
     .hint { font-size: 12.5px; font-weight: 700; color: var(--raf-ink-soft); margin: 14px 0 0; }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

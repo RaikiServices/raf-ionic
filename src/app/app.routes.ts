@@ -128,6 +128,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/profile/change-phone.page').then((m) => m.ChangePhonePage),
   },
   {
+    path: 'profil/email/code',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/profile/verify-email-code.page').then((m) => m.VerifyEmailCodePage),
+  },
+  {
     path: 'profil/email',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/profile/change-email.page').then((m) => m.ChangeEmailPage),

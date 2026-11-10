@@ -100,6 +100,11 @@ export class ApiService {
     return this.http.post<MessageResponse>(api('/auth/email/verify'), { token });
   }
 
+  /** Confirme l'email avec le code a 6 chiffres recu dans le meme email que le lien. */
+  verifyEmailCode(code: string): Observable<MessageResponse> {
+    return this.http.post<MessageResponse>(api('/auth/email/verify-code'), { code });
+  }
+
   resendVerification(email: string): Observable<MessageResponse> {
     return this.http.post<MessageResponse>(api('/auth/email/resend'), { email });
   }

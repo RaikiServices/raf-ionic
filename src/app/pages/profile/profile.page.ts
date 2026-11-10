@@ -49,6 +49,7 @@ import { TopBarComponent } from '../../ui/top-bar.component';
                 <raf-icon name="check" [size]="26" />
               } @else {
                 <div class="email-actions">
+                  <button class="btn3d green sm" type="button" (click)="nav.navigateForward('/profil/email/code')">Saisir le code</button>
                   <button class="btn3d sm" type="button" [disabled]="resending()" (click)="resendEmail()">Renvoyer</button>
                   <button class="btn3d blue sm" type="button" (click)="nav.navigateForward('/profil/email')">Corriger</button>
                 </div>

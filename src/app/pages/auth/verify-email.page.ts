@@ -28,7 +28,7 @@ import { AuthLayoutComponent } from './auth-layout.component';
           @case ('error') {
             <raf-icon class="pop-in" name="cross" [size]="72" />
             <p class="lead">{{ message() }}</p>
-            <p class="hint">Tu peux demander un nouveau lien depuis ton profil.</p>
+            <p class="hint">Tu peux saisir le code à 6 chiffres du même email depuis ton profil, ou demander un nouvel email.</p>
           }
         }
         @if (state() !== 'pending') {
