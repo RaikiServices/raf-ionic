@@ -91,6 +91,8 @@ export class GamePage implements OnDestroy {
   protected readonly hasOngoing = signal(false);
   /** Solo : sujet deja joue aujourd'hui. */
   protected readonly playedToday = signal(false);
+  /** Solo : premiere partie offerte (interrupteur du back-office), jouable sans credits. */
+  protected readonly firstGameOffered = signal(false);
   protected readonly countdown = signal(3);
   protected readonly error = signal<string | null>(null);
   protected readonly quitOpen = signal(false);
@@ -221,11 +223,13 @@ export class GamePage implements OnDestroy {
       this.hasOngoing.set(sessions.some((s) => s.status === 'IN_PROGRESS'));
 
       if (quiz.gameMode === 'SOLO') {
-        const [played, terms] = await Promise.all([
+        const [played, terms, offer] = await Promise.all([
           firstValueFrom(this.apiService.soloPlayedToday()),
           firstValueFrom(this.apiService.payoutTerms()),
+          firstValueFrom(this.apiService.firstSoloOffer()).catch(() => ({ offered: false })),
           this.state.refreshWallet(),
         ]);
+        this.firstGameOffered.set(offer.offered);
         this.playedToday.set(quiz.selectedCategoryId != null && played.includes(quiz.selectedCategoryId));
         this.termsRequired.set(terms.required);
         this.termsVersion = terms.version;

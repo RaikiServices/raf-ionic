@@ -57,7 +57,7 @@
                 } @else if (playedToday()) {
                   <div class="alert-box info">Tu as déjà joué ce sujet aujourd'hui. Reviens demain, ou essaie un autre sujet !</div>
                   <button class="btn3d blue block" type="button" (click)="leave()">Autres sujets</button>
-                } @else if (q.free) {
+                } @else if (q.free || firstGameOffered()) {
                   <p class="tickets-left"><raf-icon name="gift" [size]="26" /> Cette partie est offerte</p>
                   <button class="btn3d lg block pulse" type="button" (click)="launch()"><raf-icon name="play" [size]="26" /> C'est parti !</button>
                 } @else if (state.wallet() && !canAfford()) {

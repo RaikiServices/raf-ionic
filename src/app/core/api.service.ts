@@ -209,6 +209,11 @@ export class ApiService {
     return this.http.get<number[]>(api('/game/solo/played-today'));
   }
 
+  /** Premiere partie solo offerte : la prochaine partie payante du joueur l'est-elle ? */
+  firstSoloOffer(): Observable<{ offered: boolean }> {
+    return this.http.get<{ offered: boolean }>(api('/game/solo/first-game-offer'));
+  }
+
   /** Accord du paiement des retraits par tranches : a accepter avant le solo ? */
   payoutTerms(): Observable<PayoutTerms> {
     return this.http.get<PayoutTerms>(api('/game/solo/payout-terms'));
