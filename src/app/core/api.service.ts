@@ -37,6 +37,7 @@ import {
   Withdrawal,
   WithdrawalRequest,
   WinningsConversion,
+  PayoutTerms,
 } from './models';
 
 function paging(page: number, size: number): HttpParams {
@@ -206,6 +207,15 @@ export class ApiService {
   /** Sujets deja joues en solo aujourd'hui : une partie par sujet et par jour. */
   soloPlayedToday(): Observable<number[]> {
     return this.http.get<number[]>(api('/game/solo/played-today'));
+  }
+
+  /** Accord du paiement des retraits par tranches : a accepter avant le solo ? */
+  payoutTerms(): Observable<PayoutTerms> {
+    return this.http.get<PayoutTerms>(api('/game/solo/payout-terms'));
+  }
+
+  acceptPayoutTerms(version: number): Observable<PayoutTerms> {
+    return this.http.post<PayoutTerms>(api('/game/solo/payout-terms'), { version });
   }
 
   mySessions(quizId: number): Observable<GameResult[]> {

@@ -94,6 +94,15 @@ export class GamePage implements OnDestroy {
   protected readonly countdown = signal(3);
   protected readonly error = signal<string | null>(null);
   protected readonly quitOpen = signal(false);
+  /**
+   * Solo : accord du paiement des retraits par tranches, demande avant la partie a un
+   * joueur qui a deja fait un sans-faute. Le serveur refuse la partie sans lui.
+   */
+  protected readonly termsRequired = signal(false);
+  protected readonly termsOpen = signal(false);
+  protected readonly termsChecked = signal(false);
+  protected readonly termsBusy = signal(false);
+  private termsVersion = 1;
 
   protected readonly game = signal<GameStart | null>(null);
   /** Question affichee et sa position (0 = premiere). */
@@ -108,7 +117,8 @@ export class GamePage implements OnDestroy {
   protected readonly shownScore = signal(0);
 
   private readonly content = viewChild(IonContent);
-  private readonly quitModal = viewChild(IonModal);
+  private readonly quitModal = viewChild('quitModal', { read: IonModal });
+  private readonly termsModal = viewChild('termsModal', { read: IonModal });
 
   /**
    * Une question longue ou illustree peut depasser l'ecran : la page defile, et
@@ -191,6 +201,7 @@ export class GamePage implements OnDestroy {
     }
     this.backButton?.unsubscribe();
     void closeModal(this.quitOpen, this.quitModal());
+    void closeModal(this.termsOpen, this.termsModal());
   }
 
   ngOnDestroy(): void {
@@ -210,11 +221,14 @@ export class GamePage implements OnDestroy {
       this.hasOngoing.set(sessions.some((s) => s.status === 'IN_PROGRESS'));
 
       if (quiz.gameMode === 'SOLO') {
-        const [played] = await Promise.all([
+        const [played, terms] = await Promise.all([
           firstValueFrom(this.apiService.soloPlayedToday()),
+          firstValueFrom(this.apiService.payoutTerms()),
           this.state.refreshWallet(),
         ]);
         this.playedToday.set(quiz.selectedCategoryId != null && played.includes(quiz.selectedCategoryId));
+        this.termsRequired.set(terms.required);
+        this.termsVersion = terms.version;
       } else {
         const tickets = await firstValueFrom(this.apiService.quizTickets(this.quizId));
         this.activeTickets.set(tickets.filter((t) => t.status === 'ACTIVE').length);
@@ -229,6 +243,12 @@ export class GamePage implements OnDestroy {
 
   protected launch(): void {
     this.feedback.tap();
+    // Une partie deja commencee reprend sans condition ; une nouvelle attend l'accord.
+    if (this.termsRequired() && !this.hasOngoing()) {
+      this.termsChecked.set(false);
+      this.termsOpen.set(true);
+      return;
+    }
     if (this.hasOngoing()) {
       void this.begin();
       return;
@@ -265,7 +285,48 @@ export class GamePage implements OnDestroy {
         void this.feedback.toast('Partie reprise : les questions expirées entre-temps comptent sans réponse.');
       }
     } catch (e) {
+      // Accord demande entre-temps (premier sans-faute sur un autre appareil) : on le propose.
+      if (errorCode(e) === 'SOLO_PAYOUT_TERMS_REQUIRED') {
+        this.termsRequired.set(true);
+        this.phase.set('intro');
+        this.termsChecked.set(false);
+        this.termsOpen.set(true);
+        return;
+      }
       this.fail(errorMessage(e), errorCode(e));
+    }
+  }
+
+  protected toggleTerms(event: Event): void {
+    this.termsChecked.set((event.target as HTMLInputElement).checked);
+  }
+
+  /** « Plus tard » : la fenetre se ferme, la partie n'est pas lancee. */
+  protected async laterTerms(): Promise<void> {
+    await closeModal(this.termsOpen, this.termsModal());
+  }
+
+  protected async acceptTerms(): Promise<void> {
+    if (!this.termsChecked() || this.termsBusy()) {
+      return;
+    }
+    this.termsBusy.set(true);
+    try {
+      const terms = await firstValueFrom(this.apiService.acceptPayoutTerms(this.termsVersion));
+      this.termsRequired.set(terms.required);
+      await closeModal(this.termsOpen, this.termsModal());
+      this.launch();
+    } catch (e) {
+      // Texte change entre-temps : on recharge la version a accepter.
+      if (errorCode(e) === 'PAYOUT_TERMS_OUTDATED') {
+        const terms = await firstValueFrom(this.apiService.payoutTerms()).catch(() => null);
+        if (terms) {
+          this.termsVersion = terms.version;
+        }
+      }
+      void this.feedback.error(e);
+    } finally {
+      this.termsBusy.set(false);
     }
   }
 

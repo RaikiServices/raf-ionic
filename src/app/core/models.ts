@@ -464,6 +464,7 @@ export type WithdrawalStatus =
   | 'AWAITING_OTP'
   | 'PENDING'
   | 'APPROVED'
+  | 'PARTIALLY_PAID'
   | 'SENDING'
   | 'PAID'
   | 'REJECTED'
@@ -480,6 +481,10 @@ export interface Withdrawal {
   amountHtg: number;
   feeHtg: number;
   netHtg: number;
+  /** Deja verse : somme des tranches, ou le net une fois paye en une fois. */
+  paidHtg?: number;
+  /** Reste non verse rendu aux gains a la cloture d'un retrait verse en partie. */
+  refundedHtg?: number;
   provider: PaymentProvider;
   destinationNumber: string | null;
   status: WithdrawalStatus;
@@ -516,6 +521,8 @@ export type NotificationType =
   | 'TOPUP_CONFIRMED'
   | 'WITHDRAWAL_APPROVED'
   | 'WITHDRAWAL_PAID'
+  | 'WITHDRAWAL_PARTIALLY_PAID'
+  | 'WITHDRAWAL_CLOSED'
   | 'WITHDRAWAL_REJECTED'
   | 'ANNOUNCEMENT'
   | 'ADMIN_RECONCILIATION_ALERT';
@@ -542,4 +549,10 @@ export interface NotificationPreference {
   channel: NotificationChannel;
   enabled: boolean;
   enabledByDefault: boolean;
+}
+
+/** Accord du paiement des retraits par tranches, demande avant le solo apres un sans-faute. */
+export interface PayoutTerms {
+  required: boolean;
+  version: number;
 }

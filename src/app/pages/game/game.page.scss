@@ -499,3 +499,46 @@
     line-height: 1.45;
   }
 }
+
+.terms {
+  margin-top: 30px;
+  display: grid;
+  gap: 12px;
+
+  p {
+    margin: 0;
+    font-weight: 700;
+    line-height: 1.45;
+  }
+
+  .kreyol {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--raf-ink-soft);
+  }
+
+  .agree {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin: 4px 0 6px;
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 1.35;
+
+    input {
+      flex: none;
+      width: 20px;
+      height: 20px;
+      margin-top: 1px;
+      accent-color: var(--raf-green-dark);
+    }
+
+    em {
+      display: block;
+      margin-top: 4px;
+      font-weight: 600;
+      color: var(--raf-ink-soft);
+    }
+  }
+}

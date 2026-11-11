@@ -231,13 +231,42 @@
     }
   </div>
 
-  <ion-modal class="raf-popup" [isOpen]="quitOpen()" (didDismiss)="quitOpen.set(false)">
+  <ion-modal #quitModal class="raf-popup" [isOpen]="quitOpen()" (didDismiss)="quitOpen.set(false)">
     <ng-template>
       <div class="panel quit">
         <div class="ribbon">Quitter ?</div>
         <p>Le chrono continue sans toi : chaque question non répondue comptera comme fausse. Tu pourras reprendre ta partie là où elle en sera.</p>
         <button class="btn3d block" type="button" (click)="quitOpen.set(false)">Continuer à jouer</button>
         <button class="btn3d red block" type="button" (click)="leave()">Quitter</button>
+      </div>
+    </ng-template>
+  </ion-modal>
+
+  <ion-modal #termsModal class="raf-popup" [isOpen]="termsOpen()" (didDismiss)="termsOpen.set(false)">
+    <ng-template>
+      <div class="panel terms">
+        <div class="ribbon">Retraits : bon à savoir</div>
+        <p>
+          RAF peut verser tes gains en plusieurs fois. Quand tu demandes un retrait, une partie peut t'être envoyée
+          d'abord et le reste plus tard : le versement complet peut prendre plus de temps que prévu. Tes gains restent
+          à toi, et tu vois dans l'app ce qui t'a déjà été versé.
+        </p>
+        <p class="kreyol">
+          <strong>Retrè : sa pou w konnen.</strong> RAF ka voye lajan ou genyen an an plizyè fwa. Lè w mande yon retrè,
+          yo ka voye yon pati ba ou anvan epi rès la pita : sa ka pran plis tan pase sa w te prevwa. Lajan an rete pou
+          ou, epi w ka wè nan aplikasyon an konbyen yo deja voye ba ou.
+        </p>
+        <label class="agree">
+          <input type="checkbox" [checked]="termsChecked()" (change)="toggleTerms($event)" />
+          <span>
+            J'ai compris et j'accepte que RAF puisse me payer en plusieurs fois.
+            <em>Mwen konprann epi mwen dakò pou RAF ka peye m an plizyè fwa.</em>
+          </span>
+        </label>
+        <button class="btn3d block" type="button" [disabled]="!termsChecked() || termsBusy()" (click)="acceptTerms()">
+          {{ termsBusy() ? 'Enregistrement…' : 'Continuer · Kontinye' }}
+        </button>
+        <button class="btn3d cream block" type="button" (click)="laterTerms()">Plus tard · Pita</button>
       </div>
     </ng-template>
   </ion-modal>

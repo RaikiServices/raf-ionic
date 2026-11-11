@@ -14,6 +14,8 @@ const ICONS: Partial<Record<NotificationType, string>> = {
   TOPUP_CONFIRMED: 'coin',
   WITHDRAWAL_APPROVED: 'check',
   WITHDRAWAL_PAID: 'cash',
+  WITHDRAWAL_PARTIALLY_PAID: 'cash',
+  WITHDRAWAL_CLOSED: 'coin',
   WITHDRAWAL_REJECTED: 'cross',
   ANNOUNCEMENT: 'info',
   ADMIN_RECONCILIATION_ALERT: 'warning',
@@ -47,6 +49,8 @@ export function notificationLink(n: AppNotification): string | null {
       return '/portefeuille';
     case 'WITHDRAWAL_APPROVED':
     case 'WITHDRAWAL_PAID':
+    case 'WITHDRAWAL_PARTIALLY_PAID':
+    case 'WITHDRAWAL_CLOSED':
     case 'WITHDRAWAL_REJECTED':
       return '/portefeuille/retraits';
     case 'ANNOUNCEMENT':

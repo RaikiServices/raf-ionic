@@ -21,6 +21,7 @@ const STATUS: Record<WithdrawalStatus, { label: string; cls: string }> = {
   AWAITING_OTP: { label: 'Code attendu', cls: 'scheduled' },
   PENDING: { label: 'En attente', cls: 'computing' },
   APPROVED: { label: 'Approuvé', cls: 'registration' },
+  PARTIALLY_PAID: { label: 'Versé en partie', cls: 'computing' },
   SENDING: { label: 'Envoi en cours', cls: 'registration' },
   PAID: { label: 'Versé', cls: 'running' },
   REJECTED: { label: 'Refusé', cls: 'closing' },
@@ -73,6 +74,17 @@ const STATUS: Record<WithdrawalStatus, { label: string; cls: string }> = {
                 }
                 @if (w.status === 'REJECTED' && w.rejectionReason) {
                   <div class="alert-box hint">Motif : {{ w.rejectionReason }}. Le montant est revenu dans tes gains.</div>
+                }
+                @if (w.status === 'PARTIALLY_PAID') {
+                  <div class="alert-box info hint">
+                    {{ (w.paidHtg ?? 0) | htg }} déjà versés sur {{ w.netHtg | htg }}. Le reste te sera envoyé dès que possible.
+                  </div>
+                }
+                @if (w.status === 'PAID' && w.refundedHtg) {
+                  <div class="alert-box hint">
+                    {{ (w.paidHtg ?? 0) | htg }} versés ; les {{ w.refundedHtg | htg }} restants sont revenus dans tes gains.
+                    {{ w.rejectionReason ? 'Motif : ' + w.rejectionReason : '' }}
+                  </div>
                 }
                 @if (w.status === 'PAID' && w.paidAt) {
                   <div class="paid">Versé {{ w.paidAt | dateTime }}{{ w.payoutReference ? ' · réf. ' + w.payoutReference : '' }}</div>
