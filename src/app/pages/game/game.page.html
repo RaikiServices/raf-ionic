@@ -47,6 +47,12 @@
                 }
               </ul>
 
+              @if (solo()) {
+                <button class="btn3d gold block ranking-link" type="button" (click)="openRanking()">
+                  <raf-icon name="trophy" [size]="24" /> {{ 'Voir le classement' | t }}
+                </button>
+              }
+
               @if (hasOngoing()) {
                 <div class="alert-box info">{{ "Une partie est déjà en cours : tu reprends là où tu t'étais arrêté." | t }}</div>
                 <button class="btn3d lg block pulse" type="button" (click)="launch()"><raf-icon name="play" [size]="26" /> {{ 'Reprendre' | t }}</button>

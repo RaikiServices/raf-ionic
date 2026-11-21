@@ -20,6 +20,7 @@ import {
   LeaderTransferConfig,
   LeaderTransferPlayer,
   Leaderboard,
+  SoloLeaderboard,
   MessageResponse,
   NewsItem,
   NotificationPreference,
@@ -166,6 +167,11 @@ export class ApiService {
 
   vote(quizId: number, topicId: number): Observable<Quiz> {
     return this.http.post<Quiz>(api(`/quizzes/${quizId}/vote/${topicId}`), {});
+  }
+
+  /** Classement d'un quiz solo : meilleur score et gains par joueur, noms masques. */
+  soloLeaderboard(quizId: number): Observable<SoloLeaderboard> {
+    return this.http.get<SoloLeaderboard>(api(`/quizzes/${quizId}/solo-leaderboard`));
   }
 
   leaderboard(quizId: number, page = 0, size = 50): Observable<Leaderboard> {

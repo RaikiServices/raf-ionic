@@ -626,6 +626,11 @@ export class GamePage implements OnDestroy {
     }
   }
 
+  /** Classement du quiz solo (preuve sociale), avant de payer sa partie. */
+  protected openRanking(): void {
+    void this.nav.navigateForward(`/quiz/${this.quizId}/classement-solo`);
+  }
+
   protected async leave(): Promise<void> {
     this.stopTimer();
     await closeModal(this.quitOpen, this.quitModal());

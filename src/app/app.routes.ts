@@ -61,6 +61,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/game/game.page').then((m) => m.GamePage),
   },
   {
+    path: 'quiz/:id/classement-solo',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/quiz/solo-leaderboard.page').then((m) => m.SoloLeaderboardPage),
+  },
+  {
     path: 'quiz/:id/classement',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/quiz/leaderboard.page').then((m) => m.LeaderboardPage),

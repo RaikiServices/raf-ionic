@@ -320,6 +320,28 @@ export interface LeaderboardEntry {
   me: boolean;
 }
 
+/** Un joueur du classement d'un quiz solo (nom masque par le serveur). */
+export interface SoloLeaderboardEntry {
+  rank: number;
+  displayName: string;
+  bestCorrect: number;
+  wonHtg: number;
+  perfects: number;
+  me: boolean;
+}
+
+/** Classement d'un quiz solo : resume, top 50 et place du joueur. */
+export interface SoloLeaderboard {
+  quizId: number;
+  quizTitle: string;
+  questionsPerGame: number;
+  players: number;
+  perfects: number;
+  wonHtg: number;
+  entries: SoloLeaderboardEntry[];
+  me: SoloLeaderboardEntry | null;
+}
+
 export interface Leaderboard {
   quizId: number;
   quizTitle: string;
