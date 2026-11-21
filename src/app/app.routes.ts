@@ -143,6 +143,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/profile/delete-account.page').then((m) => m.DeleteAccountPage),
   },
   {
+    path: 'profil/guides',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/profile/guides.page').then((m) => m.GuidesPage),
+  },
+  {
     path: 'profil/appareils',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/profile/devices.page').then((m) => m.DevicesPage),

@@ -7,7 +7,6 @@ import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
 import { FeedbackService } from '../../core/feedback.service';
 import { initials } from '../../core/format';
-import { openHelp } from '../../core/help';
 import { InstallService } from '../../core/install.service';
 import { Invite } from '../../core/models';
 import { SoundService } from '../../core/sound.service';
@@ -35,11 +34,11 @@ import { TPipe, t } from '../../core/i18n';
             <div class="since">{{ 'Joueur depuis le {date}' | t: { date: u.createdAt | date } }}</div>
           </section>
 
-          <button class="btn3d green block invite-btn" type="button" [disabled]="inviteLoading()" (click)="openInvite()">
+          <button class="btn3d green block invite-btn" type="button" data-guide="profile-invite" [disabled]="inviteLoading()" (click)="openInvite()">
             <raf-icon name="users" [size]="28" /> {{ (inviteLoading() ? 'Chargement…' : 'Inviter un ami') | t }}
           </button>
 
-          <section class="panel panel-with-ribbon">
+          <section class="panel panel-with-ribbon" data-guide="profile-account">
             <div class="ribbon blue">{{ 'Mon compte' | t }}</div>
             <div class="list-row">
               <raf-icon name="mail" [size]="32" />
@@ -80,7 +79,7 @@ import { TPipe, t } from '../../core/i18n';
 
           <section class="panel panel-with-ribbon">
             <div class="ribbon purple">{{ 'Réglages' | t }}</div>
-            <div class="list-row">
+            <div class="list-row" data-guide="profile-lang">
               <raf-icon name="question" [size]="32" />
               <span class="grow row-title">{{ 'Langue' | t }}</span>
               <raf-lang-select />
@@ -90,7 +89,7 @@ import { TPipe, t } from '../../core/i18n';
               <span class="grow row-title">{{ 'Sons du jeu' | t }}</span>
               <ion-toggle [checked]="sound.enabled()" (ionChange)="sound.setEnabled($event.detail.checked)" [attr.aria-label]="'Sons du jeu' | t" />
             </div>
-            <button class="list-row clickable" type="button" (click)="nav.navigateForward('/alertes/reglages')">
+            <button class="list-row clickable" type="button" data-guide="profile-notifications" (click)="nav.navigateForward('/alertes/reglages')">
               <raf-icon name="bell" [size]="32" />
               <span class="grow row-title">{{ 'Notifications' | t }}</span>
               <ion-icon name="chevron-forward" />
@@ -107,7 +106,7 @@ import { TPipe, t } from '../../core/i18n';
               <span class="grow row-title">{{ 'Mot de passe' | t }}</span>
               <ion-icon name="chevron-forward" />
             </button>
-            <button class="list-row clickable" type="button" (click)="nav.navigateForward('/profil/appareils')">
+            <button class="list-row clickable" type="button" data-guide="profile-devices" (click)="nav.navigateForward('/profil/appareils')">
               <raf-icon name="device" [size]="32" />
               <span class="grow row-title">{{ 'Appareils connectés' | t }}</span>
               <ion-icon name="chevron-forward" />
@@ -116,11 +115,11 @@ import { TPipe, t } from '../../core/i18n';
 
           <section class="panel panel-with-ribbon">
             <div class="ribbon green">{{ 'Aide' | t }}</div>
-            <button class="list-row clickable" type="button" (click)="openHelp()">
+            <button class="list-row clickable" type="button" (click)="nav.navigateForward('/profil/guides')">
               <raf-icon name="question" [size]="32" />
               <div class="grow">
                 <div class="row-title">{{ 'Aide et support' | t }}</div>
-                <div class="row-sub">{{ 'Guide pas à pas, en français et en kreyòl' | t }}</div>
+                <div class="row-sub">{{ 'Guides interactifs : recharger, retirer, jouer…' | t }}</div>
               </div>
               <ion-icon name="chevron-forward" />
             </button>
@@ -289,7 +288,6 @@ export class ProfilePage {
   protected readonly inviteLoading = signal(false);
   protected readonly canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
   protected readonly resending = signal(false);
-  protected readonly openHelp = openHelp;
   protected readonly initialsText = computed(() => initials(this.auth.user()?.firstName, this.auth.user()?.lastName));
 
   ionViewWillEnter(): void {

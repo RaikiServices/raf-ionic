@@ -48,7 +48,7 @@ import { TPipe } from '../../core/i18n';
           </div>
         } @else {
           @if (featured(); as q) {
-            <section class="hero pop-in" (click)="open(q)">
+            <section class="hero pop-in" data-guide="quiz-card" (click)="open(q)">
               <div class="hero-art" [class.has-banner]="!!q.bannerUrl" [style.background]="q.bannerUrl ? null : gradient(q)">
                 @if (q.bannerUrl; as url) {
                   <img [src]="url" alt="" />
@@ -94,7 +94,7 @@ import { TPipe } from '../../core/i18n';
             <h2 class="section-title"><raf-icon name="flame" [size]="30" /> {{ 'À jouer maintenant' | t }}</h2>
             <div class="list stagger">
               @for (q of live(); track q.id) {
-                <raf-quiz-card [quiz]="q" [tickets]="ticketsFor(q.id)" (click)="open(q)" />
+                <raf-quiz-card data-guide="quiz-card" [quiz]="q" [tickets]="ticketsFor(q.id)" (click)="open(q)" />
               }
             </div>
           }
@@ -103,7 +103,7 @@ import { TPipe } from '../../core/i18n';
             <h2 class="section-title"><raf-icon name="ticket" [size]="30" /> {{ 'Inscriptions ouvertes' | t }}</h2>
             <div class="list stagger">
               @for (q of upcoming(); track q.id) {
-                <raf-quiz-card [quiz]="q" [tickets]="ticketsFor(q.id)" (click)="open(q)" />
+                <raf-quiz-card data-guide="quiz-card" [quiz]="q" [tickets]="ticketsFor(q.id)" (click)="open(q)" />
               }
             </div>
           }
@@ -112,7 +112,7 @@ import { TPipe } from '../../core/i18n';
             <h2 class="section-title"><raf-icon name="trophy" [size]="30" /> {{ 'Terminés' | t }}</h2>
             <div class="list stagger">
               @for (q of past(); track q.id) {
-                <raf-quiz-card [quiz]="q" [tickets]="ticketsFor(q.id)" (click)="open(q)" />
+                <raf-quiz-card data-guide="quiz-card" [quiz]="q" [tickets]="ticketsFor(q.id)" (click)="open(q)" />
               }
             </div>
           }

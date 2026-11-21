@@ -41,7 +41,7 @@ interface SoloGroup {
   template: `
         <p class="lead">{{ "Un sans-faute, et c'est gagné !" | t }}</p>
 
-        <section class="glass how">
+        <section class="glass how" data-guide="solo-how">
           <div><raf-icon name="coin" [size]="30" /><span>{{ 'Tu paies ta partie en crédits' | t }}</span></div>
           <div><raf-icon name="crown" [size]="30" /><span>{{ 'Toutes les réponses justes : le prix est à toi' | t }}</span></div>
           <div><raf-icon name="clock" [size]="30" /><span>{{ 'Une partie par sujet et par jour' | t }}</span></div>

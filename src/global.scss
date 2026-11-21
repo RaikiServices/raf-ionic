@@ -25,6 +25,8 @@
 
 @import "@fontsource/lilita-one/latin.css";
 @import "@fontsource-variable/nunito/wght.css";
+/* Guides interactifs (core/guides) : style de base de driver.js, theme RAF plus bas. */
+@import "driver.js/dist/driver.css";
 
 // ---------------------------------------------------------------------------
 // Palette
@@ -1032,3 +1034,60 @@ ion-infinite-scroll-content {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* --- Guides interactifs (driver.js) : bulle aux couleurs du jeu ------------------ */
+.driver-popover.raf-guide {
+  max-width: min(340px, calc(100vw - 32px));
+  padding: 16px 16px 12px;
+  border-radius: 20px;
+  border: 3px solid var(--raf-p200);
+  background: #fffaf2;
+  color: var(--raf-ink);
+  box-shadow: 0 6px 0 var(--raf-p200), 0 12px 30px rgba(74, 47, 18, 0.25);
+  font-family: var(--raf-font);
+}
+.driver-popover.raf-guide .driver-popover-title {
+  font-family: var(--raf-font-display);
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 1.15;
+}
+.driver-popover.raf-guide .driver-popover-description {
+  margin-top: 6px;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--raf-ink);
+}
+.driver-popover.raf-guide .driver-popover-progress-text {
+  font-weight: 800;
+  font-size: 12.5px;
+  color: var(--raf-ink-soft);
+}
+.driver-popover.raf-guide .driver-popover-footer button {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 0;
+  text-shadow: none;
+  font-family: var(--raf-font);
+  font-weight: 900;
+  font-size: 14px;
+}
+.driver-popover.raf-guide .driver-popover-next-btn {
+  background: linear-gradient(180deg, #ffc078, var(--raf-primary));
+  color: #fff;
+  box-shadow: 0 3px 0 #c46a00;
+}
+.driver-popover.raf-guide .driver-popover-prev-btn {
+  background: #fff;
+  color: var(--raf-ink);
+  box-shadow: 0 3px 0 var(--raf-p200);
+}
+.driver-popover.raf-guide .driver-popover-close-btn {
+  color: var(--raf-ink-soft);
+  font-size: 22px;
+}
+.driver-popover.raf-guide .driver-popover-arrow-side-bottom { border-bottom-color: #fffaf2; }
+.driver-popover.raf-guide .driver-popover-arrow-side-top { border-top-color: #fffaf2; }
+.driver-popover.raf-guide .driver-popover-arrow-side-left { border-left-color: #fffaf2; }
+.driver-popover.raf-guide .driver-popover-arrow-side-right { border-right-color: #fffaf2; }

@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import {
   IonContent,
   IonHeader,
+  IonModal,
   IonRefresher,
   IonRefresherContent,
   IonToolbar,
@@ -12,6 +13,7 @@ import {
 
 import { AuthService } from '../../core/auth.service';
 import { FeedbackService } from '../../core/feedback.service';
+import { GuideService } from '../../core/guides/guide.service';
 import { PlayerStateService } from '../../core/player-state.service';
 import { IconComponent } from '../../ui/icon.component';
 import { TopBarComponent } from '../../ui/top-bar.component';
@@ -46,6 +48,7 @@ function isTab(value: string | null): value is HomeTabKey {
     IonHeader,
     IonToolbar,
     IonContent,
+    IonModal,
     IonRefresher,
     IonRefresherContent,
     TopBarComponent,
@@ -67,7 +70,7 @@ function isTab(value: string | null): value is HomeTabKey {
       <div class="page-pad">
         <h1 class="hello title-stroke">{{ 'Salut {nom} !' | t: { nom: auth.user()?.firstName ?? '' } }}</h1>
 
-        <nav class="home-tabs" role="tablist" [attr.aria-label]="'Accueil' | t">
+        <nav class="home-tabs" data-guide="home-tabs" role="tablist" [attr.aria-label]="'Accueil' | t">
           @for (tab of tabs; track tab.key) {
             <button type="button" role="tab" class="home-tab" [class.active]="active() === tab.key"
                     [attr.aria-selected]="active() === tab.key" (click)="select(tab.key)">
@@ -89,9 +92,25 @@ function isTab(value: string | null): value is HomeTabKey {
           }
         }
       </div>
+
+      <!-- Guide de demarrage, propose une fois aux nouveaux comptes. -->
+      <ion-modal class="raf-popup" [isOpen]="guides.offerOpen()" [backdropDismiss]="false">
+        <ng-template>
+          <div class="panel popup">
+            <div class="ribbon gold">{{ 'Visite guidée' | t }}</div>
+            <div class="popup-art"><raf-icon class="float" name="flame" [size]="88" /></div>
+            <p class="offer">{{ 'Bienvenue {nom} ! Veux-tu une visite rapide de l’app ? Une minute, et tu sauras où tout se trouve.' | t: { nom: auth.user()?.firstName ?? '' } }}</p>
+            <button class="btn3d lg block pulse" type="button" (click)="guides.answerOffer(true)">{{ 'Oui, c’est parti' | t }}</button>
+            <button class="btn3d blue block" type="button" (click)="guides.answerOffer(false)">{{ 'Plus tard' | t }}</button>
+            <p class="hint">{{ 'Tu la retrouveras dans Profil, « Aide et support ».' | t }}</p>
+          </div>
+        </ng-template>
+      </ion-modal>
     </ion-content>
   `,
   styles: `
+    .offer { margin: 0; font-weight: 800; text-align: center; line-height: 1.45; }
+    .hint { margin: 2px 0 0; font-size: 12.5px; font-weight: 700; text-align: center; color: var(--raf-ink-soft); }
     .hello {
       font-size: 28px;
       margin: 6px 4px 14px;
@@ -142,6 +161,7 @@ function isTab(value: string | null): value is HomeTabKey {
 })
 export class HomePage {
   protected readonly auth = inject(AuthService);
+  protected readonly guides = inject(GuideService);
   private readonly state = inject(PlayerStateService);
   private readonly feedback = inject(FeedbackService);
   private readonly router = inject(Router);
@@ -167,6 +187,11 @@ export class HomePage {
   }
 
   /** Retour sur l'accueil : l'onglet affiche se met a jour. */
+  /** Nouveau compte : la visite guidee est proposee a l'arrivee sur l'accueil. */
+  ionViewDidEnter(): void {
+    this.guides.offerOnboarding();
+  }
+
   ionViewWillEnter(): void {
     if (this.entered) {
       void this.reloadActive();

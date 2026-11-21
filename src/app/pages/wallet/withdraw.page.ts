@@ -68,7 +68,7 @@ const PROVIDERS: { value: PaymentProvider; label: string; sub: string }[] = [
             @case ('form') {
               <section class="panel panel-with-ribbon">
                 <div class="ribbon">{{ 'Montant' | t }}</div>
-                <label class="field">
+                <label class="field" data-guide="withdraw-amount">
                   <span class="input-box amount-box">
                     <input type="number" inputmode="numeric" name="amount" [(ngModel)]="amountHtg" step="1" min="0" placeholder="0" />
                     <span class="prefix">HTG</span>
@@ -86,7 +86,7 @@ const PROVIDERS: { value: PaymentProvider; label: string; sub: string }[] = [
                 </div>
 
                 <h3 class="sub-title">{{ 'Recevoir sur' | t }}</h3>
-                <div class="providers">
+                <div class="providers" data-guide="withdraw-providers">
                   @for (p of providers; track p.value) {
                     <button class="provider" type="button" [class.selected]="provider() === p.value" (click)="provider.set(p.value)">
                       <span class="p-name">{{ p.label | t }}</span>
@@ -110,7 +110,7 @@ const PROVIDERS: { value: PaymentProvider; label: string; sub: string }[] = [
                 @if (error(); as message) {
                   <div class="alert-box">{{ message }}</div>
                 }
-                <button class="btn3d orange block" type="button" [disabled]="busy()" (click)="sendCode()">
+                <button class="btn3d orange block" type="button" data-guide="withdraw-send" [disabled]="busy()" (click)="sendCode()">
                   {{ (busy() ? 'Envoi…' : byEmail() ? 'Recevoir le code par email' : 'Recevoir le code SMS') | t }}
                 </button>
               </section>

@@ -61,7 +61,7 @@ function depositNumber(label: string, value: string | null | undefined): Deposit
     <ion-content class="raf-sky" [fullscreen]="true">
       <div class="page-pad">
         @if (online()?.enabled) {
-          <section class="panel panel-with-ribbon">
+          <section class="panel panel-with-ribbon" data-guide="topup-online">
             <div class="ribbon green">{{ 'En ligne' | t }}</div>
             <p class="lead">{{ 'Paie directement par MonCash ou NatCash : tes crédits arrivent tout de suite, sans agent.' | t }}</p>
             <div class="brands">
@@ -77,7 +77,7 @@ function depositNumber(label: string, value: string | null | undefined): Deposit
 
         @if (canConvert()) {
           @let w = state.wallet()!;
-          <section class="panel panel-with-ribbon">
+          <section class="panel panel-with-ribbon" data-guide="topup-winnings">
             <div class="ribbon green">{{ 'Avec mes gains' | t }}</div>
             <p class="lead">{{ 'Tu as {n} HTG de gains : transforme-les en crédits, tout de suite.' | t: { n: w.winningsBalanceHtg | num } }}</p>
             <button class="btn3d green block" type="button" (click)="nav.navigateForward('/portefeuille/recharger-avec-gains')">
@@ -87,7 +87,7 @@ function depositNumber(label: string, value: string | null | undefined): Deposit
         }
 
         @if (hasNumbers()) {
-          <section class="panel panel-with-ribbon">
+          <section class="panel panel-with-ribbon" data-guide="topup-remote">
             <div class="ribbon">{{ 'À distance' | t }}</div>
             @if (availability(); as a) {
               <div class="presence" [class.on]="a.available" role="status">
@@ -135,7 +135,7 @@ function depositNumber(label: string, value: string | null | undefined): Deposit
           </section>
         }
 
-        <section class="panel panel-with-ribbon">
+        <section class="panel panel-with-ribbon" data-guide="topup-counter">
           <div class="ribbon blue">{{ 'Au guichet RAF' | t }}</div>
           <p class="lead">{{ 'Un agent RAF crédite ton compte sur place, en espèces.' | t }}</p>
           <ol class="steps">

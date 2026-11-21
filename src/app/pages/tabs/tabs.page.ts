@@ -17,11 +17,11 @@ import { TPipe } from '../../core/i18n';
   template: `
     <ion-tabs (ionTabsDidChange)="feedback.tap()">
       <ion-tab-bar slot="bottom">
-        <ion-tab-button tab="portefeuille">
+        <ion-tab-button tab="portefeuille" data-guide="tab-tresor">
           <span class="tile"><raf-icon name="chest" [size]="32" /></span>
           <span class="label">{{ 'Trésor' | t }}</span>
         </ion-tab-button>
-        <ion-tab-button tab="tickets">
+        <ion-tab-button tab="tickets" data-guide="tab-tickets">
           <span class="tile"><raf-icon name="ticket" [size]="32" /></span>
           <span class="label">{{ 'Tickets' | t }}</span>
         </ion-tab-button>
@@ -29,7 +29,7 @@ import { TPipe } from '../../core/i18n';
           <span class="tile"><raf-icon name="home" [size]="32" /></span>
           <span class="label">{{ 'Accueil' | t }}</span>
         </ion-tab-button>
-        <ion-tab-button tab="alertes">
+        <ion-tab-button tab="alertes" data-guide="tab-alertes">
           <span class="tile">
             <raf-icon name="bell" [size]="32" />
             @if (state.unread() > 0) {
@@ -38,7 +38,7 @@ import { TPipe } from '../../core/i18n';
           </span>
           <span class="label">{{ 'Alertes' | t }}</span>
         </ion-tab-button>
-        <ion-tab-button tab="profil">
+        <ion-tab-button tab="profil" data-guide="tab-profil">
           <span class="tile"><raf-icon name="user" [size]="32" /></span>
           <span class="label">{{ 'Profil' | t }}</span>
         </ion-tab-button>

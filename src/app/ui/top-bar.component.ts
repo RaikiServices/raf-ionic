@@ -39,12 +39,12 @@ import { TPipe } from '../core/i18n';
 
       @if (showWallet()) {
         <div class="wallet">
-          <button class="pill" type="button" (click)="router.navigateByUrl('/portefeuille')" [attr.aria-label]="'Crédits de jeu' | t">
+          <button class="pill" type="button" data-guide="credits" (click)="router.navigateByUrl('/portefeuille')" [attr.aria-label]="'Crédits de jeu' | t">
             <raf-icon class="pill-icon" name="coin" [size]="34" />
             {{ state.wallet()?.creditBalance ?? '…' }}
             <span class="pill-plus">+</span>
           </button>
-          <button class="pill" type="button" (click)="router.navigateByUrl('/portefeuille')" [attr.aria-label]="'Gains en HTG' | t">
+          <button class="pill" type="button" data-guide="gains" (click)="router.navigateByUrl('/portefeuille')" [attr.aria-label]="'Gains en HTG' | t">
             <raf-icon class="pill-icon" name="cash" [size]="34" />
             {{ winningsHtg() }}
           </button>

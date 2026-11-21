@@ -53,6 +53,11 @@ export class ApiService {
 
   // --- Compte -----------------------------------------------------------------
 
+  /** Guide de demarrage fait ou refuse : il n'est plus propose a ce compte. */
+  onboardingDone(): Observable<User> {
+    return this.http.post<User>(api('/me/onboarding/done'), {});
+  }
+
   me(): Observable<User> {
     return this.http.get<User>(api('/me'));
   }

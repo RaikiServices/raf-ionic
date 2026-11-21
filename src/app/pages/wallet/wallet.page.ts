@@ -70,7 +70,7 @@ const TYPES: Record<TransactionType, { label: string; icon: string }> = {
       <div class="page-pad">
         @let w = state.wallet();
 
-        <section class="vault credits pop-in">
+        <section class="vault credits pop-in" data-guide="wallet-credits">
           <div class="vault-head">
             <raf-icon name="coin" [size]="58" />
             <div>
@@ -86,12 +86,12 @@ const TYPES: Record<TransactionType, { label: string; icon: string }> = {
               <span><strong>{{ w.retentionHtg | num }} HTG</strong> {{ 'en attente, ajoutés à ta prochaine recharge' | t }}</span>
             </div>
           }
-          <button class="btn3d block" type="button" (click)="go('/portefeuille/recharger')">
+          <button class="btn3d block" type="button" data-guide="wallet-topup" (click)="go('/portefeuille/recharger')">
             <raf-icon name="plus" [size]="22" /> {{ 'Recharger' | t }}
           </button>
         </section>
 
-        <section class="vault winnings pop-in">
+        <section class="vault winnings pop-in" data-guide="wallet-winnings">
           <div class="vault-head">
             <raf-icon name="cash" [size]="58" />
             <div>
@@ -100,7 +100,7 @@ const TYPES: Record<TransactionType, { label: string; icon: string }> = {
               <div class="vault-sub">{{ 'Retirables vers MonCash, NatCash ou en espèces' | t }}</div>
             </div>
           </div>
-          <button class="btn3d orange block" type="button" [disabled]="!w || w.winningsBalanceHtg <= 0" (click)="go('/portefeuille/retirer')">
+          <button class="btn3d orange block" type="button" data-guide="wallet-withdraw" [disabled]="!w || w.winningsBalanceHtg <= 0" (click)="go('/portefeuille/retirer')">
             <raf-icon name="bank" [size]="28" /> {{ 'Retirer' | t }}
           </button>
         </section>
@@ -112,7 +112,7 @@ const TYPES: Record<TransactionType, { label: string; icon: string }> = {
           </button>
         }
 
-        <button class="list-row clickable link-row" type="button" (click)="go('/portefeuille/retraits')">
+        <button class="list-row clickable link-row" type="button" data-guide="wallet-withdrawals" (click)="go('/portefeuille/retraits')">
           <raf-icon name="bank" [size]="32" />
           <span class="grow row-title">{{ 'Mes demandes de retrait' | t }}</span>
           <ion-icon name="chevron-forward" />

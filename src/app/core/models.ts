@@ -33,6 +33,8 @@ export interface User {
   test?: boolean;
   roles: string[];
   createdAt: string;
+  /** Guide de demarrage a proposer une fois (comptes crees depuis l'arrivee des guides). */
+  onboardingPending?: boolean;
 }
 
 export interface TokenResponse {

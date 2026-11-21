@@ -12,6 +12,7 @@ import { errorMessage } from '../core/errors';
 import { FeedbackService } from '../core/feedback.service';
 import { openHelp } from '../core/help';
 import { IconComponent } from './icon.component';
+import { GuideService } from '../core/guides/guide.service';
 import { closeModal } from './modal';
 import { TPipe, t } from '../core/i18n';
 
@@ -113,6 +114,7 @@ export class EmailReminderComponent {
   private readonly nav = inject(NavController);
   private readonly router = inject(Router);
   private readonly modal = viewChild(IonModal);
+  private readonly guides = inject(GuideService);
 
   protected readonly open = signal(false);
   protected readonly checking = signal(false);
@@ -257,7 +259,8 @@ export class EmailReminderComponent {
     if (verified || !this.pending()) {
       return;
     }
-    if (!this.open() && !this.quiet()) {
+    // Le guide de demarrage passe d'abord : la fenetre attend sa fin ou son refus.
+    if (!this.open() && !this.quiet() && !this.guides.holdsReminders()) {
       this.open.set(true);
     }
     this.schedule();
