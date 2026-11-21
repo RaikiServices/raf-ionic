@@ -43,33 +43,45 @@ const PAGE_SIZE = 10;
           <div class="row">
             <div class="tile-v2">
               <raf-icon name="ticket" [size]="26" />
-              <div class="value">{{ s.gamesPlayed | num }}</div>
-              <div class="label">{{ 'Parties jouées' | t }}</div>
+              <div>
+                <div class="value">{{ s.gamesPlayed | num }}</div>
+                <div class="label">{{ 'Parties jouées' | t }}</div>
+              </div>
             </div>
             <div class="tile-v2">
               <raf-icon name="check" [size]="26" />
-              <div class="value">{{ s.accuracyPercent ?? 0 }} %</div>
-              <div class="label">{{ 'Bonnes réponses' | t }}</div>
+              <div>
+                <div class="value">{{ s.accuracyPercent ?? 0 }} %</div>
+                <div class="label">{{ 'Bonnes réponses' | t }}</div>
+              </div>
             </div>
             <div class="tile-v2">
               <raf-icon name="crown" [size]="26" />
-              <div class="value">{{ s.bestRank ? (s.bestRank === 1 ? ('1er' | t) : ('{n}e' | t: { n: s.bestRank })) : '–' }}</div>
-              <div class="label">{{ 'Meilleure place' | t }}</div>
+              <div>
+                <div class="value">{{ s.bestRank ? (s.bestRank === 1 ? ('1er' | t) : ('{n}e' | t: { n: s.bestRank })) : '–' }}</div>
+                <div class="label">{{ 'Meilleure place' | t }}</div>
+              </div>
             </div>
             <div class="tile-v2">
               <raf-icon name="trophy" [size]="26" />
-              <div class="value">{{ s.podiums | num }}</div>
-              <div class="label">{{ 'Podiums' | t }}</div>
+              <div>
+                <div class="value">{{ s.podiums | num }}</div>
+                <div class="label">{{ 'Podiums' | t }}</div>
+              </div>
             </div>
             <div class="tile-v2">
               <raf-icon name="star" [size]="26" />
-              <div class="value">{{ s.perfectSoloGames | num }}</div>
-              <div class="label">{{ 'Sans-fautes solo' | t }}</div>
+              <div>
+                <div class="value">{{ s.perfectSoloGames | num }}</div>
+                <div class="label">{{ 'Sans-fautes solo' | t }}</div>
+              </div>
             </div>
             <div class="tile-v2">
               <raf-icon name="cash" [size]="26" />
-              <div class="value">{{ s.totalWinningsHtg | num }}</div>
-              <div class="label">{{ 'HTG gagnés' | t }}</div>
+              <div>
+                <div class="value">{{ s.totalWinningsHtg | num }}</div>
+                <div class="label">{{ 'HTG gagnés' | t }}</div>
+              </div>
             </div>
           </div>
           @if (s.favoriteSubject) {
@@ -175,13 +187,19 @@ const PAGE_SIZE = 10;
     .tile-v2{
         display: flex;
         gap: 2px;
-        align-items: center;
+        align-items: start;
         padding: 10px 4px;
         border-radius: 16px;
         background: #fff;
         border: 3px solid var(--raf-p200);
         box-shadow: 0 3px 0 var(--raf-p300);
+        width: 100%;
 
+    }
+
+    .tile-v2>div{
+      display: flex;
+      flex-direction: column;
     }
     .tile {
       display: flex;
