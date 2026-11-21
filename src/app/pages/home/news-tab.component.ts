@@ -40,7 +40,7 @@ const PAGE_SIZE = 10;
               </div>
             </div>
           </div>
-          <div class="row">
+          <div class="grid">
             <div class="tile-v2">
               <raf-icon name="ticket" [size]="26" />
               <div>
@@ -175,7 +175,7 @@ const PAGE_SIZE = 10;
     .streak-label { font-weight: 800; font-size: 13px; color: var(--raf-ink-soft); }
     .grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 8px;
     }
 
@@ -186,9 +186,9 @@ const PAGE_SIZE = 10;
     }
     .tile-v2{
         display: flex;
-        gap: 2px;
+        gap: 5px;
         align-items: start;
-        padding: 10px 4px;
+        padding: 10px 5px;
         border-radius: 16px;
         background: #fff;
         border: 3px solid var(--raf-p200);
