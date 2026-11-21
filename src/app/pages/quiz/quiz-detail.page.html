@@ -11,7 +11,7 @@
     @if (error(); as message) {
       <div class="panel">
         <div class="alert-box">{{ message }}</div>
-        <button class="btn3d blue block" type="button" (click)="load()">Réessayer</button>
+        <button class="btn3d blue block" type="button" (click)="load()">{{ 'Réessayer' | t }}</button>
       </div>
     } @else if (quiz(); as q) {
       <!-- Banniere -->
@@ -39,46 +39,46 @@
         @if (q.status === 'REGISTRATION') {
           <div class="bar">
             <div class="fill" [style.width.%]="playersProgress()"></div>
-            <div class="label">{{ q.playersRegistered }} / {{ q.minPlayers }} joueurs</div>
+            <div class="label">{{ '{a} / {b} joueurs' | t: { a: q.playersRegistered, b: q.minPlayers } }}</div>
           </div>
-          <p class="small">Le quiz démarre {{ q.startDelayMinutes }} min après l'inscription du {{ q.minPlayers }}<sup>e</sup> joueur.</p>
+          <p class="small">{{ "Le quiz démarre {d} min après l'inscription du {n}e joueur." | t: { d: q.startDelayMinutes, n: q.minPlayers } }}</p>
         }
         @if (q.status === 'CANCELLED' && q.cancellationReason) {
-          <p class="small">Motif : {{ q.cancellationReason }}</p>
+          <p class="small">{{ 'Motif :' | t }} {{ q.cancellationReason }}</p>
         }
         <div class="stats">
-          <div><raf-icon name="users" [size]="26" /><strong>{{ q.playersRegistered }}</strong><span>joueurs</span></div>
-          <div><raf-icon name="ticket" [size]="26" /><strong>{{ activeTickets() }}</strong><span>ticket{{ activeTickets() > 1 ? 's' : '' }} à jouer</span></div>
-          <div><raf-icon name="star" [size]="26" /><strong>{{ bestScore() ?? '—' }}</strong><span>meilleur score</span></div>
+          <div><raf-icon name="users" [size]="26" /><strong>{{ q.playersRegistered }}</strong><span>{{ 'joueurs' | t }}</span></div>
+          <div><raf-icon name="ticket" [size]="26" /><strong>{{ activeTickets() }}</strong><span>{{ (activeTickets() > 1 ? 'tickets à jouer' : 'ticket à jouer') | t }}</span></div>
+          <div><raf-icon name="star" [size]="26" /><strong>{{ bestScore() ?? '—' }}</strong><span>{{ 'meilleur score' | t }}</span></div>
         </div>
       </section>
 
       <!-- Mes parties -->
       @if (submitted().length > 0) {
         <section class="panel panel-with-ribbon">
-          <div class="ribbon blue">Mes parties</div>
+          <div class="ribbon blue">{{ 'Mes parties' | t }}</div>
           @for (s of submitted(); track s.sessionId; let i = $index) {
             <div class="list-row">
               <raf-icon [name]="s.score === bestScore() ? 'crown' : 'star'" [size]="30" />
               <div class="grow">
-                <div class="row-title">Partie {{ submitted().length - i }} : {{ s.score }} pts</div>
-                <div class="row-sub">{{ s.correctCount }} bonne{{ (s.correctCount ?? 0) > 1 ? 's' : '' }} réponse{{ (s.correctCount ?? 0) > 1 ? 's' : '' }} sur {{ q.questionsPerGame }}</div>
+                <div class="row-title">{{ 'Partie {n} : {score} pts' | t: { n: submitted().length - i, score: s.score ?? 0 } }}</div>
+                <div class="row-sub">{{ ((s.correctCount ?? 0) > 1 ? '{n} bonnes réponses sur {total}' : '{n} bonne réponse sur {total}') | t: { n: s.correctCount ?? 0, total: q.questionsPerGame } }}</div>
               </div>
               @if (q.status === 'FINISHED') {
-                <button class="btn3d blue sm" type="button" (click)="review(s.sessionId)">Corrigé</button>
+                <button class="btn3d blue sm" type="button" (click)="review(s.sessionId)">{{ 'Corrigé' | t }}</button>
               }
             </div>
           }
           @if (q.status !== 'FINISHED') {
-            <p class="small ink">Le corrigé sera visible à la fin du quiz. Seul ton meilleur score compte.</p>
+            <p class="small ink">{{ 'Le corrigé sera visible à la fin du quiz. Seul ton meilleur score compte.' | t }}</p>
           }
         </section>
       }
 
       <!-- Recompenses -->
       <section class="panel panel-with-ribbon">
-        <div class="ribbon gold">Récompenses</div>
-        <div class="total">À gagner : <strong>{{ totalPrizes() | htg }}</strong></div>
+        <div class="ribbon gold">{{ 'Récompenses' | t }}</div>
+        <div class="total">{{ 'À gagner :' | t }} <strong>{{ totalPrizes() | htg }}</strong></div>
         <div class="podium">
           @for (r of rewards(); track r.rankFrom) {
             <div class="reward" [class.top]="r.rankFrom === 1">
@@ -93,19 +93,19 @@
             </div>
           }
         </div>
-        <p class="small ink">Gains versés dans ton solde de gains, retirables vers MonCash, NatCash ou en espèces.</p>
+        <p class="small ink">{{ 'Gains versés dans ton solde de gains, retirables vers MonCash, NatCash ou en espèces.' | t }}</p>
       </section>
 
       <!-- Sujet / vote -->
       @if (q.topicMode === 'VOTE' && q.topics.length > 0) {
         <section class="panel panel-with-ribbon">
-          <div class="ribbon purple">Vote du sujet</div>
+          <div class="ribbon purple">{{ 'Vote du sujet' | t }}</div>
           @if (q.voteOpen) {
-            <p class="small ink">Les détenteurs d'un ticket choisissent le sujet. Une voix par joueur.</p>
+            <p class="small ink">{{ "Les détenteurs d'un ticket choisissent le sujet. Une voix par joueur." | t }}</p>
           } @else if (q.selectedCategoryName) {
-            <p class="small ink">Sujet retenu : <strong>{{ q.selectedCategoryName }}</strong></p>
+            <p class="small ink">{{ 'Sujet retenu :' | t }} <strong>{{ q.selectedCategoryName }}</strong></p>
           } @else {
-            <p class="small ink">Le vote est fermé.</p>
+            <p class="small ink">{{ 'Le vote est fermé.' | t }}</p>
           }
           @for (t of q.topics; track t.id) {
             <div class="topic" [class.won]="q.selectedCategoryId === t.categoryId && !q.voteOpen">
@@ -116,30 +116,30 @@
               <span class="votes">{{ t.voteCount }}</span>
               @if (q.voteOpen && ownedTickets() > 0) {
                 <button class="btn3d purple sm" type="button" [disabled]="voting() !== null" (click)="vote(t.id)">
-                  {{ voting() === t.id ? '…' : 'Voter' }}
+                  {{ voting() === t.id ? '…' : ('Voter' | t) }}
                 </button>
               }
             </div>
           }
           @if (q.voteOpen && ownedTickets() === 0) {
-            <div class="alert-box info vote-hint">Prends un ticket pour voter.</div>
+            <div class="alert-box info vote-hint">{{ 'Prends un ticket pour voter.' | t }}</div>
           }
         </section>
       } @else if (q.selectedCategoryName) {
         <section class="glass topic-line">
-          <raf-icon name="question" [size]="30" /> Sujet : <strong>{{ q.selectedCategoryName }}</strong>
+          <raf-icon name="question" [size]="30" /> {{ 'Sujet :' | t }} <strong>{{ q.selectedCategoryName }}</strong>
         </section>
       }
 
       <!-- Regles -->
       <section class="panel panel-with-ribbon">
-        <div class="ribbon">Règles</div>
+        <div class="ribbon">{{ 'Règles' | t }}</div>
         <ul class="rules">
-          <li><raf-icon name="ticket" [size]="26" /><span><strong>1 ticket = 1 partie</strong> de {{ q.questionsPerGame }} questions. Rejoue pour améliorer ton score : seul le meilleur compte.</span></li>
-          <li><raf-icon name="clock" [size]="26" /><span><strong>{{ q.questionDurationSeconds }} secondes par question</strong> : tu passes à la suivante dès ta réponse. Pas de retour en arrière ; une question sans réponse compte comme fausse.</span></li>
-          <li><raf-icon name="star" [size]="26" /><span><strong>{{ q.pointsPerCorrect }} points</strong> par bonne réponse, rien de retiré si tu te trompes.</span></li>
-          <li><raf-icon name="flame" [size]="26" /><span>Dès qu'un joueur atteint <strong>{{ q.minScoreThreshold }} points</strong>, il reste {{ closingText(q) }} pour jouer.</span></li>
-          <li><raf-icon name="crown" [size]="26" /><span>À égalité, le joueur qui a commencé sa partie le premier passe devant.</span></li>
+          <li><raf-icon name="ticket" [size]="26" /><span><strong>{{ '1 ticket = 1 partie' | t }}</strong> {{ 'de {n} questions. Rejoue pour améliorer ton score : seul le meilleur compte.' | t: { n: q.questionsPerGame } }}</span></li>
+          <li><raf-icon name="clock" [size]="26" /><span><strong>{{ '{n} secondes par question' | t: { n: q.questionDurationSeconds } }}</strong> {{ ': tu passes à la suivante dès ta réponse. Pas de retour en arrière ; une question sans réponse compte comme fausse.' | t }}</span></li>
+          <li><raf-icon name="star" [size]="26" /><span><strong>{{ '{n} points' | t: { n: q.pointsPerCorrect } }}</strong> {{ 'par bonne réponse, rien de retiré si tu te trompes.' | t }}</span></li>
+          <li><raf-icon name="flame" [size]="26" /><span>{{ "Dès qu'un joueur atteint" | t }} <strong>{{ '{n} points' | t: { n: q.minScoreThreshold } }}</strong>{{ ', il reste {temps} pour jouer.' | t: { temps: closingText(q) } }}</span></li>
+          <li><raf-icon name="crown" [size]="26" /><span>{{ 'À égalité, le joueur qui a commencé sa partie le premier passe devant.' | t }}</span></li>
         </ul>
       </section>
     } @else {
@@ -157,34 +157,34 @@
       @if (playable() && (activeTickets() > 0 || inProgress())) {
         <button class="btn3d lg block pulse" type="button" (click)="play()">
           <raf-icon name="play" [size]="26" />
-          {{ inProgress() ? 'Reprendre' : 'Jouer' }}
+          {{ (inProgress() ? 'Reprendre' : 'Jouer') | t }}
           @if (activeTickets() > 1) {
             <span class="count">×{{ activeTickets() }}</span>
           }
         </button>
         @if (buyable() && !ticketLimitReached() && !soldOut()) {
-          <button class="btn3d orange icon-only lg" type="button" aria-label="Prendre un autre ticket" (click)="openBuy()">
+          <button class="btn3d orange icon-only lg" type="button" [attr.aria-label]="'Prendre un autre ticket' | t" (click)="openBuy()">
             <raf-icon name="plus" [size]="26" />
           </button>
         }
       } @else if (buyable()) {
         @if (soldOut()) {
-          <button class="btn3d block" type="button" disabled>Complet</button>
+          <button class="btn3d block" type="button" disabled>{{ 'Complet' | t }}</button>
         } @else if (ticketLimitReached()) {
           <button class="btn3d block" type="button" disabled>
             @if (activeTickets() > 0) {
-              <raf-icon name="ticket" [size]="26" /> Ticket en poche, départ bientôt
+              <raf-icon name="ticket" [size]="26" /> {{ 'Ticket en poche, départ bientôt' | t }}
             } @else if (q.free) {
-              Ticket offert déjà joué
+              {{ 'Ticket offert déjà joué' | t }}
             } @else {
-              Limite de tickets atteinte
+              {{ 'Limite de tickets atteinte' | t }}
             }
           </button>
         } @else {
           <button class="btn3d orange lg block" type="button" (click)="openBuy()">
-            <raf-icon name="ticket" [size]="32" /> Ticket
+            <raf-icon name="ticket" [size]="32" /> {{ 'Ticket' | t }}
             @if (q.free) {
-              <span class="price">Gratuit</span>
+              <span class="price">{{ 'Gratuit' | t }}</span>
             } @else {
               <span class="price"><raf-icon name="coin" [size]="26" />{{ q.ticketPriceCredits }}</span>
             }
@@ -192,12 +192,12 @@
         }
       } @else if (q.status === 'FINISHED') {
         <button class="btn3d gold lg block" type="button" (click)="leaderboard()">
-          <raf-icon name="trophy" [size]="32" /> Classement
+          <raf-icon name="trophy" [size]="32" /> {{ 'Classement' | t }}
         </button>
       } @else if (q.status === 'COMPUTING') {
-        <button class="btn3d block" type="button" disabled>Calcul du classement…</button>
+        <button class="btn3d block" type="button" disabled>{{ 'Calcul du classement…' | t }}</button>
       } @else {
-        <button class="btn3d blue block" type="button" (click)="nav.navigateBack('/accueil')">Voir les autres quiz</button>
+        <button class="btn3d blue block" type="button" (click)="nav.navigateBack('/accueil')">{{ 'Voir les autres quiz' | t }}</button>
       }
     </div>
   </ion-footer>
@@ -206,56 +206,56 @@
   <ion-modal class="raf-popup" [isOpen]="buyOpen()" (didDismiss)="buyOpen.set(false)">
     <ng-template>
       <div class="panel popup">
-        <button class="popup-close" type="button" aria-label="Fermer" (click)="buyOpen.set(false)">
+        <button class="popup-close" type="button" [attr.aria-label]="'Fermer' | t" (click)="buyOpen.set(false)">
           <raf-icon name="close" [size]="22" />
         </button>
         @if (bought(); as t) {
-          <div class="ribbon green">Ticket obtenu !</div>
+          <div class="ribbon green">{{ 'Ticket obtenu !' | t }}</div>
           <div class="popup-art">
             <raf-icon class="pop-in" name="ticket" [size]="110" />
           </div>
           <p class="center code">N° {{ t.code }}</p>
           @if (playable()) {
-            <button class="btn3d lg block pulse" type="button" (click)="play()"><raf-icon name="play" [size]="26" /> Jouer maintenant</button>
+            <button class="btn3d lg block pulse" type="button" (click)="play()"><raf-icon name="play" [size]="26" /> {{ 'Jouer maintenant' | t }}</button>
           } @else {
-            <p class="center small ink">Tu joueras dès le démarrage du quiz. Nous te préviendrons !</p>
-            <button class="btn3d block" type="button" (click)="buyOpen.set(false)">Super !</button>
+            <p class="center small ink">{{ 'Tu joueras dès le démarrage du quiz. Nous te préviendrons !' | t }}</p>
+            <button class="btn3d block" type="button" (click)="buyOpen.set(false)">{{ 'Super !' | t }}</button>
           }
           @if (q.free) {
             <raf-instagram-card variant="thanks" />
           }
         } @else {
-          <div class="ribbon">Prendre un ticket</div>
+          <div class="ribbon">{{ 'Prendre un ticket' | t }}</div>
           <div class="popup-art">
             <raf-icon class="float" name="ticket" [size]="96" />
           </div>
           @if (q.free) {
             <div class="price-row">
-              <span>Prix</span>
-              <strong><raf-icon name="gift" [size]="28" /> Offert</strong>
+              <span>{{ 'Prix' | t }}</span>
+              <strong><raf-icon name="gift" [size]="28" /> {{ 'Offert' | t }}</strong>
             </div>
-            <p class="center small ink">Ce quiz est gratuit : un ticket par joueur, et de vrais gains à la clé.</p>
+            <p class="center small ink">{{ 'Ce quiz est gratuit : un ticket par joueur, et de vrais gains à la clé.' | t }}</p>
           } @else if (isTester()) {
-            <div class="alert-box info">Compte de test : ticket offert, sans limite et sans gain. Tes parties ne comptent pas pour les vrais joueurs.</div>
+            <div class="alert-box info">{{ 'Compte de test : ticket offert, sans limite et sans gain. Tes parties ne comptent pas pour les vrais joueurs.' | t }}</div>
           } @else {
             <div class="price-row">
-              <span>Prix</span>
-              <strong><raf-icon name="coin" [size]="28" /> {{ q.ticketPriceCredits }} crédits</strong>
+              <span>{{ 'Prix' | t }}</span>
+              <strong><raf-icon name="coin" [size]="28" /> {{ '{n} crédits' | t: { n: q.ticketPriceCredits } }}</strong>
             </div>
             <div class="price-row">
-              <span>Ton solde</span>
-              <strong [class.short]="!canAfford()"><raf-icon name="coin" [size]="28" /> {{ state.wallet()?.creditBalance ?? '…' }} crédits</strong>
+              <span>{{ 'Ton solde' | t }}</span>
+              <strong [class.short]="!canAfford()"><raf-icon name="coin" [size]="28" /> {{ '{n} crédits' | t: { n: state.wallet()?.creditBalance ?? '…' } }}</strong>
             </div>
           }
           @if (buyError(); as message) {
             <div class="alert-box">{{ message }}</div>
           }
           @if (state.wallet() && !canAfford()) {
-            <div class="alert-box warn">Il te manque {{ q.ticketPriceCredits - (state.wallet()?.creditBalance ?? 0) }} crédits.</div>
-            <button class="btn3d block" type="button" (click)="goTopUp()"><raf-icon name="plus" [size]="22" /> Recharger</button>
+            <div class="alert-box warn">{{ 'Il te manque {n} crédits.' | t: { n: q.ticketPriceCredits - (state.wallet()?.creditBalance ?? 0) } }}</div>
+            <button class="btn3d block" type="button" (click)="goTopUp()"><raf-icon name="plus" [size]="22" /> {{ 'Recharger' | t }}</button>
           } @else {
             <button class="btn3d orange lg block" type="button" [disabled]="buying()" (click)="confirmBuy()">
-              {{ buying() ? (q.free ? 'Un instant…' : 'Achat…') : (q.free ? 'Prendre mon ticket' : 'Confirmer') }}
+              {{ (buying() ? (q.free ? 'Un instant…' : 'Achat…') : (q.free ? 'Prendre mon ticket' : 'Confirmer')) | t }}
             </button>
           }
         }

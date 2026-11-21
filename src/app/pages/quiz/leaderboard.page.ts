@@ -17,13 +17,14 @@ import { Leaderboard, LeaderboardEntry } from '../../core/models';
 import { IconComponent } from '../../ui/icon.component';
 import { NumPipe } from '../../ui/pipes';
 import { TopBarComponent } from '../../ui/top-bar.component';
+import { TPipe, t } from '../../core/i18n';
 
 const PAGE_SIZE = 50;
 
 /** Classement fige d'un quiz termine : podium, liste, et la place du joueur toujours visible. */
 @Component({
   selector: 'raf-leaderboard',
-  imports: [
+  imports: [TPipe, 
     IonHeader,
     IonToolbar,
     IonContent,
@@ -36,7 +37,7 @@ const PAGE_SIZE = 50;
   ],
   template: `
     <ion-header class="raf-header">
-      <ion-toolbar><raf-top-bar [back]="'/quiz/' + quizId" title="Classement" [showWallet]="false" /></ion-toolbar>
+      <ion-toolbar><raf-top-bar [back]="'/quiz/' + quizId" [title]="'Classement' | t" [showWallet]="false" /></ion-toolbar>
     </ion-header>
 
     <ion-content class="raf-sky" [fullscreen]="true">
@@ -44,14 +45,14 @@ const PAGE_SIZE = 50;
         @if (notReady()) {
           <div class="empty-state">
             <raf-icon class="float" name="hourglass" [size]="88" />
-            <div class="empty-title">Classement pas encore publié</div>
-            <div class="empty-text">Il sera figé à la fin du quiz. Nous te préviendrons !</div>
+            <div class="empty-title">{{ 'Classement pas encore publié' | t }}</div>
+            <div class="empty-text">{{ 'Il sera figé à la fin du quiz. Nous te préviendrons !' | t }}</div>
           </div>
         } @else if (error(); as message) {
           <div class="panel"><div class="alert-box">{{ message }}</div></div>
         } @else if (board(); as b) {
           <h1 class="quiz-title title-stroke sm">{{ b.quizTitle }}</h1>
-          <p class="sub">{{ b.totalRanked }} joueur{{ b.totalRanked > 1 ? 's' : '' }} classé{{ b.totalRanked > 1 ? 's' : '' }}</p>
+          <p class="sub">{{ (b.totalRanked > 1 ? '{n} joueurs classés' : '{n} joueur classé') | t: { n: b.totalRanked } }}</p>
 
           @if (podium().length > 0) {
             <div class="podium">
@@ -61,8 +62,8 @@ const PAGE_SIZE = 50;
                     <raf-icon class="crown float" name="crown" [size]="46" />
                   }
                   <div class="avatar">{{ initial(e) }}</div>
-                  <div class="name">{{ e.me ? 'Toi' : e.displayName }}</div>
-                  <div class="pts">{{ e.score }} pts</div>
+                  <div class="name">{{ e.me ? ('Toi' | t) : e.displayName }}</div>
+                  <div class="pts">{{ '{n} pts' | t: { n: e.score } }}</div>
                   <div class="step">
                     <raf-icon [name]="'medal' + e.rank" [size]="40" />
                     @if (e.rewardHtg > 0) {
@@ -79,7 +80,7 @@ const PAGE_SIZE = 50;
               <div class="list-row" [class.me]="e.me">
                 <span class="rank">{{ e.rank }}</span>
                 <div class="grow">
-                  <div class="row-title">{{ e.me ? 'Toi' : e.displayName }}</div>
+                  <div class="row-title">{{ e.me ? ('Toi' | t) : e.displayName }}</div>
                   @if (e.rewardHtg > 0) {
                     <div class="row-sub gain-sub">+{{ e.rewardHtg | num }} HTG</div>
                   }
@@ -102,10 +103,10 @@ const PAGE_SIZE = 50;
     @if (board()?.me; as me) {
       <ion-footer class="me-bar">
         <div class="me-row">
-          <span class="rank">{{ me.rank }}<small>e</small></span>
+          <span class="rank">{{ me.rank }}<small>{{ 'e' | t }}</small></span>
           <div class="grow">
-            <div class="me-title">Ta place</div>
-            <div class="me-sub">{{ me.score }} pts</div>
+            <div class="me-title">{{ 'Ta place' | t }}</div>
+            <div class="me-sub">{{ '{n} pts' | t: { n: me.score } }}</div>
           </div>
           @if (me.rewardHtg > 0) {
             <span class="me-gain"><raf-icon name="cash" [size]="30" /> +{{ me.rewardHtg | num }} HTG</span>
@@ -312,6 +313,6 @@ export class LeaderboardPage {
   }
 
   protected initial(e: LeaderboardEntry): string {
-    return (e.me ? 'Toi' : e.displayName).charAt(0).toUpperCase();
+    return (e.me ? t('Toi') : e.displayName).charAt(0).toUpperCase();
   }
 }

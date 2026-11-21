@@ -11,6 +11,7 @@ import { PlayerStateService } from './core/player-state.service';
 import { AnnouncementPopupComponent } from './ui/announcement-popup.component';
 import { EmailReminderComponent } from './ui/email-reminder.component';
 import { IconDefsComponent } from './ui/icon.component';
+import { restoreLang } from './core/i18n';
 
 @Component({
   selector: 'app-root',
@@ -32,6 +33,8 @@ export class AppComponent {
   private readonly install = inject(InstallService);
 
   constructor() {
+    void restoreLang();
+
     // Soldes et badge : charges a la connexion, oublies a la deconnexion.
     effect(() => {
       if (this.auth.isLoggedIn()) {

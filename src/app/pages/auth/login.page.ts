@@ -7,43 +7,44 @@ import { errorMessage } from '../../core/errors';
 import { FeedbackService } from '../../core/feedback.service';
 import { IconComponent } from '../../ui/icon.component';
 import { AuthLayoutComponent } from './auth-layout.component';
+import { TPipe, t } from '../../core/i18n';
 
 @Component({
   selector: 'raf-login',
-  imports: [FormsModule, IonIcon, AuthLayoutComponent, IconComponent],
+  imports: [TPipe, FormsModule, IonIcon, AuthLayoutComponent, IconComponent],
   template: `
-    <raf-auth-layout ribbon="Connexion" ribbonColor="blue" backTo="/bienvenue">
+    <raf-auth-layout [ribbon]="'Connexion' | t" ribbonColor="blue" backTo="/bienvenue">
       <form (ngSubmit)="submit()" [class.shake]="shake()">
         @if (error(); as message) {
           <div class="alert-box">{{ message }}</div>
         }
         <label class="field">
-          <span class="field-label">Email</span>
+          <span class="field-label">{{ 'Email' | t }}</span>
           <span class="input-box">
             <raf-icon name="mail" [size]="24" />
-            <input type="email" name="email" [(ngModel)]="email" autocomplete="email" inputmode="email" placeholder="toi@exemple.com" required />
+            <input type="email" name="email" [(ngModel)]="email" autocomplete="email" inputmode="email" [placeholder]="'toi@exemple.com' | t" required />
           </span>
         </label>
         <label class="field">
-          <span class="field-label">Mot de passe</span>
+          <span class="field-label">{{ 'Mot de passe' | t }}</span>
           <span class="input-box">
             <raf-icon name="key" [size]="24" />
             <input [type]="showPassword() ? 'text' : 'password'" name="password" [(ngModel)]="password" autocomplete="current-password" placeholder="••••••••" required />
-            <button type="button" (click)="showPassword.set(!showPassword())" [attr.aria-label]="showPassword() ? 'Masquer' : 'Afficher'">
+            <button type="button" (click)="showPassword.set(!showPassword())" [attr.aria-label]="(showPassword() ? 'Masquer' : 'Afficher') | t">
               <ion-icon [name]="showPassword() ? 'eye-off-outline' : 'eye-outline'" />
             </button>
           </span>
         </label>
         <button class="btn3d block lg" type="submit" [disabled]="busy()">
-          {{ busy() ? 'Connexion…' : 'Jouer' }}
+          {{ (busy() ? 'Connexion…' : 'Jouer') | t }}
         </button>
         <div class="links">
-          <button class="link-btn ink" type="button" (click)="nav.navigateForward('/mot-de-passe-oublie')">Mot de passe oublié ?</button>
+          <button class="link-btn ink" type="button" (click)="nav.navigateForward('/mot-de-passe-oublie')">{{ 'Mot de passe oublié ?' | t }}</button>
         </div>
       </form>
       <div below class="below">
-        <span>Pas encore de compte ?</span>
-        <button class="btn3d orange sm" type="button" (click)="nav.navigateForward('/inscription')">Créer un compte</button>
+        <span>{{ 'Pas encore de compte ?' | t }}</span>
+        <button class="btn3d orange sm" type="button" (click)="nav.navigateForward('/inscription')">{{ 'Créer un compte' | t }}</button>
       </div>
     </raf-auth-layout>
   `,
@@ -75,7 +76,7 @@ export class LoginPage {
 
   protected async submit(): Promise<void> {
     if (!this.email.trim() || !this.password) {
-      this.fail('Renseigne ton email et ton mot de passe.');
+      this.fail(t('Renseigne ton email et ton mot de passe.'));
       return;
     }
     this.busy.set(true);

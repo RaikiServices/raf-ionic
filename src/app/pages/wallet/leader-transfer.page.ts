@@ -20,6 +20,7 @@ import { uuid } from '../../core/uuid';
 import { IconComponent } from '../../ui/icon.component';
 import { DateTimePipe, NumPipe } from '../../ui/pipes';
 import { TopBarComponent } from '../../ui/top-bar.component';
+import { TPipe, t } from '../../core/i18n';
 
 type Step = 'pick' | 'amount' | 'confirm' | 'done';
 
@@ -36,7 +37,7 @@ const PAGE_SIZE = 20;
  */
 @Component({
   selector: 'raf-leader-transfer',
-  imports: [
+  imports: [TPipe, 
     FormsModule,
     IonHeader,
     IonToolbar,
@@ -50,7 +51,7 @@ const PAGE_SIZE = 20;
   ],
   template: `
     <ion-header class="raf-header">
-      <ion-toolbar><raf-top-bar back="/portefeuille" title="Recharger un joueur" /></ion-toolbar>
+      <ion-toolbar><raf-top-bar back="/portefeuille" [title]="'Recharger un joueur' | t" /></ion-toolbar>
     </ion-header>
 
     <ion-content class="raf-sky" [fullscreen]="true">
@@ -58,7 +59,7 @@ const PAGE_SIZE = 20;
         <section class="available glass">
           <raf-icon name="coin" [size]="46" />
           <div>
-            <div class="label">Tes crédits</div>
+            <div class="label">{{ 'Tes crédits' | t }}</div>
             <div class="value">{{ balance() === null ? '…' : (balance() | num) }}</div>
           </div>
         </section>
@@ -66,18 +67,18 @@ const PAGE_SIZE = 20;
         @if (loadError(); as message) {
           <div class="panel">
             <div class="alert-box">{{ message }}</div>
-            <button class="btn3d blue block" type="button" (click)="init()">Réessayer</button>
+            <button class="btn3d blue block" type="button" (click)="init()">{{ 'Réessayer' | t }}</button>
           </div>
         } @else if (config(); as c) {
           @if (!c.enabled) {
             <div class="panel">
-              <div class="alert-box info">La recharge des joueurs est momentanément désactivée. Réessaie plus tard.</div>
+              <div class="alert-box info">{{ 'La recharge des joueurs est momentanément désactivée. Réessaie plus tard.' | t }}</div>
             </div>
           } @else {
             @switch (step()) {
               @case ('pick') {
                 <section class="panel panel-with-ribbon">
-                  <div class="ribbon">Quel joueur ?</div>
+                  <div class="ribbon">{{ 'Quel joueur ?' | t }}</div>
                   <label class="field search">
                     <span class="input-box">
                       <raf-icon name="user" [size]="24" />
@@ -85,7 +86,7 @@ const PAGE_SIZE = 20;
                         type="search"
                         name="search"
                         autocomplete="off"
-                        placeholder="Nom ou numéro de téléphone"
+                        [placeholder]="'Nom ou numéro de téléphone' | t"
                         [ngModel]="query()"
                         (ngModelChange)="search($event)"
                       />
@@ -98,10 +99,10 @@ const PAGE_SIZE = 20;
                   } @else if (players()!.length === 0) {
                     <div class="empty-state small">
                       @if (query().trim()) {
-                        <div class="empty-text">Aucun de tes joueurs ne correspond à « {{ query().trim() }} ».</div>
+                        <div class="empty-text">{{ 'Aucun de tes joueurs ne correspond à « {q} ».' | t: { q: query().trim() } }}</div>
                       } @else {
-                        <div class="empty-title">Aucun joueur rattaché</div>
-                        <div class="empty-text">Invite des amis depuis ton profil : ils apparaîtront ici.</div>
+                        <div class="empty-title">{{ 'Aucun joueur rattaché' | t }}</div>
+                        <div class="empty-text">{{ 'Invite des amis depuis ton profil : ils apparaîtront ici.' | t }}</div>
                       }
                     </div>
                   } @else {
@@ -112,10 +113,10 @@ const PAGE_SIZE = 20;
                           <span class="row-title">{{ p.firstName }} {{ p.lastName }}</span>
                           <span class="row-sub">
                             @if (p.phoneEnd) {
-                              Tél. •••• {{ p.phoneEnd }}
+                              {{ 'Tél.' | t }} •••• {{ p.phoneEnd }}
                             }
                             @if (p.lastTransferAt) {
-                              · dernière recharge {{ p.lastTransferCredits | num }} cr. {{ p.lastTransferAt | dateTime }}
+                              · {{ 'dernière recharge' | t }} {{ p.lastTransferCredits | num }} cr. {{ p.lastTransferAt | dateTime }}
                             }
                           </span>
                         </span>
@@ -129,7 +130,7 @@ const PAGE_SIZE = 20;
                 </section>
 
                 @if (history().length > 0) {
-                  <h2 class="section-title">Tes dernières recharges</h2>
+                  <h2 class="section-title">{{ 'Tes dernières recharges' | t }}</h2>
                   <div class="panel tight">
                     @for (t of history(); track t.id) {
                       <div class="tx">
@@ -148,24 +149,24 @@ const PAGE_SIZE = 20;
               @case ('amount') {
                 @if (selected(); as p) {
                   <section class="panel panel-with-ribbon">
-                    <div class="ribbon">Montant</div>
+                    <div class="ribbon">{{ 'Montant' | t }}</div>
                     <div class="chosen">
                       <span class="avatar">{{ initials(p) }}</span>
                       <span class="grow">
                         <span class="row-title">{{ p.firstName }} {{ p.lastName }}</span>
                         @if (p.phoneEnd) {
-                          <span class="row-sub">Tél. •••• {{ p.phoneEnd }}</span>
+                          <span class="row-sub">{{ 'Tél.' | t }} •••• {{ p.phoneEnd }}</span>
                         }
                       </span>
-                      <button class="link-btn ink" type="button" (click)="backToPick()">Changer</button>
+                      <button class="link-btn ink" type="button" (click)="backToPick()">{{ 'Changer' | t }}</button>
                     </div>
 
                     <label class="field">
                       <span class="input-box amount-box">
                         <input type="number" inputmode="numeric" name="credits" [(ngModel)]="credits" step="1" min="0" placeholder="0" />
-                        <span class="prefix">crédits</span>
+                        <span class="prefix">{{ 'crédits' | t }}</span>
                       </span>
-                      <span class="field-hint">Entre {{ c.minCredits | num }} et {{ maxAllowed() | num }} crédits.</span>
+                      <span class="field-hint">{{ 'Entre {min} et {max} crédits.' | t: { min: c.minCredits | num, max: maxAllowed() | num } }}</span>
                     </label>
                     @if (quickAmounts().length > 0) {
                       <div class="quick">
@@ -178,7 +179,7 @@ const PAGE_SIZE = 20;
                     @if (error(); as message) {
                       <div class="alert-box">{{ message }}</div>
                     }
-                    <button class="btn3d orange block" type="button" (click)="review()">Continuer</button>
+                    <button class="btn3d orange block" type="button" (click)="review()">{{ 'Continuer' | t }}</button>
                   </section>
                 }
               }
@@ -186,24 +187,24 @@ const PAGE_SIZE = 20;
               @case ('confirm') {
                 @if (selected(); as p) {
                   <section class="panel panel-with-ribbon">
-                    <div class="ribbon blue">Vérification</div>
+                    <div class="ribbon blue">{{ 'Vérification' | t }}</div>
                     <div class="recap">
-                      <div><span>Joueur</span><strong>{{ p.firstName }} {{ p.lastName }}</strong></div>
+                      <div><span>{{ 'Joueur' | t }}</span><strong>{{ p.firstName }} {{ p.lastName }}</strong></div>
                       @if (p.phoneEnd) {
-                        <div><span>Téléphone</span><strong>•••• {{ p.phoneEnd }}</strong></div>
+                        <div><span>{{ 'Téléphone' | t }}</span><strong>•••• {{ p.phoneEnd }}</strong></div>
                       }
-                      <div class="net"><span>Montant</span><strong>{{ credits | num }} cr.</strong></div>
-                      <div><span>Ton solde après</span><strong>{{ (balance() ?? 0) - (credits ?? 0) | num }} cr.</strong></div>
+                      <div class="net"><span>{{ 'Montant' | t }}</span><strong>{{ credits | num }} cr.</strong></div>
+                      <div><span>{{ 'Ton solde après' | t }}</span><strong>{{ (balance() ?? 0) - (credits ?? 0) | num }} cr.</strong></div>
                     </div>
-                    <div class="alert-box info">Cette recharge est définitive : vérifie bien le joueur et le montant.</div>
+                    <div class="alert-box info">{{ 'Cette recharge est définitive : vérifie bien le joueur et le montant.' | t }}</div>
                     @if (error(); as message) {
                       <div class="alert-box">{{ message }}</div>
                     }
                     <button class="btn3d block confirm" type="button" [disabled]="busy()" (click)="confirm()">
-                      {{ busy() ? 'Envoi…' : 'Confirmer la recharge' }}
+                      {{ (busy() ? 'Envoi…' : 'Confirmer la recharge') | t }}
                     </button>
                     <div class="links">
-                      <button class="link-btn ink" type="button" [disabled]="busy()" (click)="edit()">Modifier</button>
+                      <button class="link-btn ink" type="button" [disabled]="busy()" (click)="edit()">{{ 'Modifier' | t }}</button>
                     </div>
                   </section>
                 }
@@ -212,16 +213,16 @@ const PAGE_SIZE = 20;
               @case ('done') {
                 @if (done(); as d) {
                   <section class="panel panel-with-ribbon done">
-                    <div class="ribbon green">Recharge envoyée !</div>
+                    <div class="ribbon green">{{ 'Recharge envoyée !' | t }}</div>
                     <raf-icon class="pop-in" name="check" [size]="80" />
                     <div class="recap">
-                      <div><span>Joueur</span><strong>{{ d.playerFirstName }} {{ d.playerLastName }}</strong></div>
-                      <div class="net"><span>Montant</span><strong>{{ d.credits | num }} cr.</strong></div>
-                      <div><span>Ton solde</span><strong>{{ d.leaderBalanceAfter | num }} cr.</strong></div>
+                      <div><span>{{ 'Joueur' | t }}</span><strong>{{ d.playerFirstName }} {{ d.playerLastName }}</strong></div>
+                      <div class="net"><span>{{ 'Montant' | t }}</span><strong>{{ d.credits | num }} cr.</strong></div>
+                      <div><span>{{ 'Ton solde' | t }}</span><strong>{{ d.leaderBalanceAfter | num }} cr.</strong></div>
                     </div>
-                    <p class="text">{{ d.playerFirstName }} a reçu une notification : ses crédits sont déjà disponibles.</p>
-                    <button class="btn3d orange block" type="button" (click)="again()">Recharger un autre joueur</button>
-                    <button class="btn3d blue block back-btn" type="button" (click)="nav.navigateBack('/portefeuille')">Retour au Trésor</button>
+                    <p class="text">{{ '{nom} a reçu une notification : ses crédits sont déjà disponibles.' | t: { nom: d.playerFirstName } }}</p>
+                    <button class="btn3d orange block" type="button" (click)="again()">{{ 'Recharger un autre joueur' | t }}</button>
+                    <button class="btn3d blue block back-btn" type="button" (click)="nav.navigateBack('/portefeuille')">{{ 'Retour au Trésor' | t }}</button>
                   </section>
                 }
               }
@@ -514,19 +515,19 @@ export class LeaderTransferPage implements OnDestroy {
     const c = this.config();
     const amount = this.credits;
     if (!c) {
-      return 'Chargement en cours, réessaie dans un instant.';
+      return t('Chargement en cours, réessaie dans un instant.');
     }
     if (amount == null || !Number.isInteger(amount) || amount <= 0) {
-      return 'Saisis un nombre entier de crédits.';
+      return t('Saisis un nombre entier de crédits.');
     }
     if (amount < c.minCredits) {
-      return `Le minimum est de ${c.minCredits} crédits.`;
+      return t('Le minimum est de {n} crédits.', { n: c.minCredits });
     }
     if (amount > c.maxCredits) {
-      return `Le maximum est de ${c.maxCredits} crédits par recharge.`;
+      return t('Le maximum est de {n} crédits par recharge.', { n: c.maxCredits });
     }
     if (amount > (this.balance() ?? 0)) {
-      return "Tu n'as pas assez de crédits. Recharge d'abord ton solde.";
+      return t("Tu n'as pas assez de crédits. Recharge d'abord ton solde.");
     }
     return null;
   }

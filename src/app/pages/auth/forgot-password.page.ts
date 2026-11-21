@@ -7,33 +7,34 @@ import { ApiService } from '../../core/api.service';
 import { errorMessage } from '../../core/errors';
 import { IconComponent } from '../../ui/icon.component';
 import { AuthLayoutComponent } from './auth-layout.component';
+import { TPipe, t } from '../../core/i18n';
 
 @Component({
   selector: 'raf-forgot-password',
-  imports: [FormsModule, AuthLayoutComponent, IconComponent],
+  imports: [TPipe, FormsModule, AuthLayoutComponent, IconComponent],
   template: `
-    <raf-auth-layout ribbon="Mot de passe oublié" ribbonColor="purple" backTo="/connexion" helpTopic="mot-de-passe">
+    <raf-auth-layout [ribbon]="'Mot de passe oublié' | t" ribbonColor="purple" backTo="/connexion" helpTopic="mot-de-passe">
       @if (sent(); as message) {
         <div class="center">
           <raf-icon class="pop-in" name="mail" [size]="72" />
           <p class="lead">{{ message }}</p>
-          <p class="hint">Ouvre le lien reçu par email pour choisir un nouveau mot de passe. Pense à regarder dans les indésirables.</p>
-          <button class="btn3d blue block" type="button" (click)="nav.navigateBack('/connexion')">Retour à la connexion</button>
+          <p class="hint">{{ 'Ouvre le lien reçu par email pour choisir un nouveau mot de passe. Pense à regarder dans les indésirables.' | t }}</p>
+          <button class="btn3d blue block" type="button" (click)="nav.navigateBack('/connexion')">{{ 'Retour à la connexion' | t }}</button>
         </div>
       } @else {
         <form (ngSubmit)="submit()">
-          <p class="hint">Indique l'email de ton compte : nous t'enverrons un lien pour choisir un nouveau mot de passe.</p>
+          <p class="hint">{{ "Indique l'email de ton compte : nous t'enverrons un lien pour choisir un nouveau mot de passe." | t }}</p>
           @if (error(); as message) {
             <div class="alert-box">{{ message }}</div>
           }
           <label class="field">
-            <span class="field-label">Email</span>
+            <span class="field-label">{{ 'Email' | t }}</span>
             <span class="input-box">
               <raf-icon name="mail" [size]="24" />
               <input type="email" name="email" [(ngModel)]="email" autocomplete="email" inputmode="email" required />
             </span>
           </label>
-          <button class="btn3d purple block" type="submit" [disabled]="busy()">{{ busy() ? 'Envoi…' : 'Envoyer le lien' }}</button>
+          <button class="btn3d purple block" type="submit" [disabled]="busy()">{{ (busy() ? 'Envoi…' : 'Envoyer le lien') | t }}</button>
         </form>
       }
     </raf-auth-layout>
@@ -56,7 +57,7 @@ export class ForgotPasswordPage {
 
   protected async submit(): Promise<void> {
     if (!this.email.trim()) {
-      this.error.set('Indique ton email.');
+      this.error.set(t('Indique ton email.'));
       return;
     }
     this.busy.set(true);

@@ -16,21 +16,24 @@ export class HtgPipe implements PipeTransform {
   }
 }
 
-@Pipe({ name: 'dateTime' })
+// Impur : suit la langue choisie (mois, « aujourd'hui »...).
+@Pipe({ name: 'dateTime', pure: false })
 export class DateTimePipe implements PipeTransform {
   transform(value: string | null | undefined): string {
     return formatDateTime(value);
   }
 }
 
-@Pipe({ name: 'date' })
+// Impur : suit la langue choisie (mois, « aujourd'hui »...).
+@Pipe({ name: 'date', pure: false })
 export class DatePipe implements PipeTransform {
   transform(value: string | null | undefined): string {
     return formatDate(value);
   }
 }
 
-@Pipe({ name: 'ago' })
+// Impur : suit la langue choisie (mois, « aujourd'hui »...).
+@Pipe({ name: 'ago', pure: false })
 export class AgoPipe implements PipeTransform {
   transform(value: string): string {
     return formatAgo(value);

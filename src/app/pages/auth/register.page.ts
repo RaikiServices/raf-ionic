@@ -11,6 +11,7 @@ import { storage } from '../../core/storage';
 import { EmailSuggestionComponent } from '../../ui/email-suggestion.component';
 import { IconComponent } from '../../ui/icon.component';
 import { AuthLayoutComponent } from './auth-layout.component';
+import { TPipe, t } from '../../core/i18n';
 
 /** Parrain du lien d'invitation suivi, garde si le joueur quitte puis revient sur l'inscription. */
 const INVITER_KEY = 'raf.inviter';
@@ -40,66 +41,66 @@ export function normalizePhone(raw: string): string {
 
 @Component({
   selector: 'raf-register',
-  imports: [FormsModule, IonIcon, AuthLayoutComponent, IconComponent, EmailSuggestionComponent],
+  imports: [TPipe, FormsModule, IonIcon, AuthLayoutComponent, IconComponent, EmailSuggestionComponent],
   template: `
-    <raf-auth-layout ribbon="Inscription" backTo="/bienvenue">
+    <raf-auth-layout [ribbon]="'Inscription' | t" backTo="/bienvenue">
       <form (ngSubmit)="submit()" [class.shake]="shake()">
         @if (error(); as message) {
           <div class="alert-box">{{ message }}</div>
         }
         <div class="two">
           <label class="field">
-            <span class="field-label">Prénom</span>
+            <span class="field-label">{{ 'Prénom' | t }}</span>
             <span class="input-box">
               <input name="firstName" [(ngModel)]="firstName" autocomplete="given-name" required /></span>
           </label>
           <label class="field">
-            <span class="field-label">Nom</span>
+            <span class="field-label">{{ 'Nom' | t }}</span>
             <span class="input-box"><input name="lastName" [(ngModel)]="lastName" autocomplete="family-name" required /></span>
           </label>
         </div>
         <label class="field">
-          <span class="field-label">Email</span>
+          <span class="field-label">{{ 'Email' | t }}</span>
           <span class="input-box">
             <raf-icon name="mail" [size]="24" />
-            <input type="email" name="email" [(ngModel)]="email" autocomplete="email" inputmode="email" placeholder="toi@exemple.com" required (blur)="checkEmail()" />
+            <input type="email" name="email" [(ngModel)]="email" autocomplete="email" inputmode="email" [placeholder]="'toi@exemple.com' | t" required (blur)="checkEmail()" />
           </span>
           @if (emailSuggestion(); as suggestion) {
             <raf-email-suggestion [suggestion]="suggestion" (accept)="acceptEmail($event)" (keep)="keepEmail()" />
           } @else {
-            <span class="field-hint">Pour te connecter et recevoir tes gains. Vérifie-la bien : on y envoie un lien de confirmation.</span>
+            <span class="field-hint">{{ 'Pour te connecter et recevoir tes gains. Vérifie-la bien : on y envoie un lien de confirmation.' | t }}</span>
           }
         </label>
         <label class="field">
-          <span class="field-label">Téléphone</span>
+          <span class="field-label">{{ 'Téléphone' | t }}</span>
           <span class="input-box">
             <raf-icon name="phone" [size]="24" />
             <span class="prefix">+509</span>
             <input type="tel" name="phone" [(ngModel)]="phone" autocomplete="tel-national" inputmode="tel" placeholder="3712 3456" required />
           </span>
-          <span class="field-hint">Un code SMS le confirmera avant ton premier retrait.</span>
+          <span class="field-hint">{{ 'Un code SMS le confirmera avant ton premier retrait.' | t }}</span>
         </label>
         <label class="field">
-          <span class="field-label">Mot de passe</span>
+          <span class="field-label">{{ 'Mot de passe' | t }}</span>
           <span class="input-box">
             <raf-icon name="key" [size]="24" />
-            <input [type]="showPassword() ? 'text' : 'password'" name="password" [(ngModel)]="password" autocomplete="new-password" placeholder="8 caractères minimum" required />
-            <button type="button" (click)="showPassword.set(!showPassword())" [attr.aria-label]="showPassword() ? 'Masquer' : 'Afficher'">
+            <input [type]="showPassword() ? 'text' : 'password'" name="password" [(ngModel)]="password" autocomplete="new-password" [placeholder]="'8 caractères minimum' | t" required />
+            <button type="button" (click)="showPassword.set(!showPassword())" [attr.aria-label]="(showPassword() ? 'Masquer' : 'Afficher') | t">
               <ion-icon [name]="showPassword() ? 'eye-off-outline' : 'eye-outline'" />
             </button>
           </span>
         </label>
         <label class="adult">
           <input type="checkbox" name="adult" [(ngModel)]="adult" />
-          <span>J'ai <strong>18 ans ou plus</strong> et je joue de façon responsable.</span>
+          <span>{{ "J'ai" | t }} <strong>{{ '18 ans ou plus' | t }}</strong> {{ 'et je joue de façon responsable.' | t }}</span>
         </label>
         <button class="btn3d block lg" type="submit" [disabled]="busy()">
-          {{ busy() ? 'Création…' : "C'est parti !" }}
+          {{ (busy() ? 'Création…' : "C'est parti !") | t }}
         </button>
       </form>
       <div below class="below">
-        <span>Déjà inscrit ?</span>
-        <button class="btn3d blue sm" type="button" (click)="nav.navigateForward('/connexion')">Se connecter</button>
+        <span>{{ 'Déjà inscrit ?' | t }}</span>
+        <button class="btn3d blue sm" type="button" (click)="nav.navigateForward('/connexion')">{{ 'Se connecter' | t }}</button>
       </div>
     </raf-auth-layout>
   `,
@@ -188,7 +189,7 @@ export class RegisterPage {
       });
       void storage.remove(INVITER_KEY);
       await this.nav.navigateRoot('/accueil', { animationDirection: 'forward' });
-      await this.feedback.success('Bienvenue dans RAF ! Un email de confirmation t’attend.');
+      await this.feedback.success(t('Bienvenue dans RAF ! Un email de confirmation t’attend.'));
     } catch (e) {
       this.fail(errorMessage(e));
     } finally {
@@ -215,23 +216,23 @@ export class RegisterPage {
 
   private check(): string | null {
     if (!this.firstName.trim() || !this.lastName.trim()) {
-      return 'Indique ton prénom et ton nom.';
+      return t('Indique ton prénom et ton nom.');
     }
     this.checkEmail();
     if (this.emailSuggestion()) {
-      return 'Vérifie ton adresse email : elle contient peut-être une faute.';
+      return t('Vérifie ton adresse email : elle contient peut-être une faute.');
     }
     if (!/^\S+@\S+\.\S+$/.test(this.email.trim())) {
-      return 'Cette adresse email ne semble pas valide.';
+      return t('Cette adresse email ne semble pas valide.');
     }
     if (!/^\+[1-9]\d{7,14}$/.test(normalizePhone(this.phone))) {
-      return 'Numéro invalide : 8 chiffres pour Haïti, ou le numéro complet avec +.';
+      return t('Numéro invalide : 8 chiffres pour Haïti, ou le numéro complet avec +.');
     }
     if (this.password.length < 8) {
-      return 'Le mot de passe doit contenir au moins 8 caractères.';
+      return t('Le mot de passe doit contenir au moins 8 caractères.');
     }
     if (!this.adult) {
-      return 'RAF est réservé aux joueurs de 18 ans et plus.';
+      return t('RAF est réservé aux joueurs de 18 ans et plus.');
     }
     return null;
   }

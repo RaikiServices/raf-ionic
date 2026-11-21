@@ -10,6 +10,7 @@ import { PlayerStateService } from '../../core/player-state.service';
 import { IconComponent } from '../../ui/icon.component';
 import { DateTimePipe, NumPipe } from '../../ui/pipes';
 import { TopBarComponent } from '../../ui/top-bar.component';
+import { TPipe, t } from '../../core/i18n';
 
 /*
  * Recharge. En ligne : le joueur paie par MonCash ou NatCash via la passerelle
@@ -51,102 +52,101 @@ function depositNumber(label: string, value: string | null | undefined): Deposit
 
 @Component({
   selector: 'raf-top-up',
-  imports: [IonHeader, IonToolbar, IonContent, TopBarComponent, IconComponent, NumPipe, DateTimePipe],
+  imports: [TPipe, IonHeader, IonToolbar, IonContent, TopBarComponent, IconComponent, NumPipe, DateTimePipe],
   template: `
     <ion-header class="raf-header">
-      <ion-toolbar><raf-top-bar back="/portefeuille" title="Recharger" /></ion-toolbar>
+      <ion-toolbar><raf-top-bar back="/portefeuille" [title]="'Recharger' | t" /></ion-toolbar>
     </ion-header>
 
     <ion-content class="raf-sky" [fullscreen]="true">
       <div class="page-pad">
         @if (online()?.enabled) {
           <section class="panel panel-with-ribbon">
-            <div class="ribbon green">En ligne</div>
-            <p class="lead">Paie directement par MonCash ou NatCash : tes crédits arrivent tout de suite, sans agent.</p>
+            <div class="ribbon green">{{ 'En ligne' | t }}</div>
+            <p class="lead">{{ 'Paie directement par MonCash ou NatCash : tes crédits arrivent tout de suite, sans agent.' | t }}</p>
             <div class="brands">
               <div class="brand moncash">MonCash</div>
               <div class="brand natcash">NatCash</div>
             </div>
             <button class="btn3d orange block" type="button" (click)="nav.navigateForward('/portefeuille/recharger-en-ligne')">
-              Payer en ligne
+              {{ 'Payer en ligne' | t }}
             </button>
-            <p class="fee-note">Frais de paiement de {{ feePercent() }} en plus du montant.</p>
+            <p class="fee-note">{{ 'Frais de paiement de {taux} en plus du montant.' | t: { taux: feePercent() } }}</p>
           </section>
         }
 
         @if (canConvert()) {
           @let w = state.wallet()!;
           <section class="panel panel-with-ribbon">
-            <div class="ribbon green">Avec mes gains</div>
-            <p class="lead">Tu as {{ w.winningsBalanceHtg | num }} HTG de gains : transforme-les en crédits, tout de suite.</p>
+            <div class="ribbon green">{{ 'Avec mes gains' | t }}</div>
+            <p class="lead">{{ 'Tu as {n} HTG de gains : transforme-les en crédits, tout de suite.' | t: { n: w.winningsBalanceHtg | num } }}</p>
             <button class="btn3d green block" type="button" (click)="nav.navigateForward('/portefeuille/recharger-avec-gains')">
-              <raf-icon name="coin" [size]="26" /> Recharger avec mes gains
+              <raf-icon name="coin" [size]="26" /> {{ 'Recharger avec mes gains' | t }}
             </button>
           </section>
         }
 
         @if (hasNumbers()) {
           <section class="panel panel-with-ribbon">
-            <div class="ribbon">À distance</div>
+            <div class="ribbon">{{ 'À distance' | t }}</div>
             @if (availability(); as a) {
               <div class="presence" [class.on]="a.available" role="status">
                 <span class="dot"></span>
                 <div class="grow">
                   @if (a.available) {
-                    <div class="opt-title">Agent en ligne</div>
-                    <div class="opt-sub">Ta recharge est créditée tout de suite.</div>
+                    <div class="opt-title">{{ 'Agent en ligne' | t }}</div>
+                    <div class="opt-sub">{{ 'Ta recharge est créditée tout de suite.' | t }}</div>
                   } @else {
                     <div class="opt-title">
-                      Aucun agent en ligne
+                      {{ 'Aucun agent en ligne' | t }}
                       @if (a.lastSeenAt) {
-                        <span class="seen">· vu {{ a.lastSeenAt | dateTime }}</span>
+                        <span class="seen">· {{ 'vu' | t }} {{ a.lastSeenAt | dateTime }}</span>
                       }
                     </div>
-                    <div class="opt-sub">Ta recharge sera créditée dès le retour d'un agent.</div>
+                    <div class="opt-sub">{{ "Ta recharge sera créditée dès le retour d'un agent." | t }}</div>
                   }
                 </div>
               </div>
             }
 
-            <p class="lead">Envoie l'argent par MonCash ou NatCash, sans te déplacer.</p>
+            <p class="lead">{{ "Envoie l'argent par MonCash ou NatCash, sans te déplacer." | t }}</p>
             @for (n of numbers(); track n.label) {
               <div class="option">
                 <div class="brand" [class]="n.css">{{ n.label }}</div>
                 <div class="grow">
-                  <div class="opt-sub">Numéro de l'agent RAF</div>
+                  <div class="opt-sub">{{ "Numéro de l'agent RAF" | t }}</div>
                   <div class="number">{{ n.display }}</div>
                 </div>
-                <button type="button" class="copy" (click)="copy(n)">Copier</button>
+                <button type="button" class="copy" (click)="copy(n)">{{ 'Copier' | t }}</button>
               </div>
             }
             <ol class="steps">
               @if (auth.user(); as u) {
-                <li>Envoie le montant <strong>depuis le numéro de ton compte RAF ({{ u.phone }})</strong>.</li>
+                <li>{{ 'Envoie le montant' | t }} <strong>{{ 'depuis le numéro de ton compte RAF' | t }} ({{ u.phone }})</strong>.</li>
               } @else {
-                <li>Envoie le montant <strong>depuis le numéro de ton compte RAF</strong>.</li>
+                <li>{{ 'Envoie le montant' | t }} <strong>{{ 'depuis le numéro de ton compte RAF' | t }}</strong>.</li>
               }
-              <li>L'agent reconnaît ton numéro et crédite ton compte du montant reçu.</li>
-              <li>Tu reçois une notification dès que tes crédits arrivent.</li>
+              <li>{{ "L'agent reconnaît ton numéro et crédite ton compte du montant reçu." | t }}</li>
+              <li>{{ 'Tu reçois une notification dès que tes crédits arrivent.' | t }}</li>
             </ol>
             <p class="warn">
-              Depuis un autre numéro, l'agent ne peut pas savoir à qui appartient l'argent :
-              ta recharge serait retardée.
+              {{ "Depuis un autre numéro, l'agent ne peut pas savoir à qui appartient l'argent : ta recharge serait retardée." | t }}
             </p>
           </section>
         }
 
         <section class="panel panel-with-ribbon">
-          <div class="ribbon blue">Au guichet RAF</div>
-          <p class="lead">Un agent RAF crédite ton compte sur place, en espèces.</p>
+          <div class="ribbon blue">{{ 'Au guichet RAF' | t }}</div>
+          <p class="lead">{{ 'Un agent RAF crédite ton compte sur place, en espèces.' | t }}</p>
           <ol class="steps">
-            <li>Rends-toi chez un agent RAF.</li>
-            <li>Donne-lui ton numéro de téléphone ou ton identifiant joueur.</li>
-            <li>Paie en HTG : tes crédits arrivent aussitôt, avec une notification.</li>
+            <li>{{ 'Rends-toi chez un agent RAF.' | t }}</li>
+            <li>{{ 'Donne-lui ton numéro de téléphone ou ton identifiant joueur.' | t }}</li>
+            <li>{{ 'Paie en HTG : tes crédits arrivent aussitôt, avec une notification.' | t }}</li>
           </ol>
           @if (auth.user(); as u) {
             <div class="id-card">
-              <div><span>Identifiant joueur</span><strong>#{{ u.id }}</strong></div>
-              <div><span>Téléphone</span><strong>{{ u.phone }}</strong></div>
+              <div><span>{{ 'Identifiant joueur' | t }}</span><strong>#{{ u.id }}</strong></div>
+              <div><span>{{ 'Téléphone' | t }}</span><strong>{{ u.phone }}</strong></div>
             </div>
           }
         </section>
@@ -155,48 +155,48 @@ function depositNumber(label: string, value: string | null | undefined): Deposit
           <section class="option soon first-soon">
             <div class="brand moncash">MonCash</div>
             <div class="grow">
-              <div class="opt-title">Paiement automatique</div>
-              <div class="opt-sub">Directement depuis l'app, sans agent</div>
+              <div class="opt-title">{{ 'Paiement automatique' | t }}</div>
+              <div class="opt-sub">{{ "Directement depuis l'app, sans agent" | t }}</div>
             </div>
-            <span class="soon-tag">Bientôt</span>
+            <span class="soon-tag">{{ 'Bientôt' | t }}</span>
           </section>
           <section class="option soon">
             <div class="brand natcash">NatCash</div>
             <div class="grow">
-              <div class="opt-title">Paiement automatique</div>
-              <div class="opt-sub">Directement depuis l'app, sans agent</div>
+              <div class="opt-title">{{ 'Paiement automatique' | t }}</div>
+              <div class="opt-sub">{{ "Directement depuis l'app, sans agent" | t }}</div>
             </div>
-            <span class="soon-tag">Bientôt</span>
+            <span class="soon-tag">{{ 'Bientôt' | t }}</span>
           </section>
         }
 
         @if (topUps().length > 0) {
-          <h2 class="section-title">Mes recharges</h2>
+          <h2 class="section-title">{{ 'Mes recharges' | t }}</h2>
           <div class="panel tight">
             @for (t of topUps(); track t.id) {
               <div class="row">
                 <raf-icon name="coin" [size]="30" />
                 <div class="grow">
-                  <div class="opt-title">+{{ t.credits | num }} crédits</div>
-                  <div class="opt-sub">{{ t.chargedHtg ?? t.amountHtg | num }} HTG · {{ provider(t) }} · {{ t.createdAt | dateTime }}</div>
+                  <div class="opt-title">{{ '+{n} crédits' | t: { n: t.credits | num } }}</div>
+                  <div class="opt-sub">{{ t.chargedHtg ?? t.amountHtg | num }} HTG · {{ provider(t) | t }} · {{ t.createdAt | dateTime }}</div>
                   @if (t.retentionUsedHtg > 0 || t.retentionKeptHtg > 0) {
                     <div class="opt-sub">
                       @if (t.retentionUsedHtg > 0) {
-                        + {{ t.retentionUsedHtg | num }} HTG repris de ta retenue
+                        {{ '+ {n} HTG repris de ta retenue' | t: { n: t.retentionUsedHtg | num } }}
                       }
                       @if (t.retentionUsedHtg > 0 && t.retentionKeptHtg > 0) {
                         ·
                       }
                       @if (t.retentionKeptHtg > 0) {
-                        {{ t.retentionKeptHtg | num }} HTG gardés pour la prochaine
+                        {{ '{n} HTG gardés pour la prochaine' | t: { n: t.retentionKeptHtg | num } }}
                       }
                     </div>
                   }
                 </div>
                 @if (t.status === 'PENDING' && t.paymentUrl) {
-                  <a class="resume" [href]="t.paymentUrl">Payer</a>
+                  <a class="resume" [href]="t.paymentUrl">{{ 'Payer' | t }}</a>
                 } @else {
-                  <span class="state" [class.ok]="t.status === 'CONFIRMED'">{{ status(t) }}</span>
+                  <span class="state" [class.ok]="t.status === 'CONFIRMED'">{{ status(t) | t }}</span>
                 }
               </div>
             }
@@ -414,8 +414,8 @@ export class TopUpPage implements OnDestroy {
   protected copy(n: DepositNumber): void {
     navigator.clipboard
       .writeText(n.value)
-      .then(() => this.feedback.success(`Numéro ${n.label} copié`))
-      .catch(() => this.feedback.toast(`Numéro ${n.label} : ${n.display}`));
+      .then(() => this.feedback.success(t('Numéro {nom} copié', { nom: n.label })))
+      .catch(() => this.feedback.toast(t('Numéro {nom} : {num}', { nom: n.label, num: n.display })));
   }
 
   private refreshAvailability(): void {

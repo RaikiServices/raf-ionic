@@ -14,14 +14,16 @@ import { SoundService } from '../../core/sound.service';
 import { IconComponent } from '../../ui/icon.component';
 import { closeModal } from '../../ui/modal';
 import { DatePipe } from '../../ui/pipes';
+import { LangSelectComponent } from '../../ui/lang-select.component';
 import { TopBarComponent } from '../../ui/top-bar.component';
+import { TPipe, t } from '../../core/i18n';
 
 @Component({
   selector: 'raf-profile',
-  imports: [IonHeader, IonToolbar, IonContent, IonIcon, IonModal, IonToggle, TopBarComponent, IconComponent, DatePipe],
+  imports: [TPipe, LangSelectComponent, IonHeader, IonToolbar, IonContent, IonIcon, IonModal, IonToggle, TopBarComponent, IconComponent, DatePipe],
   template: `
     <ion-header class="raf-header">
-      <ion-toolbar><raf-top-bar title="Profil" /></ion-toolbar>
+      <ion-toolbar><raf-top-bar [title]="'Profil' | t" /></ion-toolbar>
     </ion-header>
 
     <ion-content class="raf-sky" [fullscreen]="true">
@@ -30,28 +32,28 @@ import { TopBarComponent } from '../../ui/top-bar.component';
           <section class="card pop-in">
             <div class="avatar">{{ initialsText() }}</div>
             <h1 class="title-stroke sm">{{ u.firstName }} {{ u.lastName }}</h1>
-            <div class="since">Joueur depuis le {{ u.createdAt | date }}</div>
+            <div class="since">{{ 'Joueur depuis le {date}' | t: { date: u.createdAt | date } }}</div>
           </section>
 
           <button class="btn3d green block invite-btn" type="button" [disabled]="inviteLoading()" (click)="openInvite()">
-            <raf-icon name="users" [size]="28" /> {{ inviteLoading() ? 'Chargement…' : 'Inviter un ami' }}
+            <raf-icon name="users" [size]="28" /> {{ (inviteLoading() ? 'Chargement…' : 'Inviter un ami') | t }}
           </button>
 
           <section class="panel panel-with-ribbon">
-            <div class="ribbon blue">Mon compte</div>
+            <div class="ribbon blue">{{ 'Mon compte' | t }}</div>
             <div class="list-row">
               <raf-icon name="mail" [size]="32" />
               <div class="grow">
                 <div class="row-title">{{ u.email }}</div>
-                <div class="row-sub">{{ u.emailVerified ? 'Email confirmé' : 'Email à confirmer' }}</div>
+                <div class="row-sub">{{ (u.emailVerified ? 'Email confirmé' : 'Email à confirmer') | t }}</div>
               </div>
               @if (u.emailVerified) {
                 <raf-icon name="check" [size]="26" />
               } @else {
                 <div class="email-actions">
-                  <button class="btn3d green sm" type="button" (click)="nav.navigateForward('/profil/email/code')">Saisir le code</button>
-                  <button class="btn3d sm" type="button" [disabled]="resending()" (click)="resendEmail()">Renvoyer</button>
-                  <button class="btn3d blue sm" type="button" (click)="nav.navigateForward('/profil/email')">Corriger</button>
+                  <button class="btn3d green sm" type="button" (click)="nav.navigateForward('/profil/email/code')">{{ 'Saisir le code' | t }}</button>
+                  <button class="btn3d sm" type="button" [disabled]="resending()" (click)="resendEmail()">{{ 'Renvoyer' | t }}</button>
+                  <button class="btn3d blue sm" type="button" (click)="nav.navigateForward('/profil/email')">{{ 'Corriger' | t }}</button>
                 </div>
               }
             </div>
@@ -60,7 +62,7 @@ import { TopBarComponent } from '../../ui/top-bar.component';
               <div class="grow">
                 <div class="row-title">{{ u.phone }}</div>
                 <div class="row-sub">
-                  {{ u.phoneVerified ? 'Téléphone vérifié' : u.emailVerified ? 'À vérifier pour retirer tes gains' : "Confirme d'abord ton email" }}
+                  {{ (u.phoneVerified ? 'Téléphone vérifié' : u.emailVerified ? 'À vérifier pour retirer tes gains' : "Confirme d'abord ton email") | t }}
                 </div>
               </div>
               @if (u.phoneVerified) {
@@ -68,52 +70,57 @@ import { TopBarComponent } from '../../ui/top-bar.component';
               } @else {
                 <div class="email-actions">
                   @if (u.emailVerified) {
-                    <button class="btn3d purple sm" type="button" (click)="nav.navigateForward('/profil/telephone')">Vérifier</button>
+                    <button class="btn3d purple sm" type="button" (click)="nav.navigateForward('/profil/telephone')">{{ 'Vérifier' | t }}</button>
                   }
-                  <button class="btn3d blue sm" type="button" (click)="nav.navigateForward('/profil/telephone/corriger')">Corriger</button>
+                  <button class="btn3d blue sm" type="button" (click)="nav.navigateForward('/profil/telephone/corriger')">{{ 'Corriger' | t }}</button>
                 </div>
               }
             </div>
           </section>
 
           <section class="panel panel-with-ribbon">
-            <div class="ribbon purple">Réglages</div>
+            <div class="ribbon purple">{{ 'Réglages' | t }}</div>
+            <div class="list-row">
+              <raf-icon name="question" [size]="32" />
+              <span class="grow row-title">{{ 'Langue' | t }}</span>
+              <raf-lang-select />
+            </div>
             <div class="list-row">
               <raf-icon name="sound" [size]="32" />
-              <span class="grow row-title">Sons du jeu</span>
-              <ion-toggle [checked]="sound.enabled()" (ionChange)="sound.setEnabled($event.detail.checked)" aria-label="Sons du jeu" />
+              <span class="grow row-title">{{ 'Sons du jeu' | t }}</span>
+              <ion-toggle [checked]="sound.enabled()" (ionChange)="sound.setEnabled($event.detail.checked)" [attr.aria-label]="'Sons du jeu' | t" />
             </div>
             <button class="list-row clickable" type="button" (click)="nav.navigateForward('/alertes/reglages')">
               <raf-icon name="bell" [size]="32" />
-              <span class="grow row-title">Notifications</span>
+              <span class="grow row-title">{{ 'Notifications' | t }}</span>
               <ion-icon name="chevron-forward" />
             </button>
             @if (!installed()) {
               <button class="list-row clickable" type="button" (click)="nav.navigateForward('/installer')">
                 <raf-icon name="phone" [size]="32" />
-                <span class="grow row-title">Installer l'application</span>
+                <span class="grow row-title">{{ "Installer l'application" | t }}</span>
                 <ion-icon name="chevron-forward" />
               </button>
             }
             <button class="list-row clickable" type="button" (click)="nav.navigateForward('/profil/mot-de-passe')">
               <raf-icon name="key" [size]="32" />
-              <span class="grow row-title">Mot de passe</span>
+              <span class="grow row-title">{{ 'Mot de passe' | t }}</span>
               <ion-icon name="chevron-forward" />
             </button>
             <button class="list-row clickable" type="button" (click)="nav.navigateForward('/profil/appareils')">
               <raf-icon name="device" [size]="32" />
-              <span class="grow row-title">Appareils connectés</span>
+              <span class="grow row-title">{{ 'Appareils connectés' | t }}</span>
               <ion-icon name="chevron-forward" />
             </button>
           </section>
 
           <section class="panel panel-with-ribbon">
-            <div class="ribbon green">Aide</div>
+            <div class="ribbon green">{{ 'Aide' | t }}</div>
             <button class="list-row clickable" type="button" (click)="openHelp()">
               <raf-icon name="question" [size]="32" />
               <div class="grow">
-                <div class="row-title">Aide et support</div>
-                <div class="row-sub">Guide pas à pas, en français et en kreyòl</div>
+                <div class="row-title">{{ 'Aide et support' | t }}</div>
+                <div class="row-sub">{{ 'Guide pas à pas, en français et en kreyòl' | t }}</div>
               </div>
               <ion-icon name="chevron-forward" />
             </button>
@@ -121,15 +128,15 @@ import { TopBarComponent } from '../../ui/top-bar.component';
 
           <section class="glass responsible">
             <raf-icon name="shield" [size]="36" />
-            <p>RAF est réservé aux 18 ans et plus. Joue pour le plaisir, fixe-toi une limite et ne mise jamais l'argent dont tu as besoin.</p>
+            <p>{{ "RAF est réservé aux 18 ans et plus. Joue pour le plaisir, fixe-toi une limite et ne mise jamais l'argent dont tu as besoin." | t }}</p>
           </section>
 
           <button class="btn3d red block logout" type="button" (click)="logoutOpen.set(true)">
-            <raf-icon name="logout" [size]="28" /> Se déconnecter
+            <raf-icon name="logout" [size]="28" /> {{ 'Se déconnecter' | t }}
           </button>
 
           <button class="delete-link" type="button" (click)="nav.navigateForward('/profil/supprimer')">
-            Supprimer mon compte
+            {{ 'Supprimer mon compte' | t }}
           </button>
         }
       </div>
@@ -137,27 +144,27 @@ import { TopBarComponent } from '../../ui/top-bar.component';
       <ion-modal #inviteModal class="raf-popup" [isOpen]="inviteOpen()" (didDismiss)="inviteOpen.set(false)">
         <ng-template>
           <div class="panel popup">
-            <div class="ribbon gold">Inviter un ami</div>
+            <div class="ribbon gold">{{ 'Inviter un ami' | t }}</div>
             @if (invite(); as i) {
-              <p>Fais scanner ce code à ton ami, ou envoie-lui le lien pour qu'il s'inscrive.</p>
+              <p>{{ "Fais scanner ce code à ton ami, ou envoie-lui le lien pour qu'il s'inscrive." | t }}</p>
               @if (i.leader && i.signupBonusCredits > 0) {
                 <p class="bonus">
                   <raf-icon name="gift" [size]="26" />
-                  Il recevra {{ i.signupBonusCredits }} crédits offerts dès qu'il aura confirmé son email.
+                  {{ "Il recevra {n} crédits offerts dès qu'il aura confirmé son email." | t: { n: i.signupBonusCredits } }}
                 </p>
               }
               @if (qrCode(); as src) {
-                <img class="qr" [src]="src" alt="Code QR du lien d'invitation" width="240" height="240" />
+                <img class="qr" [src]="src" [alt]="'Code QR du lien d’invitation' | t" width="240" height="240" />
               }
               <div class="link">{{ i.url }}</div>
               <button class="btn3d block" type="button" (click)="copyInvite(i.url)">
-                Copier le lien
+                {{ 'Copier le lien' | t }}
               </button>
               @if (canShare) {
-                <button class="btn3d purple block" type="button" (click)="shareInvite(i.url)">Partager</button>
+                <button class="btn3d purple block" type="button" (click)="shareInvite(i.url)">{{ 'Partager' | t }}</button>
               }
             }
-            <button class="btn3d blue block" type="button" (click)="inviteOpen.set(false)">Fermer</button>
+            <button class="btn3d blue block" type="button" (click)="inviteOpen.set(false)">{{ 'Fermer' | t }}</button>
           </div>
         </ng-template>
       </ion-modal>
@@ -165,10 +172,10 @@ import { TopBarComponent } from '../../ui/top-bar.component';
       <ion-modal #logoutModal class="raf-popup" [isOpen]="logoutOpen()" (didDismiss)="logoutOpen.set(false)">
         <ng-template>
           <div class="panel popup">
-            <div class="ribbon">Déconnexion</div>
-            <p>Tu devras te reconnecter pour jouer sur cet appareil.</p>
-            <button class="btn3d red block" type="button" (click)="logout()">Se déconnecter</button>
-            <button class="btn3d blue block" type="button" (click)="logoutOpen.set(false)">Rester</button>
+            <div class="ribbon">{{ 'Déconnexion' | t }}</div>
+            <p>{{ 'Tu devras te reconnecter pour jouer sur cet appareil.' | t }}</p>
+            <button class="btn3d red block" type="button" (click)="logout()">{{ 'Se déconnecter' | t }}</button>
+            <button class="btn3d blue block" type="button" (click)="logoutOpen.set(false)">{{ 'Rester' | t }}</button>
           </div>
         </ng-template>
       </ion-modal>
@@ -319,13 +326,13 @@ export class ProfilePage {
   protected copyInvite(url: string): void {
     navigator.clipboard
       .writeText(url)
-      .then(() => this.feedback.success("Lien d'invitation copié"))
+      .then(() => this.feedback.success(t("Lien d'invitation copié")))
       .catch(() => this.feedback.toast(url));
   }
 
   protected shareInvite(url: string): void {
     navigator
-      .share({ title: 'RAF', text: 'Rejoins-moi sur RAF !', url })
+      .share({ title: 'RAF', text: t('Rejoins-moi sur RAF !'), url })
       .catch(() => undefined);
   }
 

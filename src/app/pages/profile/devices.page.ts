@@ -10,19 +10,20 @@ import { DeviceSession } from '../../core/models';
 import { IconComponent } from '../../ui/icon.component';
 import { DateTimePipe } from '../../ui/pipes';
 import { TopBarComponent } from '../../ui/top-bar.component';
+import { TPipe, t } from '../../core/i18n';
 
 /** Appareils connectes au compte, a deconnecter un par un ou tous ensemble. */
 @Component({
   selector: 'raf-devices',
-  imports: [IonHeader, IonToolbar, IonContent, TopBarComponent, IconComponent, DateTimePipe],
+  imports: [TPipe, IonHeader, IonToolbar, IonContent, TopBarComponent, IconComponent, DateTimePipe],
   template: `
     <ion-header class="raf-header">
-      <ion-toolbar><raf-top-bar back="/profil" title="Appareils" [showWallet]="false" /></ion-toolbar>
+      <ion-toolbar><raf-top-bar back="/profil" [title]="'Appareils' | t" [showWallet]="false" /></ion-toolbar>
     </ion-header>
 
     <ion-content class="raf-sky" [fullscreen]="true">
       <div class="page-pad">
-        <p class="intro">Un appareil inconnu ? Déconnecte-le, puis change ton mot de passe.</p>
+        <p class="intro">{{ 'Un appareil inconnu ? Déconnecte-le, puis change ton mot de passe.' | t }}</p>
         @if (error(); as message) {
           <div class="panel"><div class="alert-box">{{ message }}</div></div>
         } @else if (sessions() === null) {
@@ -33,17 +34,17 @@ import { TopBarComponent } from '../../ui/top-bar.component';
               <div class="device">
                 <raf-icon name="device" [size]="36" />
                 <div class="grow">
-                  <div class="row-title">{{ s.deviceLabel || 'Appareil inconnu' }}</div>
-                  <div class="row-sub">Actif {{ (s.lastUsedAt || s.createdAt) | dateTime }}{{ s.ipAddress ? ' · ' + s.ipAddress : '' }}</div>
+                  <div class="row-title">{{ s.deviceLabel || ('Appareil inconnu' | t) }}</div>
+                  <div class="row-sub">{{ 'Actif' | t }} {{ (s.lastUsedAt || s.createdAt) | dateTime }}{{ s.ipAddress ? ' · ' + s.ipAddress : '' }}</div>
                 </div>
-                <button class="btn3d red sm" type="button" [disabled]="busy()" (click)="revoke(s)">Retirer</button>
+                <button class="btn3d red sm" type="button" [disabled]="busy()" (click)="revoke(s)">{{ 'Retirer' | t }}</button>
               </div>
             } @empty {
-              <p class="row-sub">Aucune autre session.</p>
+              <p class="row-sub">{{ 'Aucune autre session.' | t }}</p>
             }
           </div>
           @if ((sessions()?.length ?? 0) > 1) {
-            <button class="btn3d red block all" type="button" [disabled]="busy()" (click)="revokeAll()">Déconnecter tous les appareils</button>
+            <button class="btn3d red block all" type="button" [disabled]="busy()" (click)="revokeAll()">{{ 'Déconnecter tous les appareils' | t }}</button>
           }
         }
       </div>
@@ -90,7 +91,7 @@ export class DevicesPage {
     this.busy.set(true);
     try {
       await firstValueFrom(this.apiService.revokeSession(session.id));
-      await this.feedback.success('Appareil déconnecté.');
+      await this.feedback.success(t('Appareil déconnecté.'));
       await this.load();
     } catch (e) {
       await this.feedback.error(e);

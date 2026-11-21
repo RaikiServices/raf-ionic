@@ -8,6 +8,7 @@ import { errorMessage } from '../../core/errors';
 import { GameOutcome, OutcomeResult } from '../../core/models';
 import { IconComponent } from '../../ui/icon.component';
 import { TopBarComponent } from '../../ui/top-bar.component';
+import { TPipe } from '../../core/i18n';
 
 const RESULTS: Record<OutcomeResult, { icon: string; label: string }> = {
   CORRECT: { icon: 'check', label: 'Juste' },
@@ -22,10 +23,10 @@ const RESULTS: Record<OutcomeResult, { icon: string; label: string }> = {
  */
 @Component({
   selector: 'raf-review',
-  imports: [IonHeader, IonToolbar, IonContent, TopBarComponent, IconComponent],
+  imports: [TPipe, IonHeader, IonToolbar, IonContent, TopBarComponent, IconComponent],
   template: `
     <ion-header class="raf-header">
-      <ion-toolbar><raf-top-bar [back]="'/quiz/' + quizId" title="Corrigé" [showWallet]="false" /></ion-toolbar>
+      <ion-toolbar><raf-top-bar [back]="'/quiz/' + quizId" [title]="'Corrigé' | t" [showWallet]="false" /></ion-toolbar>
     </ion-header>
 
     <ion-content class="raf-sky" [fullscreen]="true">
@@ -34,10 +35,10 @@ const RESULTS: Record<OutcomeResult, { icon: string; label: string }> = {
           <div class="panel"><div class="alert-box">{{ message }}</div></div>
         } @else if (review(); as r) {
           <section class="glass summary">
-            <div><strong>{{ r.score ?? 0 }}</strong><span>points</span></div>
-            <div><strong>{{ r.correctCount ?? 0 }}/{{ r.items.length }}</strong><span>bonnes réponses</span></div>
+            <div><strong>{{ r.score ?? 0 }}</strong><span>{{ 'points' | t }}</span></div>
+            <div><strong>{{ r.correctCount ?? 0 }}/{{ r.items.length }}</strong><span>{{ 'bonnes réponses' | t }}</span></div>
             @if (r.status === 'INVALIDATED') {
-              <div class="invalid"><raf-icon name="warning" [size]="26" /><span>Partie invalidée</span></div>
+              <div class="invalid"><raf-icon name="warning" [size]="26" /><span>{{ 'Partie invalidée' | t }}</span></div>
             }
           </section>
 
@@ -45,15 +46,15 @@ const RESULTS: Record<OutcomeResult, { icon: string; label: string }> = {
             <div class="rows stagger">
               @for (item of r.items; track item.position) {
                 <div [class]="'row-item ' + item.result.toLowerCase()">
-                  <span class="num">Question {{ item.position }}</span>
+                  <span class="num">{{ 'Question {n}' | t: { n: item.position } }}</span>
                   <span class="mark">
                     <raf-icon [name]="results[item.result].icon" [size]="26" />
-                    {{ results[item.result].label }}
+                    {{ results[item.result].label | t }}
                   </span>
                 </div>
               }
             </div>
-            <p class="note">Les questions et leurs réponses ne sont pas affichées : elles peuvent revenir dans d'autres quiz.</p>
+            <p class="note">{{ "Les questions et leurs réponses ne sont pas affichées : elles peuvent revenir dans d'autres quiz." | t }}</p>
           </section>
         } @else {
           <div class="skeleton" style="height: 90px; margin-bottom: 14px"></div>

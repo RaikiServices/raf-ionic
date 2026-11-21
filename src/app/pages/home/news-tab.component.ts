@@ -6,6 +6,7 @@ import { errorMessage } from '../../core/errors';
 import { NewsItem, PlayerStats } from '../../core/models';
 import { IconComponent } from '../../ui/icon.component';
 import { DatePipe, NumPipe } from '../../ui/pipes';
+import { TPipe } from '../../core/i18n';
 
 const PAGE_SIZE = 10;
 
@@ -18,23 +19,23 @@ const PAGE_SIZE = 10;
  */
 @Component({
   selector: 'raf-news-tab',
-  imports: [IconComponent, NumPipe, DatePipe],
+  imports: [TPipe, IconComponent, NumPipe, DatePipe],
   template: `
     <section class="panel panel-with-ribbon stats">
-      <div class="ribbon purple">Mes stats</div>
+      <div class="ribbon purple">{{ 'Mes stats' | t }}</div>
       @if (stats(); as s) {
         @if (s.gamesPlayed === 0) {
-          <p class="stats-empty">Joue ta première partie pour voir tes statistiques ici !</p>
+          <p class="stats-empty">{{ 'Joue ta première partie pour voir tes statistiques ici !' | t }}</p>
         } @else {
           <div class="streak" [class.on]="s.currentStreakDays > 0">
             <raf-icon name="flame" [size]="40" />
             <div>
-              <div class="streak-value">{{ s.currentStreakDays }} jour{{ s.currentStreakDays > 1 ? 's' : '' }}</div>
+              <div class="streak-value">{{ (s.currentStreakDays > 1 ? '{n} jours' : '{n} jour') | t: { n: s.currentStreakDays } }}</div>
               <div class="streak-label">
                 @if (s.currentStreakDays > 0) {
-                  de suite · record {{ s.bestStreakDays }} jour{{ s.bestStreakDays > 1 ? 's' : '' }}
+                  {{ (s.bestStreakDays > 1 ? 'de suite · record {n} jours' : 'de suite · record {n} jour') | t: { n: s.bestStreakDays } }}
                 } @else {
-                  Joue aujourd'hui pour lancer une série !
+                  {{ "Joue aujourd'hui pour lancer une série !" | t }}
                 }
               </div>
             </div>
@@ -43,51 +44,51 @@ const PAGE_SIZE = 10;
             <div class="tile">
               <raf-icon name="ticket" [size]="26" />
               <div class="value">{{ s.gamesPlayed | num }}</div>
-              <div class="label">Parties jouées</div>
+              <div class="label">{{ 'Parties jouées' | t }}</div>
             </div>
             <div class="tile">
               <raf-icon name="check" [size]="26" />
               <div class="value">{{ s.accuracyPercent ?? 0 }} %</div>
-              <div class="label">Bonnes réponses</div>
+              <div class="label">{{ 'Bonnes réponses' | t }}</div>
             </div>
             <div class="tile">
               <raf-icon name="crown" [size]="26" />
-              <div class="value">{{ s.bestRank ? s.bestRank + (s.bestRank === 1 ? 'er' : 'e') : '–' }}</div>
-              <div class="label">Meilleure place</div>
+              <div class="value">{{ s.bestRank ? (s.bestRank === 1 ? ('1er' | t) : ('{n}e' | t: { n: s.bestRank })) : '–' }}</div>
+              <div class="label">{{ 'Meilleure place' | t }}</div>
             </div>
             <div class="tile">
               <raf-icon name="trophy" [size]="26" />
               <div class="value">{{ s.podiums | num }}</div>
-              <div class="label">Podiums</div>
+              <div class="label">{{ 'Podiums' | t }}</div>
             </div>
             <div class="tile">
               <raf-icon name="star" [size]="26" />
               <div class="value">{{ s.perfectSoloGames | num }}</div>
-              <div class="label">Sans-fautes solo</div>
+              <div class="label">{{ 'Sans-fautes solo' | t }}</div>
             </div>
             <div class="tile">
               <raf-icon name="cash" [size]="26" />
               <div class="value">{{ s.totalWinningsHtg | num }}</div>
-              <div class="label">HTG gagnés</div>
+              <div class="label">{{ 'HTG gagnés' | t }}</div>
             </div>
           </div>
           @if (s.favoriteSubject) {
-            <div class="favorite"><raf-icon name="question" [size]="24" /> Sujet préféré : <strong>{{ s.favoriteSubject }}</strong></div>
+            <div class="favorite"><raf-icon name="question" [size]="24" /> {{ 'Sujet préféré :' | t }} <strong>{{ s.favoriteSubject }}</strong></div>
           }
         }
       } @else if (statsError()) {
-        <p class="stats-empty">Statistiques indisponibles pour le moment.</p>
+        <p class="stats-empty">{{ 'Statistiques indisponibles pour le moment.' | t }}</p>
       } @else {
         <div class="skeleton stats-skel"></div>
       }
     </section>
 
-    <h2 class="section-title"><raf-icon name="bell" [size]="30" /> Les nouvelles</h2>
+    <h2 class="section-title"><raf-icon name="bell" [size]="30" /> {{ 'Les nouvelles' | t }}</h2>
 
     @if (error(); as message) {
       <div class="panel">
         <div class="alert-box">{{ message }}</div>
-        <button class="btn3d blue block" type="button" (click)="load()">Réessayer</button>
+        <button class="btn3d blue block" type="button" (click)="load()">{{ 'Réessayer' | t }}</button>
       </div>
     } @else if (!news()) {
       <div class="skeleton news-skel"></div>
@@ -95,8 +96,8 @@ const PAGE_SIZE = 10;
     } @else if (news()!.length === 0) {
       <div class="empty-state">
         <raf-icon class="float" name="bell" [size]="80" />
-        <div class="empty-title">Pas encore d'actualité</div>
-        <div class="empty-text">Les nouvelles de l'équipe RAF apparaîtront ici.</div>
+        <div class="empty-title">{{ "Pas encore d'actualité" | t }}</div>
+        <div class="empty-text">{{ "Les nouvelles de l'équipe RAF apparaîtront ici." | t }}</div>
       </div>
     } @else {
       <div class="list stagger">
@@ -108,7 +109,7 @@ const PAGE_SIZE = 10;
             <div class="news-body">
               <div class="news-meta">
                 @if (n.pinned) {
-                  <span class="status-tag running">À la une</span>
+                  <span class="status-tag running">{{ 'À la une' | t }}</span>
                 }
                 <span>{{ n.publishedAt | date }}</span>
               </div>
@@ -117,7 +118,7 @@ const PAGE_SIZE = 10;
               <!-- Seulement si le texte depasse vraiment les 4 lignes affichees. -->
               @if (expanded().has(n.id) || overflows(text)) {
                 <button class="more" type="button" (click)="toggle(n.id)">
-                  {{ expanded().has(n.id) ? 'Réduire' : 'Lire la suite' }}
+                  {{ (expanded().has(n.id) ? 'Réduire' : 'Lire la suite') | t }}
                 </button>
               }
             </div>
@@ -126,7 +127,7 @@ const PAGE_SIZE = 10;
       </div>
       @if (hasMore()) {
         <button class="btn3d blue block more-news" type="button" [disabled]="loadingMore()" (click)="loadMore()">
-          {{ loadingMore() ? 'Chargement…' : 'Voir plus' }}
+          {{ (loadingMore() ? 'Chargement…' : 'Voir plus') | t }}
         </button>
       }
     }

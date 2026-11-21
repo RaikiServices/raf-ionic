@@ -3,19 +3,22 @@ import { IonContent, NavController } from '@ionic/angular/standalone';
 
 import { HelpTopic, openHelp } from '../../core/help';
 import { IconComponent } from '../../ui/icon.component';
+import { LangSelectComponent } from '../../ui/lang-select.component';
+import { TPipe } from '../../core/i18n';
 
 /** Mise en page des ecrans sans compte : ciel, logo, panneau creme a ruban. */
 @Component({
   selector: 'raf-auth-layout',
-  imports: [IonContent, IconComponent],
+  imports: [TPipe, IonContent, IconComponent, LangSelectComponent],
   template: `
     <ion-content class="raf-sky" [fullscreen]="true">
       <div class="wrap">
         @if (backTo(); as target) {
-          <button class="btn3d sm icon-only back" type="button" aria-label="Retour" (click)="nav.navigateBack(target)">
+          <button class="btn3d sm icon-only back" type="button" [attr.aria-label]="'Retour' | t" (click)="nav.navigateBack(target)">
             <raf-icon name="back" [size]="20" />
           </button>
         }
+        <raf-lang-select class="lang" />
         <img class="logo pop-in" src="assets/logo-raf.png" alt="RAF" />
         <section class="panel panel-with-ribbon slide-up">
           <div [class]="'ribbon ' + ribbonColor()">{{ ribbon() }}</div>
@@ -23,7 +26,7 @@ import { IconComponent } from '../../ui/icon.component';
         </section>
         <ng-content select="[below]" />
         <button class="link-btn ink help" type="button" (click)="openHelp(helpTopic())">
-          <raf-icon name="question" [size]="20" /> Besoin d'aide ?
+          <raf-icon name="question" [size]="20" /> {{ "Besoin d'aide ?" | t }}
         </button>
       </div>
     </ion-content>
@@ -47,6 +50,12 @@ import { IconComponent } from '../../ui/icon.component';
       position: absolute;
       top: calc(14px + var(--raf-safe-top));
       left: 16px;
+      z-index: 2;
+    }
+    .lang {
+      position: absolute;
+      top: calc(14px + var(--raf-safe-top));
+      right: 16px;
       z-index: 2;
     }
     .logo {

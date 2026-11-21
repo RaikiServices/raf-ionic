@@ -12,6 +12,7 @@ import { uuid } from '../../core/uuid';
 import { IconComponent } from '../../ui/icon.component';
 import { NumPipe } from '../../ui/pipes';
 import { TopBarComponent } from '../../ui/top-bar.component';
+import { TPipe, t } from '../../core/i18n';
 
 type Step = 'form' | 'confirm' | 'done';
 
@@ -25,10 +26,10 @@ type Step = 'form' | 'confirm' | 'done';
  */
 @Component({
   selector: 'raf-convert-winnings',
-  imports: [FormsModule, IonHeader, IonToolbar, IonContent, TopBarComponent, IconComponent, NumPipe],
+  imports: [TPipe, FormsModule, IonHeader, IonToolbar, IonContent, TopBarComponent, IconComponent, NumPipe],
   template: `
     <ion-header class="raf-header">
-      <ion-toolbar><raf-top-bar back="/portefeuille/recharger" title="Recharger avec mes gains" /></ion-toolbar>
+      <ion-toolbar><raf-top-bar back="/portefeuille/recharger" [title]="'Recharger avec mes gains' | t" /></ion-toolbar>
     </ion-header>
 
     <ion-content class="raf-sky" [fullscreen]="true">
@@ -38,43 +39,43 @@ type Step = 'form' | 'confirm' | 'done';
         <section class="available glass">
           <raf-icon name="cash" [size]="46" />
           <div class="grow">
-            <div class="label">Gains disponibles</div>
+            <div class="label">{{ 'Gains disponibles' | t }}</div>
             <div class="value">{{ w ? (w.winningsBalanceHtg | num) : '…' }} HTG</div>
           </div>
           @if (w) {
-            <div class="rate">1 crédit = {{ w.htgRate | num }} HTG</div>
+            <div class="rate">{{ '1 crédit = {n} HTG' | t: { n: w.htgRate | num } }}</div>
           }
         </section>
 
         @if (enabled() === false) {
           <div class="panel">
-            <div class="alert-box info">La recharge avec les gains est momentanément désactivée. Réessaie plus tard.</div>
+            <div class="alert-box info">{{ 'La recharge avec les gains est momentanément désactivée. Réessaie plus tard.' | t }}</div>
           </div>
         } @else if (w) {
           @switch (step()) {
             @case ('form') {
               <section class="panel panel-with-ribbon">
-                <div class="ribbon green">Montant</div>
+                <div class="ribbon green">{{ 'Montant' | t }}</div>
                 <label class="field">
                   <span class="input-box amount-box">
                     <input type="number" inputmode="numeric" name="amount" [ngModel]="amountHtg()" (ngModelChange)="amountHtg.set($event)" step="1" min="0" placeholder="0" />
                     <span class="prefix">HTG</span>
                   </span>
-                  <span class="field-hint">Au moins {{ w.htgRate | num }} HTG pour 1 crédit.</span>
+                  <span class="field-hint">{{ 'Au moins {n} HTG pour 1 crédit.' | t: { n: w.htgRate | num } }}</span>
                 </label>
                 <div class="quick">
                   @for (p of [25, 50, 100]; track p) {
-                    <button class="btn3d cream sm" type="button" (click)="setPercent(p)">{{ p === 100 ? 'Tout' : p + ' %' }}</button>
+                    <button class="btn3d cream sm" type="button" (click)="setPercent(p)">{{ p === 100 ? ('Tout' | t) : p + ' %' }}</button>
                   }
                 </div>
 
                 @if (preview(); as pv) {
                   <div class="recap">
-                    <div class="net"><span>Tu reçois</span><strong>{{ pv.credits | num }} cr.</strong></div>
-                    <div><span>Débité de tes gains</span><strong>{{ pv.debitedHtg | num }} HTG</strong></div>
+                    <div class="net"><span>{{ 'Tu reçois' | t }}</span><strong>{{ pv.credits | num }} cr.</strong></div>
+                    <div><span>{{ 'Débité de tes gains' | t }}</span><strong>{{ pv.debitedHtg | num }} HTG</strong></div>
                     @if (pv.leftoverHtg > 0) {
                       <div class="hint-row">
-                        {{ pv.leftoverHtg | num }} HTG ne forment pas un crédit entier : ils restent dans tes gains.
+                        {{ '{n} HTG ne forment pas un crédit entier : ils restent dans tes gains.' | t: { n: pv.leftoverHtg | num } }}
                       </div>
                     }
                   </div>
@@ -83,31 +84,31 @@ type Step = 'form' | 'confirm' | 'done';
                 @if (error(); as message) {
                   <div class="alert-box">{{ message }}</div>
                 }
-                <button class="btn3d orange block" type="button" (click)="review()">Continuer</button>
+                <button class="btn3d orange block" type="button" (click)="review()">{{ 'Continuer' | t }}</button>
               </section>
             }
 
             @case ('confirm') {
               @if (preview(); as pv) {
                 <section class="panel panel-with-ribbon">
-                  <div class="ribbon blue">Vérification</div>
+                  <div class="ribbon blue">{{ 'Vérification' | t }}</div>
                   <div class="recap">
-                    <div><span>Débité de tes gains</span><strong>{{ pv.debitedHtg | num }} HTG</strong></div>
-                    <div class="net"><span>Crédits ajoutés</span><strong>+{{ pv.credits | num }} cr.</strong></div>
-                    <div><span>Gains après</span><strong>{{ w.winningsBalanceHtg - pv.debitedHtg | num }} HTG</strong></div>
-                    <div><span>Crédits après</span><strong>{{ w.creditBalance + pv.credits | num }} cr.</strong></div>
+                    <div><span>{{ 'Débité de tes gains' | t }}</span><strong>{{ pv.debitedHtg | num }} HTG</strong></div>
+                    <div class="net"><span>{{ 'Crédits ajoutés' | t }}</span><strong>+{{ pv.credits | num }} cr.</strong></div>
+                    <div><span>{{ 'Gains après' | t }}</span><strong>{{ w.winningsBalanceHtg - pv.debitedHtg | num }} HTG</strong></div>
+                    <div><span>{{ 'Crédits après' | t }}</span><strong>{{ w.creditBalance + pv.credits | num }} cr.</strong></div>
                   </div>
                   <div class="alert-box info">
-                    Cette recharge est définitive : les crédits servent à jouer et ne peuvent pas être retirés.
+                    {{ 'Cette recharge est définitive : les crédits servent à jouer et ne peuvent pas être retirés.' | t }}
                   </div>
                   @if (error(); as message) {
                     <div class="alert-box">{{ message }}</div>
                   }
                   <button class="btn3d block confirm" type="button" [disabled]="busy()" (click)="confirm()">
-                    {{ busy() ? 'Conversion…' : 'Confirmer la recharge' }}
+                    {{ (busy() ? 'Conversion…' : 'Confirmer la recharge') | t }}
                   </button>
                   <div class="links">
-                    <button class="link-btn ink" type="button" [disabled]="busy()" (click)="edit()">Modifier</button>
+                    <button class="link-btn ink" type="button" [disabled]="busy()" (click)="edit()">{{ 'Modifier' | t }}</button>
                   </div>
                 </section>
               }
@@ -116,15 +117,15 @@ type Step = 'form' | 'confirm' | 'done';
             @case ('done') {
               @if (done(); as d) {
                 <section class="panel panel-with-ribbon done">
-                  <div class="ribbon green">Recharge réussie !</div>
+                  <div class="ribbon green">{{ 'Recharge réussie !' | t }}</div>
                   <raf-icon class="pop-in" name="check" [size]="80" />
                   <div class="recap">
-                    <div class="net"><span>Crédits ajoutés</span><strong>+{{ d.topUp.credits | num }} cr.</strong></div>
-                    <div><span>Tes crédits</span><strong>{{ d.creditBalance | num }} cr.</strong></div>
-                    <div><span>Tes gains</span><strong>{{ d.winningsBalanceHtg | num }} HTG</strong></div>
+                    <div class="net"><span>{{ 'Crédits ajoutés' | t }}</span><strong>+{{ d.topUp.credits | num }} cr.</strong></div>
+                    <div><span>{{ 'Tes crédits' | t }}</span><strong>{{ d.creditBalance | num }} cr.</strong></div>
+                    <div><span>{{ 'Tes gains' | t }}</span><strong>{{ d.winningsBalanceHtg | num }} HTG</strong></div>
                   </div>
-                  <button class="btn3d orange block" type="button" (click)="nav.navigateRoot('/accueil')">Jouer maintenant</button>
-                  <button class="btn3d blue block back-btn" type="button" (click)="nav.navigateBack('/portefeuille')">Retour au Trésor</button>
+                  <button class="btn3d orange block" type="button" (click)="nav.navigateRoot('/accueil')">{{ 'Jouer maintenant' | t }}</button>
+                  <button class="btn3d blue block back-btn" type="button" (click)="nav.navigateBack('/portefeuille')">{{ 'Retour au Trésor' | t }}</button>
                 </section>
               }
             }
@@ -274,16 +275,16 @@ export class ConvertWinningsPage {
     const w = this.state.wallet();
     const amount = this.amountHtg();
     if (!w) {
-      return 'Chargement en cours, réessaie dans un instant.';
+      return t('Chargement en cours, réessaie dans un instant.');
     }
     if (amount == null || !Number.isInteger(amount) || amount <= 0) {
-      return 'Saisis un montant entier en HTG.';
+      return t('Saisis un montant entier en HTG.');
     }
     if (amount > w.winningsBalanceHtg) {
-      return `Tu n'as que ${w.winningsBalanceHtg} HTG de gains.`;
+      return t("Tu n'as que {n} HTG de gains.", { n: w.winningsBalanceHtg });
     }
     if (amount < w.htgRate) {
-      return `Il faut au moins ${w.htgRate} HTG pour obtenir 1 crédit.`;
+      return t('Il faut au moins {n} HTG pour obtenir 1 crédit.', { n: w.htgRate });
     }
     return null;
   }

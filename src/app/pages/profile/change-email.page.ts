@@ -11,6 +11,7 @@ import { FeedbackService } from '../../core/feedback.service';
 import { EmailSuggestionComponent } from '../../ui/email-suggestion.component';
 import { IconComponent } from '../../ui/icon.component';
 import { TopBarComponent } from '../../ui/top-bar.component';
+import { TPipe, t } from '../../core/i18n';
 
 /**
  * Correction d'une adresse email mal saisie a l'inscription. Possible tant qu'elle
@@ -18,28 +19,28 @@ import { TopBarComponent } from '../../ui/top-bar.component';
  */
 @Component({
   selector: 'raf-change-email',
-  imports: [FormsModule, IonHeader, IonToolbar, IonContent, TopBarComponent, IconComponent, EmailSuggestionComponent],
+  imports: [TPipe, FormsModule, IonHeader, IonToolbar, IonContent, TopBarComponent, IconComponent, EmailSuggestionComponent],
   template: `
     <ion-header class="raf-header">
-      <ion-toolbar><raf-top-bar back="/profil" title="Mon email" [showWallet]="false" /></ion-toolbar>
+      <ion-toolbar><raf-top-bar back="/profil" [title]="'Mon email' | t" [showWallet]="false" /></ion-toolbar>
     </ion-header>
 
     <ion-content class="raf-sky" [fullscreen]="true">
       <div class="page-pad">
         <form class="panel panel-with-ribbon" (ngSubmit)="submit()">
-          <div class="ribbon blue">Corriger mon email</div>
+          <div class="ribbon blue">{{ 'Corriger mon email' | t }}</div>
           @if (error(); as message) {
             <div class="alert-box">{{ message }}</div>
           }
           @if (auth.user(); as u) {
             <div class="alert-box info stack">
-              <span>Le lien de confirmation a été envoyé à</span>
+              <span>{{ 'Le lien de confirmation a été envoyé à' | t }}</span>
               <strong>{{ u.email }}</strong>
-              <span>Si cette adresse est fausse, saisis la bonne : on t'enverra un nouveau lien.</span>
+              <span>{{ "Si cette adresse est fausse, saisis la bonne : on t'enverra un nouveau lien." | t }}</span>
             </div>
           }
           <label class="field">
-            <span class="field-label">Bonne adresse email</span>
+            <span class="field-label">{{ 'Bonne adresse email' | t }}</span>
             <span class="input-box">
               <raf-icon name="mail" [size]="24" />
               <input type="email" name="email" [(ngModel)]="email" autocomplete="email" inputmode="email" (blur)="checkEmail()" />
@@ -49,13 +50,13 @@ import { TopBarComponent } from '../../ui/top-bar.component';
             }
           </label>
           <label class="field">
-            <span class="field-label">Mot de passe</span>
+            <span class="field-label">{{ 'Mot de passe' | t }}</span>
             <span class="input-box">
               <raf-icon name="lock" [size]="24" />
               <input type="password" name="password" [(ngModel)]="password" autocomplete="current-password" />
             </span>
           </label>
-          <button class="btn3d blue block" type="submit" [disabled]="busy()">{{ busy() ? 'Envoi…' : 'Enregistrer et renvoyer le lien' }}</button>
+          <button class="btn3d blue block" type="submit" [disabled]="busy()">{{ (busy() ? 'Envoi…' : 'Enregistrer et renvoyer le lien') | t }}</button>
         </form>
       </div>
     </ion-content>
@@ -96,15 +97,15 @@ export class ChangeEmailPage {
     const email = this.email.trim();
     this.checkEmail();
     if (this.emailSuggestion()) {
-      this.error.set('Vérifie ton adresse email : elle contient peut-être une faute.');
+      this.error.set(t('Vérifie ton adresse email : elle contient peut-être une faute.'));
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      this.error.set('Saisis une adresse email valide.');
+      this.error.set(t('Saisis une adresse email valide.'));
       return;
     }
     if (!this.password) {
-      this.error.set('Saisis ton mot de passe pour confirmer.');
+      this.error.set(t('Saisis ton mot de passe pour confirmer.'));
       return;
     }
     this.busy.set(true);
@@ -112,7 +113,7 @@ export class ChangeEmailPage {
     try {
       const user = await firstValueFrom(this.apiService.correctEmail(this.password, email));
       await this.auth.setUser(user);
-      await this.feedback.success(`Adresse enregistrée. Ouvre le lien envoyé à ${user.email}.`);
+      await this.feedback.success(t('Adresse enregistrée. Ouvre le lien envoyé à {email}.', { email: user.email }));
       await this.nav.navigateBack('/profil');
     } catch (e) {
       this.error.set(errorMessage(e));

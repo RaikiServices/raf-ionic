@@ -11,6 +11,7 @@ import { Category, Quiz } from '../../core/models';
 import { themeGradient } from '../../core/quiz-rules';
 import { IconComponent } from '../../ui/icon.component';
 import { NumPipe } from '../../ui/pipes';
+import { TPipe } from '../../core/i18n';
 
 /** Cle du groupe des quiz dont le sujet n'a pas de categorie parente. */
 const OTHERS = 'autres';
@@ -36,20 +37,20 @@ interface SoloGroup {
  */
 @Component({
   selector: 'raf-solo-tab',
-  imports: [IconComponent, NumPipe],
+  imports: [TPipe, IconComponent, NumPipe],
   template: `
-        <p class="lead">Un sans-faute, et c'est gagné !</p>
+        <p class="lead">{{ "Un sans-faute, et c'est gagné !" | t }}</p>
 
         <section class="glass how">
-          <div><raf-icon name="coin" [size]="30" /><span>Tu paies ta partie en crédits</span></div>
-          <div><raf-icon name="crown" [size]="30" /><span>Toutes les réponses justes : le prix est à toi</span></div>
-          <div><raf-icon name="clock" [size]="30" /><span>Une partie par sujet et par jour</span></div>
+          <div><raf-icon name="coin" [size]="30" /><span>{{ 'Tu paies ta partie en crédits' | t }}</span></div>
+          <div><raf-icon name="crown" [size]="30" /><span>{{ 'Toutes les réponses justes : le prix est à toi' | t }}</span></div>
+          <div><raf-icon name="clock" [size]="30" /><span>{{ 'Une partie par sujet et par jour' | t }}</span></div>
         </section>
 
         @if (error(); as message) {
           <div class="panel">
             <div class="alert-box">{{ message }}</div>
-            <button class="btn3d blue block" type="button" (click)="load()">Réessayer</button>
+            <button class="btn3d blue block" type="button" (click)="load()">{{ 'Réessayer' | t }}</button>
           </div>
         } @else if (!quizzes()) {
           <div class="skeleton card-skel"></div>
@@ -57,15 +58,15 @@ interface SoloGroup {
         } @else if (quizzes()!.length === 0) {
           <div class="empty-state">
             <raf-icon class="float" name="flame" [size]="80" />
-            <div class="empty-title">Aucun défi solo pour le moment</div>
-            <div class="empty-text">De nouveaux sujets arrivent bientôt.</div>
+            <div class="empty-title">{{ 'Aucun défi solo pour le moment' | t }}</div>
+            <div class="empty-text">{{ 'De nouveaux sujets arrivent bientôt.' | t }}</div>
           </div>
         } @else if (current(); as group) {
           @if (groups().length > 1) {
             <button class="back" type="button" (click)="closeCategory()">
-              <raf-icon name="back" [size]="22" />Toutes les catégories
+              <raf-icon name="back" [size]="22" />{{ 'Toutes les catégories' | t }}
             </button>
-            <h2 class="group-title">{{ group.name }}</h2>
+            <h2 class="group-title">{{ group.key === others ? (group.name | t) : group.name }}</h2>
           }
           <div class="list stagger">
             @for (q of group.quizzes; track q.id) {
@@ -83,7 +84,7 @@ interface SoloGroup {
                   <div class="prize"><raf-icon name="cash" [size]="26" /> {{ q.soloPrizeHtg | num }} HTG</div>
                   <div class="chips">
                     @if (q.free) {
-                      <span class="chip free"><raf-icon name="gift" [size]="18" />Gratuit</span>
+                      <span class="chip free"><raf-icon name="gift" [size]="18" />{{ 'Gratuit' | t }}</span>
                     } @else {
                       <span class="chip"><raf-icon name="coin" [size]="18" />{{ q.ticketPriceCredits }}</span>
                     }
@@ -93,7 +94,7 @@ interface SoloGroup {
                 <!-- La carte entiere lance la partie : pas de bouton en double. -->
                 @if (played(q)) {
                   <div class="side">
-                    <span class="status-tag finished">Demain</span>
+                    <span class="status-tag finished">{{ 'Demain' | t }}</span>
                   </div>
                 }
               </article>
@@ -111,15 +112,15 @@ interface SoloGroup {
                   }
                 </div>
                 <div class="tile-body">
-                  <h3 class="tile-name">{{ g.name }}</h3>
+                  <h3 class="tile-name">{{ g.key === others ? (g.name | t) : g.name }}</h3>
                   <div class="tile-count">{{ g.quizzes.length }} quiz</div>
                   @if (g.playableToday > 0) {
-                    <span class="chip today"><raf-icon name="play" [size]="16" />{{ g.playableToday }} à jouer aujourd'hui</span>
+                    <span class="chip today"><raf-icon name="play" [size]="16" />{{ "{n} à jouer aujourd'hui" | t: { n: g.playableToday } }}</span>
                   } @else {
-                    <span class="chip"><raf-icon name="clock" [size]="16" />Reviens demain</span>
+                    <span class="chip"><raf-icon name="clock" [size]="16" />{{ 'Reviens demain' | t }}</span>
                   }
                   @if (g.bestPrizeHtg > 0) {
-                    <div class="tile-prize"><raf-icon name="cash" [size]="20" />Jusqu'à {{ g.bestPrizeHtg | num }} HTG</div>
+                    <div class="tile-prize"><raf-icon name="cash" [size]="20" />{{ "Jusqu'à {n} HTG" | t: { n: g.bestPrizeHtg | num } }}</div>
                   }
                 </div>
               </article>

@@ -15,6 +15,7 @@ import { IconComponent } from '../../ui/icon.component';
 import { InstagramCardComponent } from '../../ui/instagram-card.component';
 import { closeModal } from '../../ui/modal';
 import { NumPipe } from '../../ui/pipes';
+import { TPipe, t } from '../../core/i18n';
 
 type Phase = 'loading' | 'intro' | 'countdown' | 'starting' | 'playing' | 'submitting' | 'result' | 'failed';
 
@@ -62,7 +63,7 @@ const MISSED_FLASH_MS = 700;
  */
 @Component({
   selector: 'raf-game',
-  imports: [IonContent, IonIcon, IonModal, IconComponent, InstagramCardComponent, NumPipe],
+  imports: [TPipe, IonContent, IonIcon, IonModal, IconComponent, InstagramCardComponent, NumPipe],
   templateUrl: './game.page.html',
   styleUrl: './game.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -286,7 +287,7 @@ export class GamePage implements OnDestroy {
         await this.beginBatch(game);
       }
       if (game.resumed && this.phase() === 'playing') {
-        void this.feedback.toast('Partie reprise : les questions expirées entre-temps comptent sans réponse.');
+        void this.feedback.toast(t('Partie reprise : les questions expirées entre-temps comptent sans réponse.'));
       }
     } catch (e) {
       // Accord demande entre-temps (premier sans-faute sur un autre appareil) : on le propose.
@@ -470,7 +471,7 @@ export class GamePage implements OnDestroy {
 
   private onTurn(turn: GameTurn, sent: PendingAnswer): void {
     if (sent.choiceId !== null && !turn.accepted) {
-      void this.feedback.toast('Trop tard : cette réponse n\'a pas été retenue.');
+      void this.feedback.toast(t("Trop tard : cette réponse n'a pas été retenue."));
     }
     this.picked.set(null);
     if (turn.result) {

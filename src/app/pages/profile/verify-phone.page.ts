@@ -9,47 +9,48 @@ import { errorMessage } from '../../core/errors';
 import { FeedbackService } from '../../core/feedback.service';
 import { IconComponent } from '../../ui/icon.component';
 import { TopBarComponent } from '../../ui/top-bar.component';
+import { TPipe, t } from '../../core/i18n';
 
 /** Verification du telephone par code SMS (requise pour retirer des gains). */
 @Component({
   selector: 'raf-verify-phone',
-  imports: [FormsModule, IonHeader, IonToolbar, IonContent, TopBarComponent, IconComponent],
+  imports: [TPipe, FormsModule, IonHeader, IonToolbar, IonContent, TopBarComponent, IconComponent],
   template: `
     <ion-header class="raf-header">
-      <ion-toolbar><raf-top-bar back="/profil" title="Téléphone" [showWallet]="false" /></ion-toolbar>
+      <ion-toolbar><raf-top-bar back="/profil" [title]="'Téléphone' | t" [showWallet]="false" /></ion-toolbar>
     </ion-header>
 
     <ion-content class="raf-sky" [fullscreen]="true">
       <div class="page-pad">
         <section class="panel panel-with-ribbon center">
-          <div class="ribbon purple">Vérification</div>
+          <div class="ribbon purple">{{ 'Vérification' | t }}</div>
           <raf-icon class="float" name="phone" [size]="72" />
           @if (!auth.user()?.emailVerified) {
-            <p class="text">Confirme d'abord ton adresse email avec le code ou le lien reçu, puis reviens vérifier ton numéro.</p>
-            <button class="btn3d green block" type="button" (click)="nav.navigateForward('/profil/email/code')">Saisir le code reçu par email</button>
-            <button class="btn3d blue block back" type="button" (click)="nav.navigateBack('/profil')">Retour au profil</button>
+            <p class="text">{{ "Confirme d'abord ton adresse email avec le code ou le lien reçu, puis reviens vérifier ton numéro." | t }}</p>
+            <button class="btn3d green block" type="button" (click)="nav.navigateForward('/profil/email/code')">{{ 'Saisir le code reçu par email' | t }}</button>
+            <button class="btn3d blue block back" type="button" (click)="nav.navigateBack('/profil')">{{ 'Retour au profil' | t }}</button>
           } @else if (!sent()) {
-            <p class="text">Nous allons envoyer un code par SMS au <strong>{{ auth.user()?.phone }}</strong>.</p>
+            <p class="text">{{ 'Nous allons envoyer un code par SMS au' | t }} <strong>{{ auth.user()?.phone }}</strong>.</p>
             @if (error(); as message) {
               <div class="alert-box">{{ message }}</div>
             }
             <button class="btn3d purple block" type="button" [disabled]="busy()" (click)="send()">
-              {{ busy() ? 'Envoi…' : 'Envoyer le code' }}
+              {{ (busy() ? 'Envoi…' : 'Envoyer le code') | t }}
             </button>
           } @else {
-            <p class="text">Saisis le code reçu au <strong>{{ auth.user()?.phone }}</strong>.</p>
+            <p class="text">{{ 'Saisis le code reçu au' | t }} <strong>{{ auth.user()?.phone }}</strong>.</p>
             <input class="otp-input" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" name="code" [(ngModel)]="code" placeholder="······" />
             @if (error(); as message) {
               <div class="alert-box otp-error">{{ message }}</div>
             }
             <button class="btn3d block confirm" type="button" [disabled]="busy()" (click)="verify()">
-              {{ busy() ? 'Vérification…' : 'Valider' }}
+              {{ (busy() ? 'Vérification…' : 'Valider') | t }}
             </button>
-            <button class="link-btn ink" type="button" [disabled]="busy()" (click)="send()">Renvoyer le code</button>
+            <button class="link-btn ink" type="button" [disabled]="busy()" (click)="send()">{{ 'Renvoyer le code' | t }}</button>
           }
           <p class="hint">
-            Mauvais numéro ?
-            <button class="link-btn ink" type="button" (click)="nav.navigateForward('/profil/telephone/corriger')">Corrige-le</button>
+            {{ 'Mauvais numéro ?' | t }}
+            <button class="link-btn ink" type="button" (click)="nav.navigateForward('/profil/telephone/corriger')">{{ 'Corrige-le' | t }}</button>
           </p>
         </section>
       </div>
@@ -99,7 +100,7 @@ export class VerifyPhonePage {
 
   protected async verify(): Promise<void> {
     if (!/^\d{4,8}$/.test(this.code.trim())) {
-      this.error.set('Saisis le code reçu par SMS.');
+      this.error.set(t('Saisis le code reçu par SMS.'));
       return;
     }
     this.busy.set(true);
@@ -107,7 +108,7 @@ export class VerifyPhonePage {
     try {
       await firstValueFrom(this.apiService.verifyPhone(this.code.trim()));
       await this.auth.setUser(await firstValueFrom(this.apiService.me()));
-      await this.feedback.success('Téléphone vérifié !');
+      await this.feedback.success(t('Téléphone vérifié !'));
       this.nav.back();
     } catch (e) {
       this.error.set(errorMessage(e));

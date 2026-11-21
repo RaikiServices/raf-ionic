@@ -1,5 +1,6 @@
 import { formatCountdown } from './format';
 import { Quiz, QuizStatus, Reward } from './models';
+import { t } from './i18n';
 
 // Regles d'affichage d'un quiz, alignees sur Quiz.acceptsTickets / acceptsPlay du backend.
 
@@ -13,6 +14,11 @@ export const STATUS_LABELS: Record<QuizStatus, string> = {
   FINISHED: 'Terminé',
   CANCELLED: 'Annulé',
 };
+
+/** Libelle du statut dans la langue courante. */
+export function statusLabel(status: QuizStatus): string {
+  return t(STATUS_LABELS[status]);
+}
 
 export function statusClass(status: QuizStatus): string {
   return status.toLowerCase();
@@ -50,9 +56,9 @@ export function totalPrizesHtg(quiz: Quiz): number {
 
 export function rankLabel(reward: Reward): string {
   if (reward.rankFrom === reward.rankTo) {
-    return reward.rankFrom === 1 ? '1er' : `${reward.rankFrom}e`;
+    return reward.rankFrom === 1 ? t('1er') : t('{n}e', { n: reward.rankFrom });
   }
-  return `${reward.rankFrom}e – ${reward.rankTo}e`;
+  return t('{a}e – {b}e', { a: reward.rankFrom, b: reward.rankTo });
 }
 
 /** Phrase d'etat avec son compte a rebours, selon le statut. */
@@ -62,22 +68,25 @@ export function statusLine(quiz: Quiz, now: number): { text: string; urgent: boo
     case 'REGISTRATION': {
       const missing = Math.max(0, quiz.minPlayers - quiz.playersRegistered);
       return {
-        text: missing > 0 ? `Encore ${missing} joueur${missing > 1 ? 's' : ''} pour lancer le quiz` : 'Lancement imminent',
+        text:
+          missing > 0
+            ? t(missing > 1 ? 'Encore {n} joueurs pour lancer le quiz' : 'Encore {n} joueur pour lancer le quiz', { n: missing })
+            : t('Lancement imminent'),
         urgent: false,
       };
     }
     case 'SCHEDULED':
-      return { text: `Démarre dans ${formatCountdown(until(quiz.scheduledStartAt))}`, urgent: false };
+      return { text: t('Démarre dans {temps}', { temps: formatCountdown(until(quiz.scheduledStartAt)) }), urgent: false };
     case 'RUNNING':
-      return { text: 'Ouvert : joue quand tu veux !', urgent: false };
+      return { text: t('Ouvert : joue quand tu veux !'), urgent: false };
     case 'CLOSING':
-      return { text: `Fin dans ${formatCountdown(until(quiz.endsAt))}`, urgent: true };
+      return { text: t('Fin dans {temps}', { temps: formatCountdown(until(quiz.endsAt)) }), urgent: true };
     case 'COMPUTING':
-      return { text: 'Calcul du classement…', urgent: false };
+      return { text: t('Calcul du classement…'), urgent: false };
     case 'FINISHED':
-      return { text: 'Classement publié', urgent: false };
+      return { text: t('Classement publié'), urgent: false };
     case 'CANCELLED':
-      return { text: 'Quiz annulé, tickets remboursés', urgent: false };
+      return { text: t('Quiz annulé, tickets remboursés'), urgent: false };
     default:
       return { text: '', urgent: false };
   }

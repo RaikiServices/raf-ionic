@@ -7,6 +7,7 @@ import { openHelp } from '../../core/help';
 import { InstallMode, InstallService } from '../../core/install.service';
 import { IconComponent } from '../../ui/icon.component';
 import { TopBarComponent } from '../../ui/top-bar.component';
+import { TPipe, t } from '../../core/i18n';
 
 interface Step {
   text: string;
@@ -43,33 +44,33 @@ const STEPS: Record<Exclude<InstallMode, 'installed' | 'prompt'>, Step[]> = {
 /** Guide d'installation sur l'ecran d'accueil, adapte au telephone et au navigateur du joueur. */
 @Component({
   selector: 'raf-install',
-  imports: [IonHeader, IonToolbar, IonContent, IonIcon, TopBarComponent, IconComponent],
+  imports: [TPipe, IonHeader, IonToolbar, IonContent, IonIcon, TopBarComponent, IconComponent],
   template: `
     <ion-header class="raf-header">
       <ion-toolbar>
-        <raf-top-bar [back]="auth.isLoggedIn() ? '/profil' : '/bienvenue'" title="Installer" [showWallet]="false" />
+        <raf-top-bar [back]="auth.isLoggedIn() ? '/profil' : '/bienvenue'" [title]="'Installer' | t" [showWallet]="false" />
       </ion-toolbar>
     </ion-header>
 
     <ion-content class="raf-sky" [fullscreen]="true">
       <div class="page-pad">
         <section class="panel panel-with-ribbon">
-          <div class="ribbon gold">Installer RAF</div>
+          <div class="ribbon gold">{{ 'Installer RAF' | t }}</div>
 
           @switch (mode()) {
             @case ('installed') {
               <div class="done">
                 <raf-icon class="pop-in" name="check" [size]="72" />
-                <p class="lead">RAF est installée sur cet appareil.</p>
-                <p class="sub">Ouvre toujours RAF depuis son icône sur l’écran d’accueil pour recevoir les notifications.</p>
+                <p class="lead">{{ 'RAF est installée sur cet appareil.' | t }}</p>
+                <p class="sub">{{ 'Ouvre toujours RAF depuis son icône sur l’écran d’accueil pour recevoir les notifications.' | t }}</p>
               </div>
             }
             @case ('prompt') {
-              <p class="lead">Ajoute RAF à ton écran d’accueil, comme une vraie application.</p>
+              <p class="lead">{{ 'Ajoute RAF à ton écran d’accueil, comme une vraie application.' | t }}</p>
               <button class="btn3d green block lg" type="button" [disabled]="busy()" (click)="installNow()">
-                <raf-icon name="phone" [size]="26" /> Installer RAF
+                <raf-icon name="phone" [size]="26" /> {{ 'Installer RAF' | t }}
               </button>
-              <p class="sub">Une fenêtre s’ouvre : touche « Installer ».</p>
+              <p class="sub">{{ 'Une fenêtre s’ouvre : touche « Installer ».' | t }}</p>
             }
             @default {
               <p class="lead">{{ intro() }}</p>
@@ -77,7 +78,7 @@ const STEPS: Record<Exclude<InstallMode, 'installed' | 'prompt'>, Step[]> = {
                 @for (step of steps(); track step.text; let n = $index) {
                   <li>
                     <span class="num">{{ n + 1 }}</span>
-                    <span class="grow">{{ step.text }}</span>
+                    <span class="grow">{{ step.text | t }}</span>
                     @if (step.icon) {
                       <ion-icon class="hint-icon" [name]="step.icon" aria-hidden="true" />
                     }
@@ -85,7 +86,7 @@ const STEPS: Record<Exclude<InstallMode, 'installed' | 'prompt'>, Step[]> = {
                 }
               </ol>
               @if (mode() === 'ios-other') {
-                <button class="btn3d block" type="button" (click)="copyLink()">Copier le lien</button>
+                <button class="btn3d block" type="button" (click)="copyLink()">{{ 'Copier le lien' | t }}</button>
               }
             }
           }
@@ -94,13 +95,13 @@ const STEPS: Record<Exclude<InstallMode, 'installed' | 'prompt'>, Step[]> = {
         @if (mode() !== 'installed') {
           <section class="glass why">
             <raf-icon name="bell" [size]="36" />
-            <p>Une fois installée, RAF peut te prévenir du début des quiz, des résultats et de tes gains.
-              @if (isIos()) { Sur iPhone, les notifications marchent <strong>seulement</strong> si RAF est installée. }
+            <p>{{ 'Une fois installée, RAF peut te prévenir du début des quiz, des résultats et de tes gains.' | t }}
+              @if (isIos()) { {{ 'Sur iPhone, les notifications marchent' | t }} <strong>{{ 'seulement' | t }}</strong> {{ 'si RAF est installée.' | t }} }
             </p>
           </section>
         }
 
-        <button class="link-btn ink help" type="button" (click)="help()">Toujours bloqué ? Besoin d'aide</button>
+        <button class="link-btn ink help" type="button" (click)="help()">{{ "Toujours bloqué ? Besoin d'aide" | t }}</button>
       </div>
     </ion-content>
   `,
@@ -158,7 +159,7 @@ export class InstallPage {
     return mode === 'installed' || mode === 'prompt' ? [] : STEPS[mode];
   });
   protected readonly intro = computed(() =>
-    this.mode() === 'ios-other' ? 'Tu utilises un autre navigateur que Safari.' : 'Suis ces étapes, ça prend 30 secondes.',
+    t(this.mode() === 'ios-other' ? 'Tu utilises un autre navigateur que Safari.' : 'Suis ces étapes, ça prend 30 secondes.'),
   );
 
   protected help(): void {
@@ -169,7 +170,7 @@ export class InstallPage {
     this.busy.set(true);
     try {
       if (await this.install.prompt()) {
-        await this.feedback.success('RAF est installée ! Retrouve-la sur ton écran d’accueil.');
+        await this.feedback.success(t('RAF est installée ! Retrouve-la sur ton écran d’accueil.'));
       }
     } finally {
       this.busy.set(false);
@@ -181,7 +182,7 @@ export class InstallPage {
     const url = new URL('installer', document.baseURI).href;
     navigator.clipboard
       .writeText(url)
-      .then(() => this.feedback.success('Lien copié. Colle-le dans Safari.'))
+      .then(() => this.feedback.success(t('Lien copié. Colle-le dans Safari.')))
       .catch(() => this.feedback.toast(url));
   }
 }

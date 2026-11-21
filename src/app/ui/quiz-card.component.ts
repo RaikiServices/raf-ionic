@@ -2,14 +2,15 @@ import { ChangeDetectionStrategy, Component, computed, inject, input } from '@an
 
 import { ClockService } from '../core/clock.service';
 import { Quiz } from '../core/models';
-import { STATUS_LABELS, statusClass, statusLine, themeGradient, topPrizeHtg } from '../core/quiz-rules';
+import { statusClass, statusLabel, statusLine, themeGradient, topPrizeHtg } from '../core/quiz-rules';
 import { IconComponent } from './icon.component';
 import { NumPipe } from './pipes';
+import { TPipe } from '../core/i18n';
 
 /** Carte compacte d'un quiz (lobby, listes). */
 @Component({
   selector: 'raf-quiz-card',
-  imports: [IconComponent, NumPipe],
+  imports: [TPipe, IconComponent, NumPipe],
   template: `
     <article class="card" [class.dim]="quiz().status === 'FINISHED' || quiz().status === 'CANCELLED'">
       <div class="thumb" [style.background]="quiz().bannerUrl ? null : gradient()">
@@ -31,7 +32,7 @@ import { NumPipe } from './pipes';
         <div class="chips">
           <span class="chip"><raf-icon name="trophy" [size]="18" />{{ prize() | num }} HTG</span>
           @if (quiz().free) {
-            <span class="chip free"><raf-icon name="gift" [size]="18" />Gratuit</span>
+            <span class="chip free"><raf-icon name="gift" [size]="18" />{{ 'Gratuit' | t }}</span>
           } @else {
             <span class="chip"><raf-icon name="coin" [size]="18" />{{ quiz().ticketPriceCredits }}</span>
           }
@@ -140,7 +141,7 @@ export class QuizCardComponent {
   /** Tickets encore utilisables du joueur sur ce quiz. */
   readonly tickets = input(0);
 
-  protected readonly label = computed(() => STATUS_LABELS[this.quiz().status]);
+  protected readonly label = computed(() => statusLabel(this.quiz().status));
   protected readonly cls = computed(() => statusClass(this.quiz().status));
   protected readonly prize = computed(() => topPrizeHtg(this.quiz()));
   protected readonly gradient = computed(() => themeGradient(this.quiz()));

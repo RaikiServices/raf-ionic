@@ -1,4 +1,5 @@
 import { environment } from '../../environments/environment';
+import { lang } from './i18n';
 
 /** Sujets du guide d'aide du site (raf-frontend-ssr, client/help/help-content.ts). */
 export type HelpTopic = 'email' | 'installer' | 'notifications' | 'mot-de-passe';
@@ -18,6 +19,8 @@ export function helpUrl(topic?: HelpTopic): string {
   if (device) {
     url.searchParams.set('appareil', device);
   }
+  // Le guide s'ouvre dans la langue de l'app (le site retient ensuite ce choix).
+  url.searchParams.set('lang', lang());
   return url.href;
 }
 

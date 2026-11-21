@@ -10,6 +10,7 @@ import { OnlineTopUpConfig } from '../../core/models';
 import { storage } from '../../core/storage';
 import { NumPipe } from '../../ui/pipes';
 import { TopBarComponent } from '../../ui/top-bar.component';
+import { TPipe, t } from '../../core/i18n';
 
 /** Recharge en ligne en cours, relue par la page de retour (recharge/retour). */
 export const PENDING_ONLINE_TOPUP_KEY = 'raf.pendingOnlineTopUp';
@@ -26,10 +27,10 @@ type Method = 'MONCASH' | 'NATCASH';
  */
 @Component({
   selector: 'raf-online-top-up',
-  imports: [FormsModule, IonHeader, IonToolbar, IonContent, TopBarComponent, NumPipe],
+  imports: [TPipe, FormsModule, IonHeader, IonToolbar, IonContent, TopBarComponent, NumPipe],
   template: `
     <ion-header class="raf-header">
-      <ion-toolbar><raf-top-bar back="/portefeuille/recharger" title="Payer en ligne" /></ion-toolbar>
+      <ion-toolbar><raf-top-bar back="/portefeuille/recharger" [title]="'Payer en ligne' | t" /></ion-toolbar>
     </ion-header>
 
     <ion-content class="raf-sky" [fullscreen]="true">
@@ -37,11 +38,11 @@ type Method = 'MONCASH' | 'NATCASH';
         @if (config(); as c) {
           @if (!c.enabled) {
             <div class="panel">
-              <div class="alert-box info">Le paiement en ligne est momentanément indisponible. Réessaie plus tard.</div>
+              <div class="alert-box info">{{ 'Le paiement en ligne est momentanément indisponible. Réessaie plus tard.' | t }}</div>
             </div>
           } @else {
             <section class="panel panel-with-ribbon">
-              <div class="ribbon">Moyen de paiement</div>
+              <div class="ribbon">{{ 'Moyen de paiement' | t }}</div>
               <div class="methods">
                 <button type="button" class="method moncash" [class.on]="method() === 'MONCASH'" (click)="method.set('MONCASH')">MonCash</button>
                 <button type="button" class="method natcash" [class.on]="method() === 'NATCASH'" (click)="method.set('NATCASH')">NatCash</button>
@@ -49,13 +50,13 @@ type Method = 'MONCASH' | 'NATCASH';
             </section>
 
             <section class="panel panel-with-ribbon">
-              <div class="ribbon green">Montant à créditer</div>
+              <div class="ribbon green">{{ 'Montant à créditer' | t }}</div>
               <label class="field">
                 <span class="input-box amount-box">
                   <input type="number" inputmode="numeric" name="amount" [ngModel]="amountHtg()" (ngModelChange)="amountHtg.set($event)" step="1" min="0" placeholder="0" />
                   <span class="prefix">HTG</span>
                 </span>
-                <span class="field-hint">De {{ c.minHtg | num }} à {{ c.maxHtg | num }} HTG · 1 crédit = {{ c.htgRate | num }} HTG</span>
+                <span class="field-hint">{{ 'De {min} à {max} HTG · 1 crédit = {taux} HTG' | t: { min: c.minHtg | num, max: c.maxHtg | num, taux: c.htgRate | num } }}</span>
               </label>
               <div class="quick">
                 @for (a of quickAmounts(); track a) {
@@ -65,12 +66,11 @@ type Method = 'MONCASH' | 'NATCASH';
 
               @if (quote(); as q) {
                 <div class="recap">
-                  <div><span>Recharge</span><strong>{{ q.amountHtg | num }} HTG</strong></div>
-                  <div><span>Frais {{ method() === 'MONCASH' ? 'MonCash' : 'NatCash' }} ({{ feePercent() }})</span><strong>{{ q.feeHtg | num }} HTG</strong></div>
-                  <div class="net"><span>Total à payer</span><strong>{{ q.chargedHtg | num }} HTG</strong></div>
+                  <div><span>{{ 'Recharge' | t }}</span><strong>{{ q.amountHtg | num }} HTG</strong></div>
+                  <div><span>{{ 'Frais {moyen} ({taux})' | t: { moyen: method() === 'MONCASH' ? 'MonCash' : 'NatCash', taux: feePercent() } }}</span><strong>{{ q.feeHtg | num }} HTG</strong></div>
+                  <div class="net"><span>{{ 'Total à payer' | t }}</span><strong>{{ q.chargedHtg | num }} HTG</strong></div>
                   <div class="hint-row">
-                    Environ {{ q.credits | num }} crédit(s) ajoutés à ton compte. Les gourdes qui ne forment pas
-                    un crédit entier sont gardées pour ta prochaine recharge.
+                    {{ 'Environ {n} crédit(s) ajoutés à ton compte. Les gourdes qui ne forment pas un crédit entier sont gardées pour ta prochaine recharge.' | t: { n: q.credits | num } }}
                   </div>
                 </div>
               }
@@ -79,11 +79,10 @@ type Method = 'MONCASH' | 'NATCASH';
                 <div class="alert-box">{{ message }}</div>
               }
               <button class="btn3d orange block" type="button" [disabled]="busy()" (click)="pay()">
-                {{ busy() ? 'Redirection…' : quote() ? 'Payer ' + (quote()!.chargedHtg | num) + ' HTG' : 'Payer' }}
+                {{ busy() ? ('Redirection…' | t) : quote() ? ('Payer {n} HTG' | t: { n: quote()!.chargedHtg | num }) : ('Payer' | t) }}
               </button>
               <p class="note">
-                Tu vas être redirigé vers la page de paiement sécurisée. Une fois le paiement validé,
-                tes crédits arrivent automatiquement, avec une notification.
+                {{ 'Tu vas être redirigé vers la page de paiement sécurisée. Une fois le paiement validé, tes crédits arrivent automatiquement, avec une notification.' | t }}
               </p>
             </section>
           }
@@ -195,7 +194,7 @@ export class OnlineTopUpPage {
       return;
     }
     if (amount == null || !Number.isInteger(amount) || amount < c.minHtg || amount > c.maxHtg) {
-      this.error.set(`Saisis un montant entier entre ${c.minHtg} et ${c.maxHtg} HTG.`);
+      this.error.set(t('Saisis un montant entier entre {min} et {max} HTG.', { min: c.minHtg, max: c.maxHtg }));
       void this.feedback.buzz('error');
       return;
     }

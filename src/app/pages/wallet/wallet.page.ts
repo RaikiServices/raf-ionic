@@ -23,6 +23,7 @@ import { PlayerStateService } from '../../core/player-state.service';
 import { IconComponent } from '../../ui/icon.component';
 import { DateTimePipe, NumPipe } from '../../ui/pipes';
 import { TopBarComponent } from '../../ui/top-bar.component';
+import { TPipe } from '../../core/i18n';
 
 const TYPES: Record<TransactionType, { label: string; icon: string }> = {
   TOPUP: { label: 'Recharge', icon: 'coin' },
@@ -42,7 +43,7 @@ const TYPES: Record<TransactionType, { label: string; icon: string }> = {
 /** Tresor : les deux soldes et l'historique des mouvements. */
 @Component({
   selector: 'raf-wallet',
-  imports: [
+  imports: [TPipe, 
     IonHeader,
     IonIcon,
     IonToolbar,
@@ -58,7 +59,7 @@ const TYPES: Record<TransactionType, { label: string; icon: string }> = {
   ],
   template: `
     <ion-header class="raf-header">
-      <ion-toolbar><raf-top-bar title="Trésor" [showWallet]="false" /></ion-toolbar>
+      <ion-toolbar><raf-top-bar [title]="'Trésor' | t" [showWallet]="false" /></ion-toolbar>
     </ion-header>
 
     <ion-content class="raf-sky" [fullscreen]="true">
@@ -73,20 +74,20 @@ const TYPES: Record<TransactionType, { label: string; icon: string }> = {
           <div class="vault-head">
             <raf-icon name="coin" [size]="58" />
             <div>
-              <div class="vault-label">Crédits de jeu</div>
+              <div class="vault-label">{{ 'Crédits de jeu' | t }}</div>
               <div class="vault-value">{{ w ? (w.creditBalance | num) : '…' }}</div>
-              <div class="vault-sub">1 crédit = {{ state.creditHtgRate() ?? '…' }} HTG · pour acheter des tickets</div>
+              <div class="vault-sub">{{ '1 crédit = {n} HTG · pour acheter des tickets' | t: { n: state.creditHtgRate() ?? '…' } }}</div>
             </div>
           </div>
           @if (w && w.retentionHtg > 0) {
             <!-- Gourdes d'une recharge qui ne formaient pas un credit entier : rien n'est perdu. -->
             <div class="retention">
               <raf-icon name="hourglass" [size]="24" />
-              <span><strong>{{ w.retentionHtg | num }} HTG</strong> en attente, ajoutés à ta prochaine recharge</span>
+              <span><strong>{{ w.retentionHtg | num }} HTG</strong> {{ 'en attente, ajoutés à ta prochaine recharge' | t }}</span>
             </div>
           }
           <button class="btn3d block" type="button" (click)="go('/portefeuille/recharger')">
-            <raf-icon name="plus" [size]="22" /> Recharger
+            <raf-icon name="plus" [size]="22" /> {{ 'Recharger' | t }}
           </button>
         </section>
 
@@ -94,37 +95,37 @@ const TYPES: Record<TransactionType, { label: string; icon: string }> = {
           <div class="vault-head">
             <raf-icon name="cash" [size]="58" />
             <div>
-              <div class="vault-label">Gains</div>
+              <div class="vault-label">{{ 'Gains' | t }}</div>
               <div class="vault-value">{{ w ? (w.winningsBalanceHtg | num) : '…' }} <small>HTG</small></div>
-              <div class="vault-sub">Retirables vers MonCash, NatCash ou en espèces</div>
+              <div class="vault-sub">{{ 'Retirables vers MonCash, NatCash ou en espèces' | t }}</div>
             </div>
           </div>
           <button class="btn3d orange block" type="button" [disabled]="!w || w.winningsBalanceHtg <= 0" (click)="go('/portefeuille/retirer')">
-            <raf-icon name="bank" [size]="28" /> Retirer
+            <raf-icon name="bank" [size]="28" /> {{ 'Retirer' | t }}
           </button>
         </section>
 
         <!-- Reserve aux leaders : ils rechargent leurs joueurs avec leurs propres credits. -->
         @if (canTransfer()) {
           <button class="btn3d purple block transfer" type="button" (click)="go('/portefeuille/recharger-joueur')">
-            <raf-icon name="users" [size]="26" /> Recharger un joueur
+            <raf-icon name="users" [size]="26" /> {{ 'Recharger un joueur' | t }}
           </button>
         }
 
         <button class="list-row clickable link-row" type="button" (click)="go('/portefeuille/retraits')">
           <raf-icon name="bank" [size]="32" />
-          <span class="grow row-title">Mes demandes de retrait</span>
+          <span class="grow row-title">{{ 'Mes demandes de retrait' | t }}</span>
           <ion-icon name="chevron-forward" />
         </button>
 
-        <h2 class="section-title">Historique</h2>
+        <h2 class="section-title">{{ 'Historique' | t }}</h2>
         @if (error(); as message) {
           <div class="panel"><div class="alert-box">{{ message }}</div></div>
         } @else if (transactions() === null) {
           <div class="skeleton" style="height: 200px"></div>
         } @else if (transactions()!.length === 0) {
           <div class="empty-state">
-            <div class="empty-text">Aucun mouvement pour l'instant.</div>
+            <div class="empty-text">{{ "Aucun mouvement pour l'instant." | t }}</div>
           </div>
         } @else {
           <div class="panel tight history">
@@ -132,7 +133,7 @@ const TYPES: Record<TransactionType, { label: string; icon: string }> = {
               <div class="tx">
                 <raf-icon [name]="icon(t)" [size]="34" />
                 <div class="grow">
-                  <div class="row-title">{{ label(t) }}</div>
+                  <div class="row-title">{{ label(t) | t }}</div>
                   <div class="row-sub">{{ t.createdAt | dateTime }}{{ t.description ? ' · ' + t.description : '' }}</div>
                 </div>
                 <div class="amount" [class.plus]="t.amount > 0" [class.minus]="t.amount < 0">

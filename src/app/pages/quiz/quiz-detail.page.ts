@@ -23,12 +23,12 @@ import { GameResult, Quiz, Reward, Ticket } from '../../core/models';
 import { PlayerStateService } from '../../core/player-state.service';
 import { uuid } from '../../core/uuid';
 import {
-  STATUS_LABELS,
   acceptsPlay,
   acceptsTickets,
   rankLabel,
   sortedRewards,
   statusClass,
+  statusLabel,
   statusLine,
   themeGradient,
   totalPrizesHtg,
@@ -38,6 +38,7 @@ import { InstagramCardComponent } from '../../ui/instagram-card.component';
 import { closeModal } from '../../ui/modal';
 import { HtgPipe, NumPipe } from '../../ui/pipes';
 import { TopBarComponent } from '../../ui/top-bar.component';
+import { TPipe, t } from '../../core/i18n';
 
 @Component({
   selector: 'raf-quiz-detail',
@@ -54,6 +55,7 @@ import { TopBarComponent } from '../../ui/top-bar.component';
     InstagramCardComponent,
     NumPipe,
     HtgPipe,
+    TPipe,
   ],
   templateUrl: './quiz-detail.page.html',
   styleUrl: './quiz-detail.page.scss',
@@ -162,7 +164,7 @@ export class QuizDetailPage {
   // --- Affichage ---------------------------------------------------------------
 
   protected statusLabel(q: Quiz): string {
-    return STATUS_LABELS[q.status];
+    return statusLabel(q.status);
   }
 
   protected statusCls(q: Quiz): string {
@@ -243,7 +245,7 @@ export class QuizDetailPage {
     this.voting.set(topicId);
     try {
       this.quiz.set(await firstValueFrom(this.apiService.vote(this.quizId, topicId)));
-      await this.feedback.success('Vote enregistré !');
+      await this.feedback.success(t('Vote enregistré !'));
     } catch (e) {
       await this.feedback.error(e);
     } finally {

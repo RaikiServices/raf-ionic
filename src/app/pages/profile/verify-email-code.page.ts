@@ -10,6 +10,7 @@ import { errorMessage } from '../../core/errors';
 import { FeedbackService } from '../../core/feedback.service';
 import { IconComponent } from '../../ui/icon.component';
 import { TopBarComponent } from '../../ui/top-bar.component';
+import { TPipe, t } from '../../core/i18n';
 
 /**
  * Confirmation de l'email par le code a 6 chiffres recu dans l'email de RAF.
@@ -17,24 +18,24 @@ import { TopBarComponent } from '../../ui/top-bar.component';
  */
 @Component({
   selector: 'raf-verify-email-code',
-  imports: [FormsModule, IonHeader, IonToolbar, IonContent, TopBarComponent, IconComponent],
+  imports: [TPipe, FormsModule, IonHeader, IonToolbar, IonContent, TopBarComponent, IconComponent],
   template: `
     <ion-header class="raf-header">
-      <ion-toolbar><raf-top-bar back="/profil" title="Email" [showWallet]="false" /></ion-toolbar>
+      <ion-toolbar><raf-top-bar back="/profil" [title]="'Email' | t" [showWallet]="false" /></ion-toolbar>
     </ion-header>
 
     <ion-content class="raf-sky" [fullscreen]="true">
       <div class="page-pad">
         <section class="panel panel-with-ribbon center">
-          <div class="ribbon purple">Confirmation</div>
+          <div class="ribbon purple">{{ 'Confirmation' | t }}</div>
           <raf-icon class="float" name="mail" [size]="72" />
           @if (auth.user()?.emailVerified) {
-            <p class="text">Ton adresse email est déjà confirmée.</p>
-            <button class="btn3d blue block" type="button" (click)="nav.navigateBack('/profil')">Retour au profil</button>
+            <p class="text">{{ 'Ton adresse email est déjà confirmée.' | t }}</p>
+            <button class="btn3d blue block" type="button" (click)="nav.navigateBack('/profil')">{{ 'Retour au profil' | t }}</button>
           } @else {
             <p class="text">
-              Saisis le code à 6 chiffres envoyé à <strong>{{ auth.user()?.email }}</strong>.
-              Tu peux aussi toucher le lien du même email.
+              {{ 'Saisis le code à 6 chiffres envoyé à' | t }} <strong>{{ auth.user()?.email }}</strong>.
+              {{ 'Tu peux aussi toucher le lien du même email.' | t }}
             </p>
             <input class="otp-input" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" name="code"
                    [(ngModel)]="code" placeholder="······" (keyup.enter)="verify()" />
@@ -42,12 +43,12 @@ import { TopBarComponent } from '../../ui/top-bar.component';
               <div class="alert-box otp-error">{{ message }}</div>
             }
             <button class="btn3d green block confirm" type="button" [disabled]="busy()" (click)="verify()">
-              {{ busy() ? 'Vérification…' : 'Valider' }}
+              {{ (busy() ? 'Vérification…' : 'Valider') | t }}
             </button>
-            <button class="link-btn ink" type="button" [disabled]="resending()" (click)="resend()">Renvoyer l'email</button>
+            <button class="link-btn ink" type="button" [disabled]="resending()" (click)="resend()">{{ "Renvoyer l'email" | t }}</button>
             <p class="hint">
-              Pas d'email ? Regarde dans <strong>Spam</strong> ou <strong>Promotions</strong>. Mauvaise adresse ?
-              <button class="link-btn ink" type="button" (click)="nav.navigateForward('/profil/email')">Corrige-la</button>
+              {{ "Pas d'email ? Regarde dans" | t }} <strong>Spam</strong> {{ 'ou' | t }} <strong>Promotions</strong>. {{ 'Mauvaise adresse ?' | t }}
+              <button class="link-btn ink" type="button" (click)="nav.navigateForward('/profil/email')">{{ 'Corrige-la' | t }}</button>
             </p>
           }
         </section>
@@ -84,14 +85,14 @@ export class VerifyEmailCodePage {
   protected async verify(): Promise<void> {
     const code = this.code.replace(/\s/g, '');
     if (!/^\d{6}$/.test(code)) {
-      this.error.set('Saisis les 6 chiffres reçus par email.');
+      this.error.set(t('Saisis les 6 chiffres reçus par email.'));
       return;
     }
     this.busy.set(true);
     this.error.set(null);
     try {
       await confirmEmailCode(this.apiService, this.auth, code);
-      await this.feedback.success('Email confirmé, merci !');
+      await this.feedback.success(t('Email confirmé, merci !'));
       this.nav.back();
     } catch (e) {
       this.error.set(errorMessage(e));

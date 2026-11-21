@@ -6,6 +6,7 @@ import { AuthService } from '../core/auth.service';
 import { formatNumber, initials } from '../core/format';
 import { PlayerStateService } from '../core/player-state.service';
 import { IconComponent } from './icon.component';
+import { TPipe } from '../core/i18n';
 
 /**
  * Barre du haut : logo RAF a gauche, puis retour ou avatar, titre, et les deux monnaies a droite
@@ -13,37 +14,37 @@ import { IconComponent } from './icon.component';
  */
 @Component({
   selector: 'raf-top-bar',
-  imports: [IconComponent],
+  imports: [TPipe, IconComponent],
   template: `
     <div class="topbar">
-      <button class="logo" type="button" aria-label="Accueil" (click)="router.navigateByUrl('/accueil')">
+      <button class="logo" type="button" [attr.aria-label]="'Accueil' | t" (click)="router.navigateByUrl('/accueil')">
         <img src="assets/logo-raf.png" alt="RAF" />
       </button>
 
       @if (back()) {
-        <button class="btn3d sm icon-only back" type="button" aria-label="Retour" (click)="goBack()">
+        <button class="btn3d sm icon-only back" type="button" [attr.aria-label]="'Retour' | t" (click)="goBack()">
           <raf-icon name="back" [size]="20" />
         </button>
       } @else {
-        <button class="avatar" type="button" aria-label="Mon profil" (click)="router.navigateByUrl('/profil')">
+        <button class="avatar" type="button" [attr.aria-label]="'Mon profil' | t" (click)="router.navigateByUrl('/profil')">
           {{ initialsText() }}
         </button>
       }
 
-      @if (title(); as t) {
-        <div class="title title-stroke sm">{{ t }}</div>
+      @if (title(); as text) {
+        <div class="title title-stroke sm">{{ text | t }}</div>
       } @else {
         <div class="spacer"></div>
       }
 
       @if (showWallet()) {
         <div class="wallet">
-          <button class="pill" type="button" (click)="router.navigateByUrl('/portefeuille')" aria-label="Crédits de jeu">
+          <button class="pill" type="button" (click)="router.navigateByUrl('/portefeuille')" [attr.aria-label]="'Crédits de jeu' | t">
             <raf-icon class="pill-icon" name="coin" [size]="34" />
             {{ state.wallet()?.creditBalance ?? '…' }}
             <span class="pill-plus">+</span>
           </button>
-          <button class="pill" type="button" (click)="router.navigateByUrl('/portefeuille')" aria-label="Gains en HTG">
+          <button class="pill" type="button" (click)="router.navigateByUrl('/portefeuille')" [attr.aria-label]="'Gains en HTG' | t">
             <raf-icon class="pill-icon" name="cash" [size]="34" />
             {{ winningsHtg() }}
           </button>

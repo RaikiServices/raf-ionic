@@ -14,10 +14,11 @@ import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../core/api.service';
 import { errorMessage } from '../../core/errors';
 import { QuizStatus, Ticket } from '../../core/models';
-import { STATUS_LABELS, statusClass } from '../../core/quiz-rules';
+import { statusClass, statusLabel } from '../../core/quiz-rules';
 import { IconComponent } from '../../ui/icon.component';
 import { DateTimePipe } from '../../ui/pipes';
 import { TopBarComponent } from '../../ui/top-bar.component';
+import { TPipe } from '../../core/i18n';
 
 interface TicketGroup {
   quizId: number;
@@ -32,10 +33,10 @@ interface TicketGroup {
 /** Mes tickets, regroupes par quiz : ceux a jouer d'abord. */
 @Component({
   selector: 'raf-tickets',
-  imports: [NgTemplateOutlet, IonHeader, IonToolbar, IonContent, IonRefresher, IonRefresherContent, TopBarComponent, IconComponent, DateTimePipe],
+  imports: [TPipe, NgTemplateOutlet, IonHeader, IonToolbar, IonContent, IonRefresher, IonRefresherContent, TopBarComponent, IconComponent, DateTimePipe],
   template: `
     <ion-header class="raf-header">
-      <ion-toolbar><raf-top-bar title="Mes tickets" /></ion-toolbar>
+      <ion-toolbar><raf-top-bar [title]="'Mes tickets' | t" /></ion-toolbar>
     </ion-header>
 
     <ion-content class="raf-sky" [fullscreen]="true">
@@ -53,13 +54,13 @@ interface TicketGroup {
         } @else if (groups()!.length === 0) {
           <div class="empty-state">
             <raf-icon class="float" name="ticket" [size]="96" />
-            <div class="empty-title">Aucun ticket pour l'instant</div>
-            <div class="empty-text">Choisis un quiz et prends ton premier ticket pour tenter de gagner.</div>
-            <button class="btn3d orange" type="button" (click)="nav.navigateRoot('/accueil')">Voir les quiz</button>
+            <div class="empty-title">{{ "Aucun ticket pour l'instant" | t }}</div>
+            <div class="empty-text">{{ 'Choisis un quiz et prends ton premier ticket pour tenter de gagner.' | t }}</div>
+            <button class="btn3d orange" type="button" (click)="nav.navigateRoot('/accueil')">{{ 'Voir les quiz' | t }}</button>
           </div>
         } @else {
           @if (toPlay().length > 0) {
-            <h2 class="section-title"><raf-icon name="play" [size]="22" /> À jouer</h2>
+            <h2 class="section-title"><raf-icon name="play" [size]="22" /> {{ 'À jouer' | t }}</h2>
           }
           <div class="stagger">
             @for (g of toPlay(); track g.quizId) {
@@ -67,7 +68,7 @@ interface TicketGroup {
             }
           </div>
           @if (others().length > 0) {
-            <h2 class="section-title">Historique</h2>
+            <h2 class="section-title">{{ 'Historique' | t }}</h2>
           }
           <div class="stagger">
             @for (g of others(); track g.quizId) {
@@ -88,16 +89,16 @@ interface TicketGroup {
             <h3>{{ g.quizTitle }}</h3>
             <div class="meta">
               @if (g.active > 0) {
-                <span class="ok">{{ g.active }} à jouer</span>
+                <span class="ok">{{ '{n} à jouer' | t: { n: g.active } }}</span>
               }
               @if (g.used > 0) {
-                <span>{{ g.used }} joué{{ g.used > 1 ? 's' : '' }}</span>
+                <span>{{ (g.used > 1 ? '{n} joués' : '{n} joué') | t: { n: g.used } }}</span>
               }
               @if (g.refunded > 0) {
-                <span>{{ g.refunded }} remboursé{{ g.refunded > 1 ? 's' : '' }}</span>
+                <span>{{ (g.refunded > 1 ? '{n} remboursés' : '{n} remboursé') | t: { n: g.refunded } }}</span>
               }
             </div>
-            <div class="date">Dernier achat {{ g.lastPurchase | dateTime }}</div>
+            <div class="date">{{ 'Dernier achat' | t }} {{ g.lastPurchase | dateTime }}</div>
           </div>
         </article>
       </ng-template>
@@ -212,7 +213,7 @@ export class TicketsPage {
   }
 
   protected label(status: QuizStatus): string {
-    return STATUS_LABELS[status];
+    return statusLabel(status);
   }
 
   protected cls(status: QuizStatus): string {

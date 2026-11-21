@@ -13,6 +13,7 @@ import { FeedbackService } from '../core/feedback.service';
 import { openHelp } from '../core/help';
 import { IconComponent } from './icon.component';
 import { closeModal } from './modal';
+import { TPipe, t } from '../core/i18n';
 
 /** Delai entre deux rappels (et entre deux verifications du profil). */
 const REMINDER_DELAY_MS = 10_000;
@@ -36,42 +37,42 @@ const QUIET_ROUTES = [/^\/quiz\/[^/]+\/jouer/, /^\/verification-email/, /^\/prof
  */
 @Component({
   selector: 'raf-email-reminder',
-  imports: [FormsModule, IonModal, IconComponent],
+  imports: [TPipe, FormsModule, IonModal, IconComponent],
   template: `
     <ion-modal class="raf-popup" [isOpen]="open()" [backdropDismiss]="false" (didDismiss)="dismissed()">
       <ng-template>
         <div class="panel popup">
-          <button class="popup-close" type="button" aria-label="Plus tard" (click)="later()">
+          <button class="popup-close" type="button" [attr.aria-label]="'Plus tard' | t" (click)="later()">
             <raf-icon name="close" [size]="22" />
           </button>
-          <div class="ribbon purple">Confirme ton email</div>
+          <div class="ribbon purple">{{ 'Confirme ton email' | t }}</div>
           <div class="popup-art">
             <raf-icon class="float" name="mail" [size]="88" />
           </div>
-          <p class="lead">Un email de confirmation a été envoyé à</p>
+          <p class="lead">{{ 'Un email de confirmation a été envoyé à' | t }}</p>
           <p class="address">{{ email() }}</p>
 
           <ol class="steps">
-            <li><span class="num">1</span><span>Ouvre l'email de <strong>RAF</strong> dans ta boîte mail.</span></li>
-            <li><span class="num">2</span><span>Saisis ici le <strong>code à 6 chiffres</strong>, ou touche le lien de confirmation.</span></li>
-            <li><span class="num">3</span><span>Pas d'email ? Regarde dans <strong>Spam</strong> ou <strong>Promotions</strong>, ou renvoie-le.</span></li>
+            <li><span class="num">1</span><span>{{ "Ouvre l'email de RAF dans ta boîte mail." | t }}</span></li>
+            <li><span class="num">2</span><span>{{ 'Saisis ici le' | t }} <strong>{{ 'code à 6 chiffres' | t }}</strong>{{ ', ou touche le lien de confirmation.' | t }}</span></li>
+            <li><span class="num">3</span><span>{{ "Pas d'email ? Regarde dans" | t }} <strong>Spam</strong> {{ 'ou' | t }} <strong>Promotions</strong>{{ ', ou renvoie-le.' | t }}</span></li>
           </ol>
 
           <input class="otp-input" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" name="code"
-                 aria-label="Code reçu par email" [(ngModel)]="code" placeholder="······" (keyup.enter)="submitCode()" />
+                 [attr.aria-label]="'Code reçu par email' | t" [(ngModel)]="code" placeholder="······" (keyup.enter)="submitCode()" />
           @if (codeError(); as message) {
             <div class="alert-box code-error">{{ message }}</div>
           }
           <button class="btn3d green block code-btn" type="button" [disabled]="verifying()" (click)="submitCode()">
-            <raf-icon name="check" [size]="24" /> {{ verifying() ? 'Vérification…' : 'Valider le code' }}
+            <raf-icon name="check" [size]="24" /> {{ (verifying() ? 'Vérification…' : 'Valider le code') | t }}
           </button>
 
-          <div class="alert-box info">Sans email confirmé, tu ne pourras pas vérifier ton téléphone ni retirer tes gains.</div>
+          <div class="alert-box info">{{ 'Sans email confirmé, tu ne pourras pas vérifier ton téléphone ni retirer tes gains.' | t }}</div>
 
-          <button class="btn3d block" type="button" [disabled]="checking()" (click)="checkNow()">J'ai touché le lien</button>
-          <button class="btn3d block" type="button" [disabled]="resending()" (click)="resend()">Renvoyer l'email</button>
-          <button class="btn3d blue block" type="button" (click)="correct()">Mon email est faux</button>
-          <button class="link-btn ink help" type="button" (click)="help()">Besoin d'aide ?</button>
+          <button class="btn3d block" type="button" [disabled]="checking()" (click)="checkNow()">{{ "J'ai touché le lien" | t }}</button>
+          <button class="btn3d block" type="button" [disabled]="resending()" (click)="resend()">{{ "Renvoyer l'email" | t }}</button>
+          <button class="btn3d blue block" type="button" (click)="correct()">{{ 'Mon email est faux' | t }}</button>
+          <button class="link-btn ink help" type="button" (click)="help()">{{ "Besoin d'aide ?" | t }}</button>
         </div>
       </ng-template>
     </ion-modal>
@@ -176,7 +177,7 @@ export class EmailReminderComponent {
       if (await this.refresh()) {
         return;
       }
-      await this.feedback.toast("Ton email n'est pas encore confirmé. Saisis le code ou touche le lien reçu par email.", 'error');
+      await this.feedback.toast(t("Ton email n'est pas encore confirmé. Saisis le code ou touche le lien reçu par email."), 'error');
     } finally {
       this.checking.set(false);
     }
@@ -185,7 +186,7 @@ export class EmailReminderComponent {
   protected async submitCode(): Promise<void> {
     const code = this.code.replace(/\s/g, '');
     if (!/^\d{6}$/.test(code)) {
-      this.codeError.set('Saisis les 6 chiffres reçus par email.');
+      this.codeError.set(t('Saisis les 6 chiffres reçus par email.'));
       return;
     }
     this.verifying.set(true);
@@ -194,7 +195,7 @@ export class EmailReminderComponent {
       await confirmEmailCode(this.apiService, this.auth, code);
       this.code = '';
       await closeModal(this.open, this.modal());
-      await this.feedback.success('Email confirmé, merci !');
+      await this.feedback.success(t('Email confirmé, merci !'));
     } catch (e) {
       this.codeError.set(errorMessage(e));
       void this.feedback.buzz('error');
@@ -282,7 +283,7 @@ export class EmailReminderComponent {
       await this.auth.setUser(user);
       if (user.emailVerified) {
         await closeModal(this.open, this.modal());
-        await this.feedback.success('Email confirmé, merci !');
+        await this.feedback.success(t('Email confirmé, merci !'));
         return true;
       }
     } catch {

@@ -23,11 +23,12 @@ import { PushService, PushState } from '../../core/push.service';
 import { IconComponent } from '../../ui/icon.component';
 import { AgoPipe } from '../../ui/pipes';
 import { TopBarComponent } from '../../ui/top-bar.component';
+import { TPipe, t } from '../../core/i18n';
 
 /** Alertes : historique des notifications, et invitation a activer le push. */
 @Component({
   selector: 'raf-notifications',
-  imports: [
+  imports: [TPipe, 
     IonHeader,
     IonToolbar,
     IonContent,
@@ -41,7 +42,7 @@ import { TopBarComponent } from '../../ui/top-bar.component';
   ],
   template: `
     <ion-header class="raf-header">
-      <ion-toolbar><raf-top-bar title="Alertes" /></ion-toolbar>
+      <ion-toolbar><raf-top-bar [title]="'Alertes' | t" /></ion-toolbar>
     </ion-header>
 
     <ion-content class="raf-sky" [fullscreen]="true">
@@ -54,19 +55,19 @@ import { TopBarComponent } from '../../ui/top-bar.component';
           <section class="push glass slide-up">
             <raf-icon class="float" name="bell" [size]="48" />
             <div class="grow">
-              <strong>Ne rate aucun quiz</strong>
-              <span>Sois prévenu au démarrage, à la clôture et quand tu gagnes.</span>
+              <strong>{{ 'Ne rate aucun quiz' | t }}</strong>
+              <span>{{ 'Sois prévenu au démarrage, à la clôture et quand tu gagnes.' | t }}</span>
             </div>
-            <button class="btn3d sm" type="button" [disabled]="pushBusy()" (click)="enablePush()">Activer</button>
+            <button class="btn3d sm" type="button" [disabled]="pushBusy()" (click)="enablePush()">{{ 'Activer' | t }}</button>
           </section>
         }
 
         <div class="toolbar">
           <button class="btn3d cream sm" type="button" (click)="nav.navigateForward('/alertes/reglages')">
-            <raf-icon name="settings" [size]="20" /> Réglages
+            <raf-icon name="settings" [size]="20" /> {{ 'Réglages' | t }}
           </button>
           @if (state.unread() > 0) {
-            <button class="btn3d blue sm" type="button" (click)="readAll()">Tout marquer lu</button>
+            <button class="btn3d blue sm" type="button" (click)="readAll()">{{ 'Tout marquer lu' | t }}</button>
           }
         </div>
 
@@ -77,8 +78,8 @@ import { TopBarComponent } from '../../ui/top-bar.component';
         } @else if (items()!.length === 0) {
           <div class="empty-state">
             <raf-icon class="float" name="bell" [size]="88" />
-            <div class="empty-title">Rien de neuf</div>
-            <div class="empty-text">Tes alertes de quiz, de gains et de retraits apparaîtront ici.</div>
+            <div class="empty-title">{{ 'Rien de neuf' | t }}</div>
+            <div class="empty-text">{{ 'Tes alertes de quiz, de gains et de retraits apparaîtront ici.' | t }}</div>
           </div>
         } @else {
           <div class="list">
@@ -238,14 +239,14 @@ export class NotificationsPage {
       const result = await this.push.enable();
       this.pushState.set(result);
       if (result === 'enabled') {
-        await this.feedback.success('Notifications activées !');
+        await this.feedback.success(t('Notifications activées !'));
       } else {
-        await this.feedback.toast("Les notifications push ne sont pas encore configurées sur le serveur.");
+        await this.feedback.toast(t('Les notifications push ne sont pas encore configurées sur le serveur.'));
       }
     } catch (e) {
       this.pushState.set(await this.push.state());
       if (this.pushState() === 'denied') {
-        await this.feedback.toast('Notifications bloquées : autorise-les dans les réglages du navigateur.', 'error');
+        await this.feedback.toast(t('Notifications bloquées : autorise-les dans les réglages du navigateur.'), 'error');
       } else {
         await this.feedback.error(e);
       }

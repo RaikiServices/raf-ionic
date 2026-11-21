@@ -4,14 +4,17 @@ import { IonContent, NavController } from '@ionic/angular/standalone';
 import { openHelp } from '../../core/help';
 import { FeedbackService } from '../../core/feedback.service';
 import { IconComponent } from '../../ui/icon.component';
+import { LangSelectComponent } from '../../ui/lang-select.component';
+import { TPipe } from '../../core/i18n';
 
 /** Ecran d'accueil sans compte : la promesse du jeu en trois etapes. */
 @Component({
   selector: 'raf-welcome',
-  imports: [IonContent, IconComponent],
+  imports: [TPipe, IonContent, IconComponent, LangSelectComponent],
   template: `
     <ion-content class="raf-sky" [fullscreen]="true">
       <div class="wrap">
+        <raf-lang-select class="lang" />
         <div class="sparkles" aria-hidden="true">
           <raf-icon class="s1 float" name="question" [size]="44" />
           <raf-icon class="s2 float" name="star" [size]="34" />
@@ -20,37 +23,43 @@ import { IconComponent } from '../../ui/icon.component';
         </div>
 
         <img class="logo pop-in" src="assets/logo-raf.png" alt="RAF" />
-        <h1 class="title-stroke tagline slide-up">Réponds. Monte au classement.<br /><span class="text-gold">Gagne !!!</span></h1>
+        <h1 class="title-stroke tagline slide-up">{{ 'Réponds. Monte au classement.' | t }}<br /><span class="text-gold">{{ 'Gagne !!!' | t }}</span></h1>
 
         <div class="steps stagger">
           <div class="step glass">
             <raf-icon name="ticket" [size]="42" />
-            <div><strong>Prends un ticket</strong><span>pour le quiz de ton choix</span></div>
+            <div><strong>{{ 'Prends un ticket' | t }}</strong><span>{{ 'pour le quiz de ton choix' | t }}</span></div>
           </div>
           <div class="step glass">
             <raf-icon name="clock" [size]="42" />
-            <div><strong>Réponds vite et juste</strong><span>avant la fin du chrono</span></div>
+            <div><strong>{{ 'Réponds vite et juste' | t }}</strong><span>{{ 'avant la fin du chrono' | t }}</span></div>
           </div>
           <div class="step glass">
             <raf-icon name="trophy" [size]="42" />
-            <div><strong>Monte au classement</strong><span>les meilleurs gagnent de l'argent</span></div>
+            <div><strong>{{ 'Monte au classement' | t }}</strong><span>{{ "les meilleurs gagnent de l'argent" | t }}</span></div>
           </div>
         </div>
 
         <div class="actions">
           <button class="btn3d lg block pulse" type="button" (click)="go('/inscription')">
             <!-- <raf-icon name="play" [size]="24" />  -->
-            Creer un compte
+            {{ 'Créer un compte' | t }}
           </button>
-          <button class="btn3d blue block" type="button" (click)="go('/connexion')">J'ai déjà un compte</button>
+          <button class="btn3d blue block" type="button" (click)="go('/connexion')">{{ "J'ai déjà un compte" | t }}</button>
         </div>
-        <button class="link-btn ink help" type="button" (click)="help()">Besoin d'aide ?</button>
-        <p class="legal">Réservé aux 18 ans et plus. Joue de façon responsable.</p>
+        <button class="link-btn ink help" type="button" (click)="help()">{{ "Besoin d'aide ?" | t }}</button>
+        <p class="legal">{{ 'Réservé aux 18 ans et plus. Joue de façon responsable.' | t }}</p>
       </div>
     </ion-content>
   `,
   styles: `
     .help { display: block; margin: 14px auto 0; }
+    .lang {
+      position: absolute;
+      top: calc(14px + var(--raf-safe-top));
+      right: 16px;
+      z-index: 2;
+    }
     .wrap {
       position: relative;
       max-width: 440px;

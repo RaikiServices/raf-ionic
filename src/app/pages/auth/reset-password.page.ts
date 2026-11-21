@@ -9,43 +9,44 @@ import { AuthService } from '../../core/auth.service';
 import { errorMessage } from '../../core/errors';
 import { IconComponent } from '../../ui/icon.component';
 import { AuthLayoutComponent } from './auth-layout.component';
+import { TPipe, t } from '../../core/i18n';
 
 /** Lien recu par email : /nouveau-mot-de-passe?token=... */
 @Component({
   selector: 'raf-reset-password',
-  imports: [FormsModule, AuthLayoutComponent, IconComponent],
+  imports: [TPipe, FormsModule, AuthLayoutComponent, IconComponent],
   template: `
-    <raf-auth-layout ribbon="Nouveau mot de passe" ribbonColor="purple" helpTopic="mot-de-passe">
+    <raf-auth-layout [ribbon]="'Nouveau mot de passe' | t" ribbonColor="purple" helpTopic="mot-de-passe">
       @if (done()) {
         <div class="center">
           <raf-icon class="pop-in" name="check" [size]="72" />
-          <p class="lead">Mot de passe mis à jour !</p>
-          <p class="hint">Toutes tes sessions ont été fermées. Reconnecte-toi avec ton nouveau mot de passe.</p>
-          <button class="btn3d block" type="button" (click)="nav.navigateRoot('/connexion')">Se connecter</button>
+          <p class="lead">{{ 'Mot de passe mis à jour !' | t }}</p>
+          <p class="hint">{{ 'Toutes tes sessions ont été fermées. Reconnecte-toi avec ton nouveau mot de passe.' | t }}</p>
+          <button class="btn3d block" type="button" (click)="nav.navigateRoot('/connexion')">{{ 'Se connecter' | t }}</button>
         </div>
       } @else if (!token) {
-        <div class="alert-box">Ce lien est incomplet. Ouvre directement le lien reçu par email, ou demandes-en un nouveau.</div>
-        <button class="btn3d purple block" type="button" (click)="nav.navigateRoot('/mot-de-passe-oublie')">Recevoir un nouveau lien</button>
+        <div class="alert-box">{{ 'Ce lien est incomplet. Ouvre directement le lien reçu par email, ou demandes-en un nouveau.' | t }}</div>
+        <button class="btn3d purple block" type="button" (click)="nav.navigateRoot('/mot-de-passe-oublie')">{{ 'Recevoir un nouveau lien' | t }}</button>
       } @else {
         <form (ngSubmit)="submit()">
           @if (error(); as message) {
             <div class="alert-box">{{ message }}</div>
           }
           <label class="field">
-            <span class="field-label">Nouveau mot de passe</span>
+            <span class="field-label">{{ 'Nouveau mot de passe' | t }}</span>
             <span class="input-box">
               <raf-icon name="key" [size]="24" />
-              <input type="password" name="password" [(ngModel)]="password" autocomplete="new-password" placeholder="8 caractères minimum" />
+              <input type="password" name="password" [(ngModel)]="password" autocomplete="new-password" [placeholder]="'8 caractères minimum' | t" />
             </span>
           </label>
           <label class="field">
-            <span class="field-label">Confirme-le</span>
+            <span class="field-label">{{ 'Confirme-le' | t }}</span>
             <span class="input-box">
               <raf-icon name="key" [size]="24" />
               <input type="password" name="confirm" [(ngModel)]="confirm" autocomplete="new-password" />
             </span>
           </label>
-          <button class="btn3d purple block" type="submit" [disabled]="busy()">{{ busy() ? 'Enregistrement…' : 'Enregistrer' }}</button>
+          <button class="btn3d purple block" type="submit" [disabled]="busy()">{{ (busy() ? 'Enregistrement…' : 'Enregistrer') | t }}</button>
         </form>
       }
     </raf-auth-layout>
@@ -71,11 +72,11 @@ export class ResetPasswordPage {
 
   protected async submit(): Promise<void> {
     if (this.password.length < 8) {
-      this.error.set('Le mot de passe doit contenir au moins 8 caractères.');
+      this.error.set(t('Le mot de passe doit contenir au moins 8 caractères.'));
       return;
     }
     if (this.password !== this.confirm) {
-      this.error.set('Les deux mots de passe ne correspondent pas.');
+      this.error.set(t('Les deux mots de passe ne correspondent pas.'));
       return;
     }
     this.busy.set(true);

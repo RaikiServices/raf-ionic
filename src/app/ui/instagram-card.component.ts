@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core
 
 import { SocialService } from '../core/social.service';
 import { IconComponent } from './icon.component';
+import { TPipe } from '../core/i18n';
 
 /**
  * Invitation a suivre Raiki Services sur Instagram. N'apparait que si le lien
@@ -13,21 +14,21 @@ import { IconComponent } from './icon.component';
  */
 @Component({
   selector: 'raf-instagram-card',
-  imports: [IconComponent],
+  imports: [TPipe, IconComponent],
   template: `
     @if (social.instagramUrl(); as url) {
       <a class="insta" [href]="url" target="_blank" rel="noopener">
         <raf-icon name="instagram" [size]="44" />
         <span class="text">
           @if (variant() === 'thanks') {
-            <strong>C’est offert !</strong>
-            <span>Pour nous dire merci, suis Raiki Services sur Instagram.</span>
+            <strong>{{ 'C’est offert !' | t }}</strong>
+            <span>{{ 'Pour nous dire merci, suis Raiki Services sur Instagram.' | t }}</span>
           } @else {
-            <strong>Gagnants et prochains quiz</strong>
-            <span>Tout est annoncé en premier sur notre Instagram.</span>
+            <strong>{{ 'Gagnants et prochains quiz' | t }}</strong>
+            <span>{{ 'Tout est annoncé en premier sur notre Instagram.' | t }}</span>
           }
         </span>
-        <span class="go">Suivre</span>
+        <span class="go">{{ 'Suivre' | t }}</span>
       </a>
     }
   `,

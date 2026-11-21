@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 
 import { IconComponent } from './icon.component';
+import { TPipe } from '../core/i18n';
 
 /**
  * « Tu voulais dire jean@gmail.com ? », sous un champ email (voir core/email-typo.ts).
@@ -9,16 +10,16 @@ import { IconComponent } from './icon.component';
  */
 @Component({
   selector: 'raf-email-suggestion',
-  imports: [IconComponent],
+  imports: [TPipe, IconComponent],
   template: `
     <div class="alert-box warn suggestion pop-in" role="alert">
       <raf-icon name="warning" [size]="26" />
       <div class="grow">
-        <div>Tu voulais dire</div>
+        <div>{{ 'Tu voulais dire' | t }}</div>
         <strong>{{ suggestion() }}</strong> ?
         <div class="actions">
-          <button class="btn3d green sm" type="button" (click)="accept.emit(suggestion())">Oui, corriger</button>
-          <button class="btn3d blue sm" type="button" (click)="keep.emit()">Non, c'est bon</button>
+          <button class="btn3d green sm" type="button" (click)="accept.emit(suggestion())">{{ 'Oui, corriger' | t }}</button>
+          <button class="btn3d blue sm" type="button" (click)="keep.emit()">{{ "Non, c'est bon" | t }}</button>
         </div>
       </div>
     </div>

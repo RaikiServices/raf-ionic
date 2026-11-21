@@ -10,6 +10,7 @@ import { FeedbackService } from '../../core/feedback.service';
 import { IconComponent } from '../../ui/icon.component';
 import { TopBarComponent } from '../../ui/top-bar.component';
 import { normalizePhone } from '../auth/register.page';
+import { TPipe, t } from '../../core/i18n';
 
 /**
  * Correction d'un numero mal saisi a l'inscription. Possible tant qu'il n'est pas
@@ -17,28 +18,28 @@ import { normalizePhone } from '../auth/register.page';
  */
 @Component({
   selector: 'raf-change-phone',
-  imports: [FormsModule, IonHeader, IonToolbar, IonContent, TopBarComponent, IconComponent],
+  imports: [TPipe, FormsModule, IonHeader, IonToolbar, IonContent, TopBarComponent, IconComponent],
   template: `
     <ion-header class="raf-header">
-      <ion-toolbar><raf-top-bar back="/profil" title="Mon numéro" [showWallet]="false" /></ion-toolbar>
+      <ion-toolbar><raf-top-bar back="/profil" [title]="'Mon numéro' | t" [showWallet]="false" /></ion-toolbar>
     </ion-header>
 
     <ion-content class="raf-sky" [fullscreen]="true">
       <div class="page-pad">
         <form class="panel panel-with-ribbon" (ngSubmit)="submit()">
-          <div class="ribbon purple">Corriger mon numéro</div>
+          <div class="ribbon purple">{{ 'Corriger mon numéro' | t }}</div>
           @if (error(); as message) {
             <div class="alert-box">{{ message }}</div>
           }
           @if (auth.user(); as u) {
             <div class="alert-box info stack">
-              <span>Numéro enregistré :</span>
+              <span>{{ 'Numéro enregistré :' | t }}</span>
               <strong>{{ u.phone }}</strong>
-              <span>S'il est faux, saisis le bon : c'est à lui que partiront le code de vérification et les codes de retrait.</span>
+              <span>{{ "S'il est faux, saisis le bon : c'est à lui que partiront le code de vérification et les codes de retrait." | t }}</span>
             </div>
           }
           <label class="field">
-            <span class="field-label">Bon numéro</span>
+            <span class="field-label">{{ 'Bon numéro' | t }}</span>
             <span class="input-box">
               <raf-icon name="phone" [size]="24" />
               <span class="prefix">+509</span>
@@ -46,13 +47,13 @@ import { normalizePhone } from '../auth/register.page';
             </span>
           </label>
           <label class="field">
-            <span class="field-label">Mot de passe</span>
+            <span class="field-label">{{ 'Mot de passe' | t }}</span>
             <span class="input-box">
               <raf-icon name="lock" [size]="24" />
               <input type="password" name="password" [(ngModel)]="password" autocomplete="current-password" />
             </span>
           </label>
-          <button class="btn3d purple block" type="submit" [disabled]="busy()">{{ busy() ? 'Enregistrement…' : 'Enregistrer' }}</button>
+          <button class="btn3d purple block" type="submit" [disabled]="busy()">{{ (busy() ? 'Enregistrement…' : 'Enregistrer') | t }}</button>
         </form>
       </div>
     </ion-content>
@@ -73,11 +74,11 @@ export class ChangePhonePage {
   protected async submit(): Promise<void> {
     const phone = normalizePhone(this.phone);
     if (!/^\+[1-9]\d{7,14}$/.test(phone)) {
-      this.error.set('Saisis un numéro valide, par exemple 3712 3456.');
+      this.error.set(t('Saisis un numéro valide, par exemple 3712 3456.'));
       return;
     }
     if (!this.password) {
-      this.error.set('Saisis ton mot de passe pour confirmer.');
+      this.error.set(t('Saisis ton mot de passe pour confirmer.'));
       return;
     }
     this.busy.set(true);
@@ -85,7 +86,7 @@ export class ChangePhonePage {
     try {
       const user = await firstValueFrom(this.apiService.correctPhone(this.password, phone));
       await this.auth.setUser(user);
-      await this.feedback.success(`Numéro enregistré : ${user.phone}.`);
+      await this.feedback.success(t('Numéro enregistré : {tel}.', { tel: user.phone }));
       // Email deja confirme : on enchaine sur la verification du nouveau numero.
       await this.nav.navigateBack(user.emailVerified ? '/profil/telephone' : '/profil');
     } catch (e) {

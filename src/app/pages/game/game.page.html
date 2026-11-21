@@ -2,12 +2,12 @@
   <div class="screen">
     <!-- Bandeau du haut -->
     <header class="hud">
-      <button class="btn3d red sm icon-only" type="button" aria-label="Quitter" (click)="askQuit()">
+      <button class="btn3d red sm icon-only" type="button" [attr.aria-label]="'Quitter' | t" (click)="askQuit()">
         <raf-icon name="close" [size]="20" />
       </button>
       @if (phase() === 'playing' || phase() === 'submitting') {
         <div class="counter">
-          <span class="counter-label">Question</span>
+          <span class="counter-label">{{ 'Question' | t }}</span>
           <span class="counter-value">{{ index() + 1 }}<small>/{{ total() }}</small></span>
         </div>
         <div class="spacer"></div>
@@ -34,45 +34,45 @@
             <raf-icon class="float" [name]="solo() ? 'flame' : 'trophy'" [size]="96" />
             <h1 class="title-stroke">{{ q.title }}</h1>
             <section class="panel panel-with-ribbon">
-              <div class="ribbon purple">{{ solo() ? 'Défi solo' : 'Prêt ?' }}</div>
+              <div class="ribbon purple">{{ (solo() ? 'Défi solo' : 'Prêt ?') | t }}</div>
               <ul class="rules">
-                <li><raf-icon name="question" [size]="28" /><span><strong>{{ q.questionsPerGame }} questions</strong>, une à la fois</span></li>
-                <li><raf-icon name="clock" [size]="28" /><span><strong>{{ q.questionDurationSeconds }} s par question</strong> : tu passes à la suivante dès ta réponse, ou à la fin du chrono</span></li>
+                <li><raf-icon name="question" [size]="28" /><span><strong>{{ '{n} questions' | t: { n: q.questionsPerGame } }}</strong>{{ ', une à la fois' | t }}</span></li>
+                <li><raf-icon name="clock" [size]="28" /><span><strong>{{ '{n} s par question' | t: { n: q.questionDurationSeconds } }}</strong> {{ ': tu passes à la suivante dès ta réponse, ou à la fin du chrono' | t }}</span></li>
                 @if (solo()) {
-                  <li><raf-icon name="crown" [size]="28" /><span><strong>Sans-faute = {{ q.soloPrizeHtg | num }} HTG</strong>, versés aussitôt sur tes gains</span></li>
-                  <li><raf-icon name="lock" [size]="28" /><span>Une seule partie par sujet et par jour</span></li>
+                  <li><raf-icon name="crown" [size]="28" /><span><strong>{{ 'Sans-faute = {n} HTG' | t: { n: q.soloPrizeHtg | num } }}</strong>{{ ', versés aussitôt sur tes gains' | t }}</span></li>
+                  <li><raf-icon name="lock" [size]="28" /><span>{{ 'Une seule partie par sujet et par jour' | t }}</span></li>
                 } @else {
-                  <li><raf-icon name="lock" [size]="28" /><span>Pas de retour en arrière : une question sans réponse compte comme fausse</span></li>
-                  <li><raf-icon name="shield" [size]="28" /><span>Tes réponses sont vérifiées à la fin : aucun indice pendant la partie</span></li>
+                  <li><raf-icon name="lock" [size]="28" /><span>{{ 'Pas de retour en arrière : une question sans réponse compte comme fausse' | t }}</span></li>
+                  <li><raf-icon name="shield" [size]="28" /><span>{{ 'Tes réponses sont vérifiées à la fin : aucun indice pendant la partie' | t }}</span></li>
                 }
               </ul>
 
               @if (hasOngoing()) {
-                <div class="alert-box info">Une partie est déjà en cours : tu reprends là où tu t'étais arrêté.</div>
-                <button class="btn3d lg block pulse" type="button" (click)="launch()"><raf-icon name="play" [size]="26" /> Reprendre</button>
+                <div class="alert-box info">{{ "Une partie est déjà en cours : tu reprends là où tu t'étais arrêté." | t }}</div>
+                <button class="btn3d lg block pulse" type="button" (click)="launch()"><raf-icon name="play" [size]="26" /> {{ 'Reprendre' | t }}</button>
               } @else if (solo()) {
                 @if (isTester()) {
-                  <p class="tickets-left"><raf-icon name="gift" [size]="26" /> Compte de test : partie offerte, sans gain</p>
-                  <button class="btn3d lg block pulse" type="button" (click)="launch()"><raf-icon name="play" [size]="26" /> C'est parti !</button>
+                  <p class="tickets-left"><raf-icon name="gift" [size]="26" /> {{ 'Compte de test : partie offerte, sans gain' | t }}</p>
+                  <button class="btn3d lg block pulse" type="button" (click)="launch()"><raf-icon name="play" [size]="26" /> {{ "C'est parti !" | t }}</button>
                 } @else if (playedToday()) {
-                  <div class="alert-box info">Tu as déjà joué ce sujet aujourd'hui. Reviens demain, ou essaie un autre sujet !</div>
-                  <button class="btn3d blue block" type="button" (click)="leave()">Autres sujets</button>
+                  <div class="alert-box info">{{ "Tu as déjà joué ce sujet aujourd'hui. Reviens demain, ou essaie un autre sujet !" | t }}</div>
+                  <button class="btn3d blue block" type="button" (click)="leave()">{{ 'Autres sujets' | t }}</button>
                 } @else if (q.free || firstGameOffered()) {
-                  <p class="tickets-left"><raf-icon name="gift" [size]="26" /> Cette partie est offerte</p>
-                  <button class="btn3d lg block pulse" type="button" (click)="launch()"><raf-icon name="play" [size]="26" /> C'est parti !</button>
+                  <p class="tickets-left"><raf-icon name="gift" [size]="26" /> {{ 'Cette partie est offerte' | t }}</p>
+                  <button class="btn3d lg block pulse" type="button" (click)="launch()"><raf-icon name="play" [size]="26" /> {{ "C'est parti !" | t }}</button>
                 } @else if (state.wallet() && !canAfford()) {
-                  <div class="alert-box warn">Il te faut {{ q.ticketPriceCredits }} crédits pour jouer ({{ state.wallet()?.creditBalance }} disponibles).</div>
-                  <button class="btn3d block" type="button" (click)="goTopUp()"><raf-icon name="plus" [size]="22" /> Recharger</button>
+                  <div class="alert-box warn">{{ 'Il te faut {n} crédits pour jouer ({dispo} disponibles).' | t: { n: q.ticketPriceCredits, dispo: state.wallet()?.creditBalance ?? 0 } }}</div>
+                  <button class="btn3d block" type="button" (click)="goTopUp()"><raf-icon name="plus" [size]="22" /> {{ 'Recharger' | t }}</button>
                 } @else {
-                  <p class="tickets-left"><raf-icon name="coin" [size]="26" /> Cette partie coûte {{ q.ticketPriceCredits }} crédits</p>
-                  <button class="btn3d lg block pulse" type="button" (click)="launch()"><raf-icon name="play" [size]="26" /> C'est parti !</button>
+                  <p class="tickets-left"><raf-icon name="coin" [size]="26" /> {{ 'Cette partie coûte {n} crédits' | t: { n: q.ticketPriceCredits } }}</p>
+                  <button class="btn3d lg block pulse" type="button" (click)="launch()"><raf-icon name="play" [size]="26" /> {{ "C'est parti !" | t }}</button>
                 }
               } @else if (activeTickets() > 0) {
-                <p class="tickets-left"><raf-icon name="ticket" [size]="26" /> Cette partie utilise 1 ticket ({{ activeTickets() }} disponible{{ activeTickets() > 1 ? 's' : '' }})</p>
-                <button class="btn3d lg block pulse" type="button" (click)="launch()"><raf-icon name="play" [size]="26" /> C'est parti !</button>
+                <p class="tickets-left"><raf-icon name="ticket" [size]="26" /> {{ (activeTickets() > 1 ? 'Cette partie utilise 1 ticket ({n} disponibles)' : 'Cette partie utilise 1 ticket ({n} disponible)') | t: { n: activeTickets() } }}</p>
+                <button class="btn3d lg block pulse" type="button" (click)="launch()"><raf-icon name="play" [size]="26" /> {{ "C'est parti !" | t }}</button>
               } @else {
-                <div class="alert-box warn">Il te faut un ticket pour jouer.</div>
-                <button class="btn3d orange block" type="button" (click)="leave()"><raf-icon name="ticket" [size]="28" /> Prendre un ticket</button>
+                <div class="alert-box warn">{{ 'Il te faut un ticket pour jouer.' | t }}</div>
+                <button class="btn3d orange block" type="button" (click)="leave()"><raf-icon name="ticket" [size]="28" /> {{ 'Prendre un ticket' | t }}</button>
               }
             </section>
           </div>
@@ -89,7 +89,7 @@
 
       @case ('starting') {
         <div class="center-stage">
-          <span class="big-go pop-in">GO !</span>
+          <span class="big-go pop-in">{{ 'GO !' | t }}</span>
         </div>
       }
 
@@ -98,7 +98,7 @@
           @for (current of [q]; track current.id) {
             <div class="play slide-up">
               <section class="question panel">
-                <div class="ribbon blue">Question {{ index() + 1 }}</div>
+                <div class="ribbon blue">{{ 'Question {n}' | t: { n: index() + 1 } }}</div>
                 @if (current.imageUrl; as img) {
                   <img class="question-img" [src]="img" alt="" />
                 }
@@ -129,10 +129,10 @@
               </div>
 
               @if (missed()) {
-                <div class="saved missed visible"><raf-icon name="hourglass" [size]="22" /> Temps écoulé</div>
+                <div class="saved missed visible"><raf-icon name="hourglass" [size]="22" /> {{ 'Temps écoulé' | t }}</div>
               } @else {
                 <div class="saved" [class.visible]="picked() !== null && picked() !== -1">
-                  <raf-icon name="check" [size]="22" /> Réponse enregistrée
+                  <raf-icon name="check" [size]="22" /> {{ 'Réponse enregistrée' | t }}
                 </div>
               }
             </div>
@@ -143,7 +143,7 @@
       @case ('submitting') {
         <div class="center-stage">
           <raf-icon class="float" name="shield" [size]="88" />
-          <span class="big-text">Vérification…</span>
+          <span class="big-text">{{ 'Vérification…' | t }}</span>
         </div>
       }
 
@@ -152,9 +152,9 @@
           <div class="result">
             <div class="rays" aria-hidden="true"></div>
             @if (r.gameMode === 'SOLO') {
-              <h1 class="title-stroke result-title pop-in">{{ r.won ? 'Sans-faute !' : 'Pas cette fois' }}</h1>
+              <h1 class="title-stroke result-title pop-in">{{ (r.won ? 'Sans-faute !' : 'Pas cette fois') | t }}</h1>
             } @else {
-              <h1 class="title-stroke result-title pop-in">{{ stars() >= 2 ? 'Bravo !' : stars() === 1 ? 'Bien joué !' : 'Partie terminée' }}</h1>
+              <h1 class="title-stroke result-title pop-in">{{ (stars() >= 2 ? 'Bravo !' : stars() === 1 ? 'Bien joué !' : 'Partie terminée') | t }}</h1>
             }
             <div class="stars">
               @for (s of [1, 2, 3]; track s) {
@@ -163,45 +163,45 @@
             </div>
             <section class="panel score-panel slide-up">
               @if (r.won) {
-                <div class="ribbon green">Gagné !</div>
+                <div class="ribbon green">{{ 'Gagné !' | t }}</div>
               } @else if (newRecord()) {
-                <div class="ribbon gold">Nouveau record !</div>
+                <div class="ribbon gold">{{ 'Nouveau record !' | t }}</div>
               }
 
               @if (r.gameMode === 'SOLO') {
-                <div class="score-label">Bonnes réponses</div>
+                <div class="score-label">{{ 'Bonnes réponses' | t }}</div>
                 <div class="score">{{ r.correctCount ?? 0 }}<small>/{{ total() }}</small></div>
                 @if (r.won) {
                   <div class="prize-won"><raf-icon name="cash" [size]="34" /> +{{ quiz()?.soloPrizeHtg | num }} HTG</div>
-                  <p class="note">Ton prix est déjà sur ton solde de gains, retirable vers MonCash, NatCash ou au guichet.</p>
+                  <p class="note">{{ 'Ton prix est déjà sur ton solde de gains, retirable vers MonCash, NatCash ou au guichet.' | t }}</p>
                 } @else {
-                  <p class="note">Il fallait un sans-faute pour gagner. Reviens demain pour retenter ce sujet !</p>
+                  <p class="note">{{ 'Il fallait un sans-faute pour gagner. Reviens demain pour retenter ce sujet !' | t }}</p>
                 }
                 <div class="result-actions">
-                  <button class="btn3d blue" type="button" (click)="leave()">Autres sujets</button>
+                  <button class="btn3d blue" type="button" (click)="leave()">{{ 'Autres sujets' | t }}</button>
                 </div>
                 <raf-instagram-card [variant]="quiz()?.free ? 'thanks' : 'news'" />
               } @else {
-                <div class="score-label">Score</div>
+                <div class="score-label">{{ 'Score' | t }}</div>
                 <div class="score">{{ shownScore() }}</div>
-                <div class="score-sub">{{ r.correctCount }} bonne{{ (r.correctCount ?? 0) > 1 ? 's' : '' }} réponse{{ (r.correctCount ?? 0) > 1 ? 's' : '' }} sur {{ total() }}</div>
+                <div class="score-sub">{{ ((r.correctCount ?? 0) > 1 ? '{n} bonnes réponses sur {total}' : '{n} bonne réponse sur {total}') | t: { n: r.correctCount ?? 0, total: total() } }}</div>
                 @if (r.bestScore != null) {
-                  <div class="best"><raf-icon name="crown" [size]="26" /> Ton meilleur score : <strong>{{ r.bestScore }}</strong></div>
+                  <div class="best"><raf-icon name="crown" [size]="26" /> {{ 'Ton meilleur score :' | t }} <strong>{{ r.bestScore }}</strong></div>
                 }
-                <p class="note">Le classement et le corrigé seront publiés à la fin du quiz. Seul ton meilleur score compte.</p>
+                <p class="note">{{ 'Le classement et le corrigé seront publiés à la fin du quiz. Seul ton meilleur score compte.' | t }}</p>
                 <!-- Quiz gratuit : un seul ticket, pas de nouvel essai a acheter. -->
                 @if (quiz()?.free && activeTickets() === 0) {
                   <div class="result-actions">
-                    <button class="btn3d blue" type="button" (click)="leave()">Retour</button>
+                    <button class="btn3d blue" type="button" (click)="leave()">{{ 'Retour' | t }}</button>
                   </div>
                 } @else {
                   <div class="result-actions two">
-                    <button class="btn3d blue" type="button" (click)="leave()">Retour</button>
+                    <button class="btn3d blue" type="button" (click)="leave()">{{ 'Retour' | t }}</button>
                     <button class="btn3d" type="button" (click)="replay()">
                       @if (activeTickets() > 0) {
-                        <raf-icon name="play" [size]="22" /> Rejouer
+                        <raf-icon name="play" [size]="22" /> {{ 'Rejouer' | t }}
                       } @else {
-                        <raf-icon name="ticket" [size]="26" /> Rejouer
+                        <raf-icon name="ticket" [size]="26" /> {{ 'Rejouer' | t }}
                       }
                     </button>
                   </div>
@@ -219,12 +219,12 @@
           <section class="panel fail-panel">
             <p class="fail-text">{{ error() }}</p>
             @if (canRetry()) {
-              <p class="fail-hint">Ta partie n'est pas perdue. Réessaie dès que le réseau revient.</p>
-              <button class="btn3d block" type="button" (click)="retry()"><ion-icon name="refresh" /> Réessayer l'envoi</button>
+              <p class="fail-hint">{{ "Ta partie n'est pas perdue. Réessaie dès que le réseau revient." | t }}</p>
+              <button class="btn3d block" type="button" (click)="retry()"><ion-icon name="refresh" /> {{ "Réessayer l'envoi" | t }}</button>
             } @else if (!game()) {
-              <button class="btn3d block" type="button" (click)="retryStart()">Réessayer</button>
+              <button class="btn3d block" type="button" (click)="retryStart()">{{ 'Réessayer' | t }}</button>
             }
-            <button class="btn3d blue block" type="button" (click)="leave()">{{ solo() ? 'Retour au Solo' : 'Retour au quiz' }}</button>
+            <button class="btn3d blue block" type="button" (click)="leave()">{{ (solo() ? 'Retour au Solo' : 'Retour au quiz') | t }}</button>
           </section>
         </div>
       }
@@ -234,10 +234,10 @@
   <ion-modal #quitModal class="raf-popup" [isOpen]="quitOpen()" (didDismiss)="quitOpen.set(false)">
     <ng-template>
       <div class="panel quit">
-        <div class="ribbon">Quitter ?</div>
-        <p>Le chrono continue sans toi : chaque question non répondue comptera comme fausse. Tu pourras reprendre ta partie là où elle en sera.</p>
-        <button class="btn3d block" type="button" (click)="quitOpen.set(false)">Continuer à jouer</button>
-        <button class="btn3d red block" type="button" (click)="leave()">Quitter</button>
+        <div class="ribbon">{{ 'Quitter ?' | t }}</div>
+        <p>{{ 'Le chrono continue sans toi : chaque question non répondue comptera comme fausse. Tu pourras reprendre ta partie là où elle en sera.' | t }}</p>
+        <button class="btn3d block" type="button" (click)="quitOpen.set(false)">{{ 'Continuer à jouer' | t }}</button>
+        <button class="btn3d red block" type="button" (click)="leave()">{{ 'Quitter' | t }}</button>
       </div>
     </ng-template>
   </ion-modal>

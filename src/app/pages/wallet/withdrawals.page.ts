@@ -16,6 +16,7 @@ import { Withdrawal, WithdrawalStatus } from '../../core/models';
 import { IconComponent } from '../../ui/icon.component';
 import { DateTimePipe, HtgPipe } from '../../ui/pipes';
 import { TopBarComponent } from '../../ui/top-bar.component';
+import { TPipe, t } from '../../core/i18n';
 
 const STATUS: Record<WithdrawalStatus, { label: string; cls: string }> = {
   AWAITING_OTP: { label: 'Code attendu', cls: 'scheduled' },
@@ -31,10 +32,10 @@ const STATUS: Record<WithdrawalStatus, { label: string; cls: string }> = {
 /** Suivi des demandes de retrait (lien des notifications : /portefeuille/retraits). */
 @Component({
   selector: 'raf-withdrawals',
-  imports: [IonHeader, IonToolbar, IonContent, IonRefresher, IonRefresherContent, TopBarComponent, IconComponent, HtgPipe, DateTimePipe],
+  imports: [TPipe, IonHeader, IonToolbar, IonContent, IonRefresher, IonRefresherContent, TopBarComponent, IconComponent, HtgPipe, DateTimePipe],
   template: `
     <ion-header class="raf-header">
-      <ion-toolbar><raf-top-bar back="/portefeuille" title="Mes retraits" /></ion-toolbar>
+      <ion-toolbar><raf-top-bar back="/portefeuille" [title]="'Mes retraits' | t" /></ion-toolbar>
     </ion-header>
 
     <ion-content class="raf-sky" [fullscreen]="true">
@@ -49,45 +50,45 @@ const STATUS: Record<WithdrawalStatus, { label: string; cls: string }> = {
         } @else if (items()!.length === 0) {
           <div class="empty-state">
             <raf-icon class="float" name="bank" [size]="88" />
-            <div class="empty-title">Aucun retrait</div>
-            <div class="empty-text">Gagne un quiz, puis retire tes gains vers MonCash, NatCash ou en espèces.</div>
-            <button class="btn3d orange" type="button" (click)="nav.navigateForward('/portefeuille/retirer')">Retirer mes gains</button>
+            <div class="empty-title">{{ 'Aucun retrait' | t }}</div>
+            <div class="empty-text">{{ 'Gagne un quiz, puis retire tes gains vers MonCash, NatCash ou en espèces.' | t }}</div>
+            <button class="btn3d orange" type="button" (click)="nav.navigateForward('/portefeuille/retirer')">{{ 'Retirer mes gains' | t }}</button>
           </div>
         } @else {
           <div class="list stagger">
             @for (w of items(); track w.id) {
               <section class="panel tight item">
                 <div class="head">
-                  <span [class]="'status-tag ' + status(w).cls">{{ status(w).label }}</span>
+                  <span [class]="'status-tag ' + status(w).cls">{{ status(w).label | t }}</span>
                   <span class="date">{{ w.createdAt | dateTime }}</span>
                 </div>
                 <div class="amounts">
                   <div class="net">{{ w.netHtg | htg }}</div>
-                  <div class="detail">{{ w.amountHtg | htg }} − {{ w.feeHtg | htg }} de frais</div>
+                  <div class="detail">{{ w.amountHtg | htg }} − {{ w.feeHtg | htg }} {{ 'de frais' | t }}</div>
                 </div>
                 <div class="dest">
                   <raf-icon [name]="w.provider === 'MANUAL' ? 'bank' : 'phone'" [size]="24" />
                   {{ provider(w) }}{{ w.destinationNumber ? ' · ' + w.destinationNumber : '' }}
                 </div>
                 @if (w.status === 'APPROVED' && w.provider === 'MANUAL') {
-                  <div class="alert-box info hint">Présente-toi au guichet RAF : l'agent t'enverra un code de remise par SMS.</div>
+                  <div class="alert-box info hint">{{ "Présente-toi au guichet RAF : l'agent t'enverra un code de remise par SMS." | t }}</div>
                 }
                 @if (w.status === 'REJECTED' && w.rejectionReason) {
-                  <div class="alert-box hint">Motif : {{ w.rejectionReason }}. Le montant est revenu dans tes gains.</div>
+                  <div class="alert-box hint">{{ 'Motif : {motif}. Le montant est revenu dans tes gains.' | t: { motif: w.rejectionReason } }}</div>
                 }
                 @if (w.status === 'PARTIALLY_PAID') {
                   <div class="alert-box info hint">
-                    {{ (w.paidHtg ?? 0) | htg }} déjà versés sur {{ w.netHtg | htg }}. Le reste te sera envoyé dès que possible.
+                    {{ '{verse} déjà versés sur {total}. Le reste te sera envoyé dès que possible.' | t: { verse: (w.paidHtg ?? 0) | htg, total: w.netHtg | htg } }}
                   </div>
                 }
                 @if (w.status === 'PAID' && w.refundedHtg) {
                   <div class="alert-box hint">
-                    {{ (w.paidHtg ?? 0) | htg }} versés ; les {{ w.refundedHtg | htg }} restants sont revenus dans tes gains.
-                    {{ w.rejectionReason ? 'Motif : ' + w.rejectionReason : '' }}
+                    {{ '{verse} versés ; les {reste} restants sont revenus dans tes gains.' | t: { verse: (w.paidHtg ?? 0) | htg, reste: w.refundedHtg | htg } }}
+                    {{ w.rejectionReason ? ('Motif :' | t) + ' ' + w.rejectionReason : '' }}
                   </div>
                 }
                 @if (w.status === 'PAID' && w.paidAt) {
-                  <div class="paid">Versé {{ w.paidAt | dateTime }}{{ w.payoutReference ? ' · réf. ' + w.payoutReference : '' }}</div>
+                  <div class="paid">{{ 'Versé' | t }} {{ w.paidAt | dateTime }}{{ w.payoutReference ? ' · ' + ('réf.' | t) + ' ' + w.payoutReference : '' }}</div>
                 }
               </section>
             }
@@ -141,6 +142,6 @@ export class WithdrawalsPage {
   }
 
   protected provider(w: Withdrawal): string {
-    return w.provider === 'MANUAL' ? 'Espèces au guichet' : w.provider === 'MONCASH' ? 'MonCash' : 'NatCash';
+    return w.provider === 'MANUAL' ? t('Espèces au guichet') : w.provider === 'MONCASH' ? 'MonCash' : 'NatCash';
   }
 }

@@ -12,6 +12,7 @@ import { notificationLink } from '../core/notification-links';
 import { PlayerStateService } from '../core/player-state.service';
 import { IconComponent } from './icon.component';
 import { closeModal } from './modal';
+import { TPipe } from '../core/i18n';
 
 /** Nouvelle verification des messages en attente, en plus de l'ouverture et du retour dans l'app. */
 const CHECK_INTERVAL_MS = 60_000;
@@ -29,26 +30,26 @@ const QUIET_ROUTES = [/^\/quiz\/[^/]+\/jouer/, /^\/profil\/supprimer/];
  */
 @Component({
   selector: 'raf-announcement-popup',
-  imports: [IonModal, IconComponent],
+  imports: [TPipe, IonModal, IconComponent],
   template: `
     <ion-modal class="raf-popup" [isOpen]="open()" [backdropDismiss]="false" (didDismiss)="dismissed()">
       <ng-template>
         @if (current(); as n) {
           <div class="panel popup">
-            <div class="ribbon">Message de RAF</div>
+            <div class="ribbon">{{ 'Message de RAF' | t }}</div>
             <div class="popup-art">
               <raf-icon class="float" name="info" [size]="72" />
             </div>
             <h2 class="title">{{ n.title }}</h2>
             <p class="body">{{ n.body }}</p>
             @if (remaining() > 0) {
-              <p class="more">Encore {{ remaining() }} message{{ remaining() > 1 ? 's' : '' }} après celui-ci</p>
+              <p class="more">{{ (remaining() > 1 ? 'Encore {n} messages après celui-ci' : 'Encore {n} message après celui-ci') | t: { n: remaining() } }}</p>
             }
             <button class="btn3d green block" type="button" [disabled]="busy()" (click)="understood()">
-              <raf-icon name="check" [size]="24" /> J'ai compris
+              <raf-icon name="check" [size]="24" /> {{ "J'ai compris" | t }}
             </button>
             @if (link(); as path) {
-              <button class="btn3d blue block" type="button" [disabled]="busy()" (click)="see(path)">Voir</button>
+              <button class="btn3d blue block" type="button" [disabled]="busy()" (click)="see(path)">{{ 'Voir' | t }}</button>
             }
           </div>
         }

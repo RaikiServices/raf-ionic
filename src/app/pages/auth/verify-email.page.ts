@@ -8,32 +8,33 @@ import { AuthService } from '../../core/auth.service';
 import { errorCode, errorMessage } from '../../core/errors';
 import { IconComponent } from '../../ui/icon.component';
 import { AuthLayoutComponent } from './auth-layout.component';
+import { TPipe, t } from '../../core/i18n';
 
 /** Lien recu par email : /verification-email?token=... */
 @Component({
   selector: 'raf-verify-email',
-  imports: [AuthLayoutComponent, IconComponent],
+  imports: [TPipe, AuthLayoutComponent, IconComponent],
   template: `
-    <raf-auth-layout ribbon="Email" helpTopic="email">
+    <raf-auth-layout [ribbon]="'Email' | t" helpTopic="email">
       <div class="center">
         @switch (state()) {
           @case ('pending') {
             <raf-icon class="spin" name="hourglass" [size]="64" />
-            <p class="lead">Vérification en cours…</p>
+            <p class="lead">{{ 'Vérification en cours…' | t }}</p>
           }
           @case ('ok') {
             <raf-icon class="pop-in" name="check" [size]="72" />
-            <p class="lead">Adresse email confirmée !</p>
+            <p class="lead">{{ 'Adresse email confirmée !' | t }}</p>
           }
           @case ('error') {
             <raf-icon class="pop-in" name="cross" [size]="72" />
             <p class="lead">{{ message() }}</p>
-            <p class="hint">Tu peux saisir le code à 6 chiffres du même email depuis ton profil, ou demander un nouvel email.</p>
+            <p class="hint">{{ 'Tu peux saisir le code à 6 chiffres du même email depuis ton profil, ou demander un nouvel email.' | t }}</p>
           }
         }
         @if (state() !== 'pending') {
           <button class="btn3d block" type="button" (click)="continue()">
-            {{ auth.isLoggedIn() ? 'Retour au jeu' : 'Se connecter' }}
+            {{ (auth.isLoggedIn() ? 'Retour au jeu' : 'Se connecter') | t }}
           </button>
         }
       </div>
@@ -59,7 +60,7 @@ export class VerifyEmailPage implements OnInit {
 
   async ngOnInit(): Promise<void> {
     if (!this.token) {
-      this.message.set('Ce lien est incomplet.');
+      this.message.set(t('Ce lien est incomplet.'));
       this.state.set('error');
       return;
     }
@@ -72,7 +73,7 @@ export class VerifyEmailPage implements OnInit {
         this.state.set('ok');
         return;
       }
-      this.message.set(errorMessage(e, 'Ce lien n’est plus valable.'));
+      this.message.set(errorMessage(e, t('Ce lien n’est plus valable.')));
       this.state.set('error');
     }
   }

@@ -12,6 +12,7 @@ import { IconComponent } from '../../ui/icon.component';
 import { NumPipe } from '../../ui/pipes';
 import { TopBarComponent } from '../../ui/top-bar.component';
 import { PENDING_ONLINE_TOPUP_KEY } from './online-top-up.page';
+import { TPipe } from '../../core/i18n';
 
 type View = 'checking' | 'confirmed' | 'failed' | 'pending' | 'cancelled' | 'unknown';
 
@@ -30,10 +31,10 @@ const MAX_WAIT_MS = 90_000;
  */
 @Component({
   selector: 'raf-top-up-return',
-  imports: [IonHeader, IonToolbar, IonContent, TopBarComponent, IconComponent, NumPipe],
+  imports: [TPipe, IonHeader, IonToolbar, IonContent, TopBarComponent, IconComponent, NumPipe],
   template: `
     <ion-header class="raf-header">
-      <ion-toolbar><raf-top-bar back="/portefeuille" title="Recharge" /></ion-toolbar>
+      <ion-toolbar><raf-top-bar back="/portefeuille" [title]="'Recharge' | t" /></ion-toolbar>
     </ion-header>
 
     <ion-content class="raf-sky" [fullscreen]="true">
@@ -41,47 +42,47 @@ const MAX_WAIT_MS = 90_000;
         <section class="panel panel-with-ribbon done">
           @switch (view()) {
             @case ('checking') {
-              <div class="ribbon blue">Vérification</div>
+              <div class="ribbon blue">{{ 'Vérification' | t }}</div>
               <div class="spinner" aria-hidden="true"></div>
-              <p class="lead">Nous vérifions ton paiement…</p>
-              <p class="sub">Ne ferme pas cette page, ça ne prend que quelques secondes.</p>
+              <p class="lead">{{ 'Nous vérifions ton paiement…' | t }}</p>
+              <p class="sub">{{ 'Ne ferme pas cette page, ça ne prend que quelques secondes.' | t }}</p>
             }
             @case ('confirmed') {
-              <div class="ribbon green">Recharge réussie !</div>
+              <div class="ribbon green">{{ 'Recharge réussie !' | t }}</div>
               <raf-icon class="pop-in" name="check" [size]="80" />
               @if (topUp(); as t) {
-                <p class="lead">+{{ t.credits | num }} crédits ajoutés</p>
-                <p class="sub">{{ t.chargedHtg ?? t.amountHtg | num }} HTG payés, frais compris.</p>
+                <p class="lead">{{ '+{n} crédits ajoutés' | t: { n: t.credits | num } }}</p>
+                <p class="sub">{{ '{n} HTG payés, frais compris.' | t: { n: t.chargedHtg ?? t.amountHtg | num } }}</p>
               }
-              <button class="btn3d orange block" type="button" (click)="nav.navigateRoot('/accueil')">Jouer maintenant</button>
+              <button class="btn3d orange block" type="button" (click)="nav.navigateRoot('/accueil')">{{ 'Jouer maintenant' | t }}</button>
             }
             @case ('pending') {
-              <div class="ribbon">Paiement en cours</div>
-              <p class="lead">Ton paiement n'est pas encore confirmé.</p>
+              <div class="ribbon">{{ 'Paiement en cours' | t }}</div>
+              <p class="lead">{{ "Ton paiement n'est pas encore confirmé." | t }}</p>
               <p class="sub">
-                Si tu as validé le paiement, tes crédits arrivent dès sa confirmation, avec une notification.
-                Aucune autre action n'est nécessaire.
+                {{ 'Si tu as validé le paiement, tes crédits arrivent dès sa confirmation, avec une notification.' | t }}
+                {{ "Aucune autre action n'est nécessaire." | t }}
               </p>
             }
             @case ('failed') {
-              <div class="ribbon">Paiement non abouti</div>
-              <p class="lead">Le paiement n'a pas été validé.</p>
-              <p class="sub">Aucun crédit n'a été ajouté. Tu peux réessayer.</p>
-              <button class="btn3d orange block" type="button" (click)="retry()">Réessayer</button>
+              <div class="ribbon">{{ 'Paiement non abouti' | t }}</div>
+              <p class="lead">{{ "Le paiement n'a pas été validé." | t }}</p>
+              <p class="sub">{{ "Aucun crédit n'a été ajouté. Tu peux réessayer." | t }}</p>
+              <button class="btn3d orange block" type="button" (click)="retry()">{{ 'Réessayer' | t }}</button>
             }
             @case ('cancelled') {
-              <div class="ribbon">Paiement annulé</div>
-              <p class="lead">Tu as annulé le paiement.</p>
-              <p class="sub">Aucun montant n'a été débité.</p>
-              <button class="btn3d orange block" type="button" (click)="retry()">Réessayer</button>
+              <div class="ribbon">{{ 'Paiement annulé' | t }}</div>
+              <p class="lead">{{ 'Tu as annulé le paiement.' | t }}</p>
+              <p class="sub">{{ "Aucun montant n'a été débité." | t }}</p>
+              <button class="btn3d orange block" type="button" (click)="retry()">{{ 'Réessayer' | t }}</button>
             }
             @case ('unknown') {
-              <div class="ribbon">Recharge</div>
-              <p class="lead">Aucune recharge en cours.</p>
-              <p class="sub">Retrouve l'état de tes recharges dans l'écran Recharger.</p>
+              <div class="ribbon">{{ 'Recharge' | t }}</div>
+              <p class="lead">{{ 'Aucune recharge en cours.' | t }}</p>
+              <p class="sub">{{ "Retrouve l'état de tes recharges dans l'écran Recharger." | t }}</p>
             }
           }
-          <button class="btn3d blue block back-btn" type="button" (click)="nav.navigateBack('/portefeuille/recharger')">Mes recharges</button>
+          <button class="btn3d blue block back-btn" type="button" (click)="nav.navigateBack('/portefeuille/recharger')">{{ 'Mes recharges' | t }}</button>
         </section>
       </div>
     </ion-content>

@@ -11,6 +11,7 @@ import { NotificationPreference, NotificationType } from '../../core/models';
 import { PushService, PushState } from '../../core/push.service';
 import { IconComponent } from '../../ui/icon.component';
 import { TopBarComponent } from '../../ui/top-bar.component';
+import { TPipe, t } from '../../core/i18n';
 
 interface Row {
   type: NotificationType;
@@ -31,38 +32,38 @@ const PUSH_MESSAGES: Record<PushState, string> = {
 /** Choix des canaux (email, push) type par type ; l'historique dans l'application est toujours garde. */
 @Component({
   selector: 'raf-notification-settings',
-  imports: [IonHeader, IonToolbar, IonContent, IonToggle, TopBarComponent, IconComponent],
+  imports: [TPipe, IonHeader, IonToolbar, IonContent, IonToggle, TopBarComponent, IconComponent],
   template: `
     <ion-header class="raf-header">
-      <ion-toolbar><raf-top-bar back="/alertes" title="Réglages" [showWallet]="false" /></ion-toolbar>
+      <ion-toolbar><raf-top-bar back="/alertes" [title]="'Réglages' | t" [showWallet]="false" /></ion-toolbar>
     </ion-header>
 
     <ion-content class="raf-sky" [fullscreen]="true">
       <div class="page-pad">
         <section class="panel panel-with-ribbon">
-          <div class="ribbon blue">Sur cet appareil</div>
+          <div class="ribbon blue">{{ 'Sur cet appareil' | t }}</div>
           <div class="device">
             <raf-icon name="bell" [size]="40" />
             <div class="grow">
-              <div class="row-title">Notifications push</div>
+              <div class="row-title">{{ 'Notifications push' | t }}</div>
               <div class="row-sub">{{ pushMessage() }}</div>
             </div>
             @if (pushState() === 'enabled' || pushState() === 'disabled') {
-              <ion-toggle [checked]="pushState() === 'enabled'" [disabled]="pushBusy()" (ionChange)="togglePush($event.detail.checked)" aria-label="Notifications push" />
+              <ion-toggle [checked]="pushState() === 'enabled'" [disabled]="pushBusy()" (ionChange)="togglePush($event.detail.checked)" [attr.aria-label]="'Notifications push' | t" />
             }
           </div>
           @if (pushState() !== 'enabled') {
-            <button class="link-btn ink help" type="button" (click)="help()">Je n'arrive pas à les activer</button>
+            <button class="link-btn ink help" type="button" (click)="help()">{{ "Je n'arrive pas à les activer" | t }}</button>
           }
           @if (pushState() === 'unsupported' && !installed()) {
             <button class="btn3d green block install" type="button" (click)="nav.navigateForward('/installer')">
-              <raf-icon name="phone" [size]="24" /> Comment installer RAF
+              <raf-icon name="phone" [size]="24" /> {{ 'Comment installer RAF' | t }}
             </button>
           }
         </section>
 
         <section class="panel panel-with-ribbon">
-          <div class="ribbon">Par type d'alerte</div>
+          <div class="ribbon">{{ "Par type d'alerte" | t }}</div>
           @if (error(); as message) {
             <div class="alert-box">{{ message }}</div>
           } @else if (rows().length === 0) {
@@ -70,25 +71,25 @@ const PUSH_MESSAGES: Record<PushState, string> = {
           } @else {
             <div class="head">
               <span class="grow"></span>
-              <span class="col">Email</span>
+              <span class="col">{{ 'Email' | t }}</span>
               <span class="col">Push</span>
             </div>
             @for (r of rows(); track r.type) {
               <div class="pref">
-                <span class="grow">{{ r.description }}</span>
+                <span class="grow">{{ r.description | t }}</span>
                 <span class="col">
                   @if (r.email; as p) {
-                    <ion-toggle [checked]="p.enabled" (ionChange)="set(p, $event.detail.checked)" [attr.aria-label]="r.description + ' par email'" />
+                    <ion-toggle [checked]="p.enabled" (ionChange)="set(p, $event.detail.checked)" [attr.aria-label]="(r.description | t) + ' (' + ('Email' | t) + ')'" />
                   }
                 </span>
                 <span class="col">
                   @if (r.push; as p) {
-                    <ion-toggle [checked]="p.enabled" (ionChange)="set(p, $event.detail.checked)" [attr.aria-label]="r.description + ' en push'" />
+                    <ion-toggle [checked]="p.enabled" (ionChange)="set(p, $event.detail.checked)" [attr.aria-label]="(r.description | t) + ' (push)'" />
                   }
                 </span>
               </div>
             }
-            <p class="note">Toutes tes alertes restent visibles dans l'onglet Alertes, quels que soient ces réglages.</p>
+            <p class="note">{{ "Toutes tes alertes restent visibles dans l'onglet Alertes, quels que soient ces réglages." | t }}</p>
           }
         </section>
       </div>
@@ -140,7 +141,7 @@ export class NotificationSettingsPage {
   protected readonly error = signal<string | null>(null);
   protected readonly pushState = signal<PushState>('unsupported');
   protected readonly pushBusy = signal(false);
-  protected readonly pushMessage = computed(() => PUSH_MESSAGES[this.pushState()]);
+  protected readonly pushMessage = computed(() => t(PUSH_MESSAGES[this.pushState()]));
 
   protected readonly rows = computed<Row[]>(() => {
     const rows = new Map<NotificationType, Row>();

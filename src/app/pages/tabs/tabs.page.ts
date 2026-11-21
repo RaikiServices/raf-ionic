@@ -4,6 +4,7 @@ import { IonTabBar, IonTabButton, IonTabs } from '@ionic/angular/standalone';
 import { FeedbackService } from '../../core/feedback.service';
 import { PlayerStateService } from '../../core/player-state.service';
 import { IconComponent } from '../../ui/icon.component';
+import { TPipe } from '../../core/i18n';
 
 /**
  * Barre d'onglets du bas, facon jeu mobile : l'onglet actif se souleve et s'illumine.
@@ -12,21 +13,21 @@ import { IconComponent } from '../../ui/icon.component';
  */
 @Component({
   selector: 'raf-tabs',
-  imports: [IonTabs, IonTabBar, IonTabButton, IconComponent],
+  imports: [TPipe, IonTabs, IonTabBar, IonTabButton, IconComponent],
   template: `
     <ion-tabs (ionTabsDidChange)="feedback.tap()">
       <ion-tab-bar slot="bottom">
         <ion-tab-button tab="portefeuille">
           <span class="tile"><raf-icon name="chest" [size]="32" /></span>
-          <span class="label">Trésor</span>
+          <span class="label">{{ 'Trésor' | t }}</span>
         </ion-tab-button>
         <ion-tab-button tab="tickets">
           <span class="tile"><raf-icon name="ticket" [size]="32" /></span>
-          <span class="label">Tickets</span>
+          <span class="label">{{ 'Tickets' | t }}</span>
         </ion-tab-button>
         <ion-tab-button tab="accueil" class="raised">
           <span class="tile"><raf-icon name="home" [size]="32" /></span>
-          <span class="label">Accueil</span>
+          <span class="label">{{ 'Accueil' | t }}</span>
         </ion-tab-button>
         <ion-tab-button tab="alertes">
           <span class="tile">
@@ -35,11 +36,11 @@ import { IconComponent } from '../../ui/icon.component';
               <span class="badge-count">{{ state.unread() > 99 ? '99+' : state.unread() }}</span>
             }
           </span>
-          <span class="label">Alertes</span>
+          <span class="label">{{ 'Alertes' | t }}</span>
         </ion-tab-button>
         <ion-tab-button tab="profil">
           <span class="tile"><raf-icon name="user" [size]="32" /></span>
-          <span class="label">Profil</span>
+          <span class="label">{{ 'Profil' | t }}</span>
         </ion-tab-button>
       </ion-tab-bar>
     </ion-tabs>

@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { ApiError } from './models';
+import { t } from './i18n';
 
 /** Code d'erreur de l'API (ex. INSUFFICIENT_FUNDS), ou null. */
 export function errorCode(error: unknown): string | null {
@@ -10,11 +11,14 @@ export function errorCode(error: unknown): string | null {
   return null;
 }
 
-/** Message a montrer au joueur. Le backend redige deja ses messages en francais. */
-export function errorMessage(error: unknown, fallback = 'Une erreur est survenue. Réessaie.'): string {
+/**
+ * Message a montrer au joueur. Le backend redige ses messages dans la langue
+ * envoyee par l'app (Accept-Language).
+ */
+export function errorMessage(error: unknown, fallback = t('Une erreur est survenue. Réessaie.')): string {
   if (error instanceof HttpErrorResponse) {
     if (error.status === 0) {
-      return 'Pas de connexion. Vérifie ton réseau et réessaie.';
+      return t('Pas de connexion. Vérifie ton réseau et réessaie.');
     }
     const body = error.error as ApiError | null;
     if (body && typeof body === 'object') {
@@ -22,7 +26,7 @@ export function errorMessage(error: unknown, fallback = 'Une erreur est survenue
       return field || body.message || fallback;
     }
     if (error.status >= 500) {
-      return 'Le serveur ne répond pas correctement. Réessaie dans un instant.';
+      return t('Le serveur ne répond pas correctement. Réessaie dans un instant.');
     }
   }
   return fallback;

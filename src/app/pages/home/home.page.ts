@@ -18,6 +18,7 @@ import { TopBarComponent } from '../../ui/top-bar.component';
 import { GroupTabComponent } from './group-tab.component';
 import { NewsTabComponent } from './news-tab.component';
 import { SoloTabComponent } from './solo-tab.component';
+import { TPipe } from '../../core/i18n';
 
 /**
  * Onglets de l'accueil, dans l'ordre d'affichage. La cle est celle du parametre
@@ -41,7 +42,7 @@ function isTab(value: string | null): value is HomeTabKey {
 /** Accueil : un systeme d'onglets (Actualite, En groupe, Solo). */
 @Component({
   selector: 'raf-home',
-  imports: [
+  imports: [TPipe, 
     IonHeader,
     IonToolbar,
     IonContent,
@@ -64,14 +65,14 @@ function isTab(value: string | null): value is HomeTabKey {
       </ion-refresher>
 
       <div class="page-pad">
-        <h1 class="hello title-stroke">Salut {{ auth.user()?.firstName }} !</h1>
+        <h1 class="hello title-stroke">{{ 'Salut {nom} !' | t: { nom: auth.user()?.firstName ?? '' } }}</h1>
 
-        <nav class="home-tabs" role="tablist" aria-label="Accueil">
+        <nav class="home-tabs" role="tablist" [attr.aria-label]="'Accueil' | t">
           @for (tab of tabs; track tab.key) {
             <button type="button" role="tab" class="home-tab" [class.active]="active() === tab.key"
                     [attr.aria-selected]="active() === tab.key" (click)="select(tab.key)">
               <raf-icon [name]="tab.icon" [size]="24" />
-              <span>{{ tab.label }}</span>
+              <span>{{ tab.label | t }}</span>
             </button>
           }
         </nav>

@@ -8,10 +8,10 @@ import { errorMessage } from '../../core/errors';
 import { FeedbackService } from '../../core/feedback.service';
 import { Quiz } from '../../core/models';
 import {
-  STATUS_LABELS,
   acceptsPlay,
   acceptsTickets,
   statusClass,
+  statusLabel,
   statusLine,
   statusRank,
   themeGradient,
@@ -20,6 +20,7 @@ import {
 import { IconComponent } from '../../ui/icon.component';
 import { NumPipe } from '../../ui/pipes';
 import { QuizCardComponent } from '../../ui/quiz-card.component';
+import { TPipe } from '../../core/i18n';
 
 /**
  * Onglet En groupe de l'accueil : le quiz a ne pas manquer en grand, puis tous
@@ -27,13 +28,13 @@ import { QuizCardComponent } from '../../ui/quiz-card.component';
  */
 @Component({
   selector: 'raf-group-tab',
-  imports: [QuizCardComponent, IconComponent, NumPipe],
+  imports: [TPipe, QuizCardComponent, IconComponent, NumPipe],
   template: `
 
         @if (error(); as message) {
           <div class="panel">
             <div class="alert-box">{{ message }}</div>
-            <button class="btn3d blue block" type="button" (click)="load()">Réessayer</button>
+            <button class="btn3d blue block" type="button" (click)="load()">{{ 'Réessayer' | t }}</button>
           </div>
         } @else if (!quizzes()) {
           <div class="skeleton hero-skel"></div>
@@ -42,8 +43,8 @@ import { QuizCardComponent } from '../../ui/quiz-card.component';
         } @else if (quizzes()!.length === 0) {
           <div class="empty-state">
             <raf-icon class="float" name="hourglass" [size]="80" />
-            <div class="empty-title">Aucun quiz pour le moment</div>
-            <div class="empty-text">Le prochain arrive bientôt. Active les notifications pour être prévenu !</div>
+            <div class="empty-title">{{ 'Aucun quiz pour le moment' | t }}</div>
+            <div class="empty-text">{{ 'Le prochain arrive bientôt. Active les notifications pour être prévenu !' | t }}</div>
           </div>
         } @else {
           @if (featured(); as q) {
@@ -72,16 +73,16 @@ import { QuizCardComponent } from '../../ui/quiz-card.component';
                 <div class="prize">
                   <raf-icon name="crown" [size]="40" />
                   <div>
-                    <div class="prize-label">1er prix</div>
+                    <div class="prize-label">{{ '1er prix' | t }}</div>
                     <div class="prize-value">{{ prize(q) | num }} HTG</div>
                   </div>
                   <div class="spacer"></div>
                   <div class="prize-side">
                     <div><raf-icon name="users" [size]="20" /> {{ q.playersRegistered }}</div>
                     @if (q.free) {
-                      <div><raf-icon name="gift" [size]="20" /> Gratuit</div>
+                      <div><raf-icon name="gift" [size]="20" /> {{ 'Gratuit' | t }}</div>
                     } @else {
-                      <div><raf-icon name="coin" [size]="20" /> {{ q.ticketPriceCredits }} / ticket</div>
+                      <div><raf-icon name="coin" [size]="20" /> {{ '{n} / ticket' | t: { n: q.ticketPriceCredits } }}</div>
                     }
                   </div>
                 </div>
@@ -90,7 +91,7 @@ import { QuizCardComponent } from '../../ui/quiz-card.component';
           }
 
           @if (live().length > 0) {
-            <h2 class="section-title"><raf-icon name="flame" [size]="30" /> À jouer maintenant</h2>
+            <h2 class="section-title"><raf-icon name="flame" [size]="30" /> {{ 'À jouer maintenant' | t }}</h2>
             <div class="list stagger">
               @for (q of live(); track q.id) {
                 <raf-quiz-card [quiz]="q" [tickets]="ticketsFor(q.id)" (click)="open(q)" />
@@ -99,7 +100,7 @@ import { QuizCardComponent } from '../../ui/quiz-card.component';
           }
 
           @if (upcoming().length > 0) {
-            <h2 class="section-title"><raf-icon name="ticket" [size]="30" /> Inscriptions ouvertes</h2>
+            <h2 class="section-title"><raf-icon name="ticket" [size]="30" /> {{ 'Inscriptions ouvertes' | t }}</h2>
             <div class="list stagger">
               @for (q of upcoming(); track q.id) {
                 <raf-quiz-card [quiz]="q" [tickets]="ticketsFor(q.id)" (click)="open(q)" />
@@ -108,7 +109,7 @@ import { QuizCardComponent } from '../../ui/quiz-card.component';
           }
 
           @if (past().length > 0) {
-            <h2 class="section-title"><raf-icon name="trophy" [size]="30" /> Terminés</h2>
+            <h2 class="section-title"><raf-icon name="trophy" [size]="30" /> {{ 'Terminés' | t }}</h2>
             <div class="list stagger">
               @for (q of past(); track q.id) {
                 <raf-quiz-card [quiz]="q" [tickets]="ticketsFor(q.id)" (click)="open(q)" />
@@ -328,7 +329,7 @@ export class GroupTabComponent implements OnInit {
   }
 
   protected label(q: Quiz): string {
-    return STATUS_LABELS[q.status];
+    return statusLabel(q.status);
   }
 
   protected cls(q: Quiz): string {
