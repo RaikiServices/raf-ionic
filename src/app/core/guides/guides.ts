@@ -4,7 +4,8 @@
  * Une etape vise un element marque `data-guide="<element>"` dans un template ; `route`
  * ouvre d'abord cet ecran (les etapes suivantes restent sur le meme ecran tant
  * qu'elles n'en donnent pas un autre). Sans element, ou si l'element n'est pas
- * affiche (pas de quiz ouvert...), l'explication apparait au centre de l'ecran.
+ * affiche (pas de quiz ouvert...), l'explication apparait au centre de l'ecran ; une
+ * etape `optional` (fonction coupee dans le back-office) est sautee.
  *
  * Textes en francais : traduits en kreyol par core/i18n-ht.ts, comme le reste de l'app.
  * Les boutons cites entre « » sont ceux de l'ecran, en francais ici.
@@ -14,7 +15,17 @@ export type GuideId = 'demarrage' | 'recharger' | 'retirer' | 'jouer' | 'compte'
 
 export interface GuideStep {
   route?: string;
+  /**
+   * Avec `route` : l'ecran signale par `data-guide-ready="<ready>"` qu'il a fini de
+   * charger ce qui decide de l'affichage (options actives ou non).
+   */
+  ready?: string;
   element?: string;
+  /**
+   * Fonction qui peut etre coupee dans le back-office ou indisponible pour ce joueur :
+   * sans son element a l'ecran, l'etape est sautee (au lieu d'une explication au centre).
+   */
+  optional?: boolean;
   title: string;
   text: string;
   side?: 'top' | 'bottom' | 'left' | 'right';
@@ -109,19 +120,23 @@ export const GUIDES: Guide[] = [
       },
       {
         route: '/portefeuille/recharger',
+        ready: 'topup',
         element: 'topup-online',
+        optional: true,
         title: 'Payer en ligne',
         text: 'Paie par MonCash ou NatCash : tes crédits arrivent tout de suite, sans agent. Des frais de paiement s’ajoutent au montant.',
         side: 'bottom',
       },
       {
         element: 'topup-winnings',
+        optional: true,
         title: 'Avec tes gains',
         text: 'Tu as des gains ? Transforme-les en crédits sans attendre.',
         side: 'bottom',
       },
       {
         element: 'topup-remote',
+        optional: true,
         title: 'À distance',
         text: 'Envoie l’argent au numéro de l’agent RAF, depuis le numéro de ton compte. L’agent crédite ton compte du montant reçu.',
         side: 'bottom',

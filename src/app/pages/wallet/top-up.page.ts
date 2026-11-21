@@ -59,7 +59,7 @@ function depositNumber(label: string, value: string | null | undefined): Deposit
     </ion-header>
 
     <ion-content class="raf-sky" [fullscreen]="true">
-      <div class="page-pad">
+      <div class="page-pad" [attr.data-guide-ready]="ready() ? 'topup' : null">
         @if (online()?.enabled) {
           <section class="panel panel-with-ribbon" data-guide="topup-online">
             <div class="ribbon green">{{ 'En ligne' | t }}</div>
@@ -384,20 +384,29 @@ export class TopUpPage implements OnDestroy {
 
   private poll: ReturnType<typeof setInterval> | null = null;
 
+  /**
+   * Options de recharge connues (actives ou non) : le guide interactif attend ce
+   * signal pour ne montrer que les options affichees (data-guide-ready="topup").
+   */
+  protected readonly ready = signal(false);
+
   ionViewWillEnter(): void {
+    this.ready.set(false);
     firstValueFrom(this.apiService.topUps(0, 20))
       .then((page) => this.topUps.set(page.content))
       .catch(() => undefined);
-    void this.state.refreshWallet();
-    firstValueFrom(this.apiService.appConfig())
-      .then((c) => this.conversionEnabled.set(c.winningsConversionEnabled === true))
-      .catch(() => this.conversionEnabled.set(false));
-    firstValueFrom(this.apiService.onlineTopUpConfig())
-      .then((c) => this.online.set(c))
-      .catch(() => this.online.set(null));
-    firstValueFrom(this.apiService.depositNumbers())
-      .then((n) => this.depositNumbers.set(n))
-      .catch(() => undefined);
+    void Promise.allSettled([
+      this.state.refreshWallet(),
+      firstValueFrom(this.apiService.appConfig())
+        .then((c) => this.conversionEnabled.set(c.winningsConversionEnabled === true))
+        .catch(() => this.conversionEnabled.set(false)),
+      firstValueFrom(this.apiService.onlineTopUpConfig())
+        .then((c) => this.online.set(c))
+        .catch(() => this.online.set(null)),
+      firstValueFrom(this.apiService.depositNumbers())
+        .then((n) => this.depositNumbers.set(n))
+        .catch(() => undefined),
+    ]).then(() => this.ready.set(true));
     this.refreshAvailability();
     this.stopPolling();
     this.poll = setInterval(() => this.refreshAvailability(), AVAILABILITY_POLL_MS);

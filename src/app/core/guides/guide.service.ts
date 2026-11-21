@@ -11,6 +11,8 @@ import { GUIDES, Guide, GuideId, GuideStep } from './guides';
 
 /** Delai maximum pour qu'un ecran ouvert par le guide affiche l'element a surligner. */
 const ELEMENT_WAIT_MS = 1200;
+/** Delai maximum pour qu'un ecran charge ce qui decide de l'affichage (options actives). */
+const READY_WAIT_MS = 4000;
 
 /**
  * Visites guidees de l'app (driver.js), sur les vrais ecrans.
@@ -87,7 +89,8 @@ export class GuideService {
     }
 
     const drive = driver({
-      showProgress: true,
+      // Etapes facultatives : leur nombre n'est connu qu'en chemin, pas de « 3 sur 7 » trompeur.
+      showProgress: !guide.steps.some((step) => step.optional),
       progressText: t('{{current}} sur {{total}}'),
       nextBtnText: t('Suivant'),
       prevBtnText: t('Retour'),
@@ -130,20 +133,42 @@ export class GuideService {
   }
 
   private async moveNow(drive: Driver, guide: Guide, delta: 1 | -1): Promise<void> {
-    const target = (drive.getActiveIndex() ?? 0) + delta;
-    if (target >= guide.steps.length) {
-      drive.destroy();
-      return;
-    }
-    if (target < 0) {
-      return;
-    }
-    const route = routeOf(guide, target);
-    if (route && !this.isOn(route)) {
-      await this.goTo(route);
+    let target = (drive.getActiveIndex() ?? 0) + delta;
+    for (;;) {
+      if (target >= guide.steps.length) {
+        drive.destroy();
+        return;
+      }
+      if (target < 0) {
+        return;
+      }
+      const route = routeOf(guide, target);
+      if (route && !this.isOn(route)) {
+        await this.goTo(route);
+      }
+      await this.waitReady(readyOf(guide, target));
+      const step = guide.steps[target];
+      // Fonction coupee dans le back-office (ou indisponible) : son etape est sautee.
+      if (step.optional && step.element && !visible(step.element)) {
+        target += delta;
+        continue;
+      }
+      break;
     }
     drive.moveTo(target);
   }
+
+  /** Attend que l'ecran signale la fin de son chargement (data-guide-ready), quelques secondes au plus. */
+  private async waitReady(name: string | undefined): Promise<void> {
+    if (!name) {
+      return;
+    }
+    const deadline = Date.now() + READY_WAIT_MS;
+    while (!visible(name, 'data-guide-ready') && Date.now() < deadline) {
+      await delay(100);
+    }
+  }
+
 
   private toDriveStep(step: GuideStep): DriveStep {
     return {
@@ -189,6 +214,16 @@ export class GuideService {
   }
 }
 
+/** Signal de chargement attendu par une etape : celui de l'etape qui a ouvert son ecran. */
+function readyOf(guide: Guide, index: number): string | undefined {
+  for (let i = index; i >= 0; i--) {
+    if (guide.steps[i].route) {
+      return guide.steps[i].ready;
+    }
+  }
+  return undefined;
+}
+
 /** Ecran d'une etape : le sien, sinon celui de l'etape precedente qui en a un. */
 function routeOf(guide: Guide, index: number): string | undefined {
   for (let i = index; i >= 0; i--) {
@@ -199,8 +234,8 @@ function routeOf(guide: Guide, index: number): string | undefined {
   return undefined;
 }
 
-function visible(name: string): Element | null {
-  const all = Array.from(document.querySelectorAll(`[data-guide="${name}"]`));
+function visible(name: string, attribute = 'data-guide'): Element | null {
+  const all = Array.from(document.querySelectorAll(`[${attribute}="${name}"]`));
   return (
     all.find((el) => {
       const rect = el.getBoundingClientRect();
