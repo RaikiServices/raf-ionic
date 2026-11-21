@@ -25,7 +25,8 @@ interface SoloGroup {
   imageUrl: string | null;
   quizzes: Quiz[];
   playableToday: number;
-  bestPrizeHtg: number;
+  /** Somme des prix (sans-faute) des quiz de la categorie. */
+  totalPrizesHtg: number;
 }
 
 /**
@@ -119,8 +120,8 @@ interface SoloGroup {
                   } @else {
                     <span class="chip"><raf-icon name="clock" [size]="16" />{{ 'Reviens demain' | t }}</span>
                   }
-                  @if (g.bestPrizeHtg > 0) {
-                    <div class="tile-prize"><raf-icon name="cash" [size]="20" />{{ "Jusqu'à {n} HTG" | t: { n: g.bestPrizeHtg | num } }}</div>
+                  @if (g.totalPrizesHtg > 0) {
+                    <div class="tile-prize"><raf-icon name="cash" [size]="20" />{{ "Jusqu'à {n} HTG" | t: { n: g.totalPrizesHtg | num } }}</div>
                   }
                 </div>
               </article>
@@ -312,7 +313,7 @@ export class SoloTabComponent implements OnInit {
           imageUrl: parent?.imageUrl ?? null,
           quizzes: [],
           playableToday: 0,
-          bestPrizeHtg: 0,
+          totalPrizesHtg: 0,
         };
         groups.set(key, group);
       }
@@ -320,7 +321,7 @@ export class SoloTabComponent implements OnInit {
       if (!this.played(quiz)) {
         group.playableToday++;
       }
-      group.bestPrizeHtg = Math.max(group.bestPrizeHtg, quiz.soloPrizeHtg ?? 0);
+      group.totalPrizesHtg += quiz.soloPrizeHtg ?? 0;
     }
 
     for (const group of groups.values()) {
