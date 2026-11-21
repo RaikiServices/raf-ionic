@@ -476,6 +476,19 @@ export interface PayoutConfig {
   feeBps: number;
 }
 
+/** Codes de retrait envoyes par email au lieu du SMS (secours choisi dans le back-office). */
+export interface WithdrawalCodesConfig {
+  byEmail: boolean;
+}
+
+export type CodeChannel = 'SMS' | 'EMAIL';
+
+/** Code de retrait envoye : message a afficher et canal utilise. */
+export interface CodeSentResponse {
+  message: string;
+  channel: CodeChannel;
+}
+
 export interface Withdrawal {
   id: number;
   amountHtg: number;

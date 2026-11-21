@@ -7,7 +7,7 @@ import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
 import { errorMessage } from '../../core/errors';
 import { FeedbackService } from '../../core/feedback.service';
-import { PaymentProvider, PayoutConfig, Withdrawal } from '../../core/models';
+import { CodeChannel, PaymentProvider, PayoutConfig, Withdrawal } from '../../core/models';
 import { PlayerStateService } from '../../core/player-state.service';
 import { IconComponent } from '../../ui/icon.component';
 import { HtgPipe, NumPipe } from '../../ui/pipes';
@@ -23,7 +23,10 @@ const PROVIDERS: { value: PaymentProvider; label: string; sub: string }[] = [
   { value: 'MANUAL', label: 'Espèces', sub: 'Au guichet RAF' },
 ];
 
-/** Retrait des gains : montant, moyen de paiement, puis code SMS de confirmation. */
+/**
+ * Retrait des gains : montant, moyen de paiement, puis code de confirmation par SMS,
+ * ou par email quand le back-office a active ce secours (SMS indisponibles).
+ */
 @Component({
   selector: 'raf-withdraw',
   imports: [TPipe, FormsModule, IonHeader, IonToolbar, IonContent, TopBarComponent, IconComponent, NumPipe, HtgPipe],
@@ -44,7 +47,15 @@ const PROVIDERS: { value: PaymentProvider; label: string; sub: string }[] = [
           </div>
         </section>
 
-        @if (!auth.user()?.phoneVerified) {
+        @if (byEmail() && !auth.user()?.emailVerified) {
+          <section class="panel panel-with-ribbon">
+            <div class="ribbon purple">{{ 'Email à confirmer' | t }}</div>
+            <p class="text">{{ "Pour protéger tes gains, chaque retrait est confirmé par un code envoyé par email. Confirme d'abord ton adresse." | t }}</p>
+            <button class="btn3d purple block" type="button" (click)="nav.navigateForward('/profil/email/code')">
+              <raf-icon name="mail" [size]="26" /> {{ 'Confirmer mon email' | t }}
+            </button>
+          </section>
+        } @else if (!byEmail() && !auth.user()?.phoneVerified) {
           <section class="panel panel-with-ribbon">
             <div class="ribbon purple">{{ 'Téléphone à vérifier' | t }}</div>
             <p class="text">{{ "Pour protéger tes gains, chaque retrait est confirmé par un code SMS. Vérifie d'abord ton numéro." | t }}</p>
@@ -93,14 +104,14 @@ const PROVIDERS: { value: PaymentProvider; label: string; sub: string }[] = [
                     </span>
                   </label>
                 } @else {
-                  <div class="alert-box info">{{ "Une fois ta demande approuvée, présente-toi au guichet : l'agent t'enverra un code de remise par SMS." | t }}</div>
+                  <div class="alert-box info">{{ (byEmail() ? "Une fois ta demande approuvée, présente-toi au guichet : l'agent t'enverra un code de remise par email." : "Une fois ta demande approuvée, présente-toi au guichet : l'agent t'enverra un code de remise par SMS.") | t }}</div>
                 }
 
                 @if (error(); as message) {
                   <div class="alert-box">{{ message }}</div>
                 }
                 <button class="btn3d orange block" type="button" [disabled]="busy()" (click)="sendCode()">
-                  {{ (busy() ? 'Envoi…' : 'Recevoir le code SMS') | t }}
+                  {{ (busy() ? 'Envoi…' : byEmail() ? 'Recevoir le code par email' : 'Recevoir le code SMS') | t }}
                 </button>
               </section>
             }
@@ -115,7 +126,11 @@ const PROVIDERS: { value: PaymentProvider; label: string; sub: string }[] = [
                     <div><span>{{ 'Tu recevras environ' | t }}</span><strong>{{ net | htg }}</strong></div>
                   }
                 </div>
-                <p class="text">{{ 'Saisis le code reçu par SMS au {tel}.' | t: { tel: auth.user()?.phone ?? '' } }}</p>
+                @if (codeChannel() === 'EMAIL') {
+                  <p class="text">{{ 'Saisis le code reçu par email à {email}. Pense à regarder dans les spams.' | t: { email: auth.user()?.email ?? '' } }}</p>
+                } @else {
+                  <p class="text">{{ 'Saisis le code reçu par SMS au {tel}.' | t: { tel: auth.user()?.phone ?? '' } }}</p>
+                }
                 <input class="otp-input" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" name="otp" [(ngModel)]="otp" placeholder="······" />
                 @if (error(); as message) {
                   <div class="alert-box otp-error">{{ message }}</div>
@@ -142,7 +157,7 @@ const PROVIDERS: { value: PaymentProvider; label: string; sub: string }[] = [
                   </div>
                   <p class="text">
                     @if (d.provider === 'MANUAL') {
-                      {{ "Un administrateur valide ta demande. Ensuite, présente-toi au guichet RAF : l'agent t'enverra un code de remise par SMS." | t }}
+                      {{ (byEmail() ? "Un administrateur valide ta demande. Ensuite, présente-toi au guichet RAF : l'agent t'enverra un code de remise par email." : "Un administrateur valide ta demande. Ensuite, présente-toi au guichet RAF : l'agent t'enverra un code de remise par SMS.") | t }}
                     } @else {
                       @if (d.automaticPayout) {
                         {{ "Dès qu'un administrateur valide ta demande, le montant part automatiquement sur ton compte {moyen}. Tu seras notifié à chaque étape." | t: { moyen: providerLabel() } }}
@@ -260,6 +275,11 @@ export class WithdrawPage {
 
   protected readonly providerLabel = computed(() => t(PROVIDERS.find((p) => p.value === this.provider())!.label));
 
+  /** Codes de retrait par email (secours du back-office) ; faux tant qu'on ne sait pas. */
+  protected readonly byEmail = signal(false);
+  /** Canal du dernier code envoye, donne par le serveur. */
+  protected readonly codeChannel = signal<CodeChannel>('SMS');
+
   /** Envoi automatique des retraits MonCash / NatCash ; null tant qu'on ne sait pas. */
   private readonly payout = signal<PayoutConfig | null>(null);
   protected readonly automatic = computed(() => !!this.payout()?.enabled && this.provider() !== 'MANUAL');
@@ -283,6 +303,9 @@ export class WithdrawPage {
     firstValueFrom(this.apiService.payoutConfig())
       .then((c) => this.payout.set(c))
       .catch(() => this.payout.set(null));
+    firstValueFrom(this.apiService.withdrawalCodesConfig())
+      .then((c) => this.byEmail.set(c.byEmail))
+      .catch(() => this.byEmail.set(false));
   }
 
   protected destinationNormalized(): string {
@@ -308,6 +331,8 @@ export class WithdrawPage {
     this.error.set(null);
     try {
       const response = await firstValueFrom(this.apiService.sendWithdrawalOtp());
+      this.codeChannel.set(response.channel ?? 'SMS');
+      this.byEmail.set(response.channel === 'EMAIL');
       this.otp = '';
       this.step.set('otp');
       void this.feedback.toast(response.message, 'success');
@@ -320,7 +345,7 @@ export class WithdrawPage {
 
   protected async confirm(): Promise<void> {
     if (!/^\d{4,8}$/.test(this.otp.trim())) {
-      this.error.set(t('Saisis le code reçu par SMS.'));
+      this.error.set(t(this.codeChannel() === 'EMAIL' ? 'Saisis le code reçu par email.' : 'Saisis le code reçu par SMS.'));
       return;
     }
     this.busy.set(true);

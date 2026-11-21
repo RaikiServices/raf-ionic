@@ -29,6 +29,8 @@ import {
   Ticket,
   OnlineTopUpConfig,
   PayoutConfig,
+  WithdrawalCodesConfig,
+  CodeSentResponse,
   TopUp,
   TopUpAvailability,
   Transaction,
@@ -250,6 +252,11 @@ export class ApiService {
     return this.http.get<PayoutConfig>(api('/public/payouts'));
   }
 
+  /** Les codes de retrait partent-ils par email (SMS indisponibles) ? Lu sans connexion. */
+  withdrawalCodesConfig(): Observable<WithdrawalCodesConfig> {
+    return this.http.get<WithdrawalCodesConfig>(api('/public/withdrawal-codes'));
+  }
+
   /** Une recharge ; une recharge en ligne en attente est reverifiee aupres de la passerelle. */
   topUp(id: number): Observable<TopUp> {
     return this.http.get<TopUp>(api(`/wallet/topups/${id}`));
@@ -283,8 +290,8 @@ export class ApiService {
     return this.http.get<TopUpAvailability>(api('/public/topup-availability'));
   }
 
-  sendWithdrawalOtp(): Observable<MessageResponse> {
-    return this.http.post<MessageResponse>(api('/wallet/withdrawals/send-otp'), {});
+  sendWithdrawalOtp(): Observable<CodeSentResponse> {
+    return this.http.post<CodeSentResponse>(api('/wallet/withdrawals/send-otp'), {});
   }
 
   requestWithdrawal(request: WithdrawalRequest): Observable<Withdrawal> {
