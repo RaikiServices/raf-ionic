@@ -24,6 +24,17 @@ export function formatNumber(value: number | null | undefined): string {
   return numberFormat.format(value ?? 0);
 }
 
+const compactFormat = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
+
+/**
+ * Montant court pour les pastilles : en dessous de 10 000, le nombre entier (« 9 850 ») ;
+ * au-dela, la forme compacte (« 12,5 k », « 150 k », « 1,2 M ») pour tenir sur un petit ecran.
+ */
+export function formatCompact(value: number | null | undefined): string {
+  const n = value ?? 0;
+  return Math.abs(n) < 10_000 ? formatNumber(n) : compactFormat.format(n);
+}
+
 export function formatHtg(value: number | null | undefined): string {
   return `${formatNumber(value)} HTG`;
 }

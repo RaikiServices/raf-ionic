@@ -1,0 +1,48 @@
+// Complements de l'ecran d'entrainement ; le reste vient de game.page.scss.
+
+.practice-tag {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--raf-ink);
+  font-weight: 900;
+  font-size: 13px;
+}
+
+// Apres la reponse, les boutons sont desactives : le filtre gris global des boutons
+// desactives effacerait le vert (bonne reponse) et le rouge (reponse donnee).
+.choice:disabled {
+  filter: none;
+  cursor: default;
+
+  &.faded {
+    filter: grayscale(0.6) opacity(0.55);
+  }
+}
+
+.feedback {
+  margin-top: 14px;
+  display: grid;
+  gap: 10px;
+
+  &.good {
+    border-color: #7cc94f;
+  }
+  &.bad {
+    border-color: #e5675a;
+  }
+}
+
+.verdict {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--raf-font-display);
+  font-size: 22px;
+}
+
+.explanation {
+  margin: 0;
+  font-weight: 700;
+  line-height: 1.45;
+}

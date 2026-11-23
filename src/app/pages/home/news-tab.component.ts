@@ -3,10 +3,12 @@ import { firstValueFrom } from 'rxjs';
 
 import { ApiService } from '../../core/api.service';
 import { errorMessage } from '../../core/errors';
-import { NewsItem, PlayerStats } from '../../core/models';
+import { NewsItem, PlayerStats, Progress } from '../../core/models';
 import { IconComponent } from '../../ui/icon.component';
 import { DatePipe, NumPipe } from '../../ui/pipes';
 import { TPipe } from '../../core/i18n';
+import { Router } from '@angular/router';
+import { ProgressCardComponent } from '../../ui/progress-card.component';
 
 const PAGE_SIZE = 10;
 
@@ -19,8 +21,23 @@ const PAGE_SIZE = 10;
  */
 @Component({
   selector: 'raf-news-tab',
-  imports: [TPipe, IconComponent, NumPipe, DatePipe],
+  imports: [TPipe, IconComponent, NumPipe, DatePipe, ProgressCardComponent],
   template: `
+    @if (progress(); as p) {
+      @if (p.totalXp === 0) {
+        <section class="panel start-here pop-in">
+          <raf-icon class="float" name="star" [size]="56" />
+          <div class="start-body">
+            <strong>{{ 'Nouveau ? Commence ici !' | t }}</strong>
+            <span>{{ 'Un entraînement gratuit de 5 questions pour découvrir le jeu, avec la bonne réponse après chaque question.' | t }}</span>
+          </div>
+          <button class="btn3d green block pulse" type="button" (click)="goPractice()">
+            <raf-icon name="play" [size]="24" /> {{ 'M’entraîner gratuitement' | t }}
+          </button>
+        </section>
+      }
+      <raf-progress-card [progress]="p" />
+    }
     <section class="panel panel-with-ribbon stats">
       <div class="ribbon purple">{{ 'Mes stats' | t }}</div>
       @if (stats(); as s) {
@@ -147,6 +164,9 @@ const PAGE_SIZE = 10;
   styles: `
     :host { display: block; }
     .stats { margin-top: 30px; margin-bottom: 8px; }
+    .start-here { display: grid; justify-items: center; gap: 10px; text-align: center; margin-top: 8px; }
+    .start-body { display: grid; gap: 4px; font-weight: 700; line-height: 1.4; }
+    .start-body strong { font-family: var(--raf-font-display); font-weight: 400; font-size: 22px; }
     .stats-empty { margin: 4px 0 0; text-align: center; font-weight: 800; color: var(--raf-ink-soft); }
     .stats-skel { height: 220px; }
     .streak {
@@ -293,7 +313,9 @@ const PAGE_SIZE = 10;
 })
 export class NewsTabComponent implements OnInit {
   private readonly apiService = inject(ApiService);
+  private readonly router = inject(Router);
 
+  protected readonly progress = signal<Progress | null>(null);
   protected readonly stats = signal<PlayerStats | null>(null);
   protected readonly statsError = signal(false);
   protected readonly news = signal<NewsItem[] | null>(null);
@@ -307,12 +329,19 @@ export class NewsTabComponent implements OnInit {
     void this.load();
   }
 
+  protected goPractice(): void {
+    void this.router.navigate(['/accueil'], { queryParams: { onglet: 'entrainement' } });
+  }
+
   /** Recharge les statistiques et la premiere page d'actualites. */
   async load(): Promise<void> {
     this.error.set(null);
     this.statsError.set(false);
     // Les deux blocs sont independants : l'echec de l'un n'empeche pas l'autre.
     await Promise.all([
+      firstValueFrom(this.apiService.progress())
+        .then((p) => this.progress.set(p))
+        .catch(() => undefined),
       firstValueFrom(this.apiService.myStats())
         .then((s) => this.stats.set(s))
         .catch(() => this.statsError.set(!this.stats())),

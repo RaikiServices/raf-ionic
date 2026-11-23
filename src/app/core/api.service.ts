@@ -26,6 +26,10 @@ import {
   NotificationPreference,
   Page,
   PlayerStats,
+  PracticeAnswerResult,
+  PracticeOverview,
+  PracticeSession,
+  Progress,
   Quiz,
   Ticket,
   OnlineTopUpConfig,
@@ -176,6 +180,27 @@ export class ApiService {
 
   leaderboard(quizId: number, page = 0, size = 50): Observable<Leaderboard> {
     return this.http.get<Leaderboard>(api(`/quizzes/${quizId}/leaderboard`), { params: paging(page, size) });
+  }
+
+  // --- Progression et entrainement --------------------------------------------
+
+  /** XP, niveau, missions du jour et badges. */
+  progress(): Observable<Progress> {
+    return this.http.get<Progress>(api('/me/progress'));
+  }
+
+  practice(): Observable<PracticeOverview> {
+    return this.http.get<PracticeOverview>(api('/practice'));
+  }
+
+  /** Lance un entrainement (ou reprend celui en cours sur ce sujet). */
+  startPractice(categoryId: number): Observable<PracticeSession> {
+    return this.http.post<PracticeSession>(api('/practice/sessions'), { categoryId });
+  }
+
+  /** choiceId null : temps ecoule. La correction revient aussitot. */
+  answerPractice(sessionId: number, questionId: number, choiceId: number | null): Observable<PracticeAnswerResult> {
+    return this.http.post<PracticeAnswerResult>(api(`/practice/sessions/${sessionId}/answers`), { questionId, choiceId });
   }
 
   // --- Parties -----------------------------------------------------------------

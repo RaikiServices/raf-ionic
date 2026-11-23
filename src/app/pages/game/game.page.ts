@@ -7,7 +7,9 @@ import { Subscription, firstValueFrom } from 'rxjs';
 import { ApiService } from '../../core/api.service';
 import { errorCode, errorMessage } from '../../core/errors';
 import { FeedbackService } from '../../core/feedback.service';
-import { CurrentQuestion, GameAnswer, GameQuestion, GameResult, GameStart, GameTurn, Quiz } from '../../core/models';
+import { CurrentQuestion, GameAnswer, GameQuestion, GameResult, GameStart, GameTurn, Progress, Quiz } from '../../core/models';
+import { ProgressGain, progressGain } from '../../core/progress';
+import { ProgressGainComponent } from '../../ui/progress-gain.component';
 import { PlayerStateService } from '../../core/player-state.service';
 import { SoundService } from '../../core/sound.service';
 import { storage } from '../../core/storage';
@@ -63,7 +65,7 @@ const MISSED_FLASH_MS = 700;
  */
 @Component({
   selector: 'raf-game',
-  imports: [TPipe, IonContent, IonIcon, IonModal, IconComponent, InstagramCardComponent, NumPipe],
+  imports: [TPipe, IonContent, IonIcon, IonModal, IconComponent, InstagramCardComponent, NumPipe, ProgressGainComponent],
   templateUrl: './game.page.html',
   styleUrl: './game.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -118,6 +120,9 @@ export class GamePage implements OnDestroy {
   protected readonly result = signal<GameResult | null>(null);
   protected readonly previousBest = signal<number | null>(null);
   protected readonly shownScore = signal(0);
+  /** XP, niveau, missions et badges gagnes pendant la partie. */
+  protected readonly gain = signal<ProgressGain | null>(null);
+  private progressBefore: Progress | null = null;
 
   private readonly content = viewChild(IonContent);
   private readonly quitModal = viewChild('quitModal', { read: IonModal });
@@ -248,6 +253,8 @@ export class GamePage implements OnDestroy {
 
   protected launch(): void {
     this.feedback.tap();
+    // Progression avant la partie, pour montrer l'XP gagnee a la fin.
+    void firstValueFrom(this.apiService.progress()).then((p) => (this.progressBefore = p)).catch(() => undefined);
     // Une partie deja commencee reprend sans condition ; une nouvelle attend l'accord.
     if (this.termsRequired() && !this.hasOngoing()) {
       this.termsChecked.set(false);
@@ -582,6 +589,11 @@ export class GamePage implements OnDestroy {
 
   private showResult(result: GameResult): void {
     this.stopTimer();
+    this.gain.set(null);
+    const before = this.progressBefore;
+    void firstValueFrom(this.apiService.progress())
+      .then((after) => this.gain.set(progressGain(before, after)))
+      .catch(() => undefined);
     this.result.set(result);
     this.phase.set('result');
     const lost = result.gameMode === 'SOLO' && !result.won;

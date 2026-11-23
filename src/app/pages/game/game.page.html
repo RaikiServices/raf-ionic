@@ -158,7 +158,7 @@
           <div class="result">
             <div class="rays" aria-hidden="true"></div>
             @if (r.gameMode === 'SOLO') {
-              <h1 class="title-stroke result-title pop-in">{{ (r.won ? 'Sans-faute !' : 'Pas cette fois') | t }}</h1>
+              <h1 class="title-stroke result-title pop-in">{{ (r.won ? 'Sans-faute !' : stars() >= 2 ? 'Presque !' : stars() === 1 ? 'Bien joué !' : 'Pas cette fois') | t }}</h1>
             } @else {
               <h1 class="title-stroke result-title pop-in">{{ (stars() >= 2 ? 'Bravo !' : stars() === 1 ? 'Bien joué !' : 'Partie terminée') | t }}</h1>
             }
@@ -177,11 +177,12 @@
               @if (r.gameMode === 'SOLO') {
                 <div class="score-label">{{ 'Bonnes réponses' | t }}</div>
                 <div class="score">{{ r.correctCount ?? 0 }}<small>/{{ total() }}</small></div>
+                <raf-progress-gain [gain]="gain()" />
                 @if (r.won) {
                   <div class="prize-won"><raf-icon name="cash" [size]="34" /> +{{ quiz()?.soloPrizeHtg | num }} HTG</div>
                   <p class="note">{{ 'Ton prix est déjà sur ton solde de gains, retirable vers MonCash, NatCash ou au guichet.' | t }}</p>
                 } @else {
-                  <p class="note">{{ 'Il fallait un sans-faute pour gagner. Reviens demain pour retenter ce sujet !' | t }}</p>
+                  <p class="note">{{ 'Il fallait un sans-faute pour gagner. Ta partie compte quand même pour ton XP et tes missions. Reviens demain pour retenter ce sujet, ou entraîne-toi gratuitement !' | t }}</p>
                 }
                 <div class="result-actions">
                   <button class="btn3d blue" type="button" (click)="leave()">{{ 'Autres sujets' | t }}</button>
@@ -191,6 +192,7 @@
                 <div class="score-label">{{ 'Score' | t }}</div>
                 <div class="score">{{ shownScore() }}</div>
                 <div class="score-sub">{{ ((r.correctCount ?? 0) > 1 ? '{n} bonnes réponses sur {total}' : '{n} bonne réponse sur {total}') | t: { n: r.correctCount ?? 0, total: total() } }}</div>
+                <raf-progress-gain [gain]="gain()" />
                 @if (r.bestScore != null) {
                   <div class="best"><raf-icon name="crown" [size]="26" /> {{ 'Ton meilleur score :' | t }} <strong>{{ r.bestScore }}</strong></div>
                 }

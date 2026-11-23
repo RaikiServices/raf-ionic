@@ -19,6 +19,7 @@ import { IconComponent } from '../../ui/icon.component';
 import { TopBarComponent } from '../../ui/top-bar.component';
 import { GroupTabComponent } from './group-tab.component';
 import { NewsTabComponent } from './news-tab.component';
+import { PracticeTabComponent } from './practice-tab.component';
 import { SoloTabComponent } from './solo-tab.component';
 import { TPipe } from '../../core/i18n';
 
@@ -29,6 +30,7 @@ import { TPipe } from '../../core/i18n';
  */
 export const HOME_TABS = [
   { key: 'actualite', label: 'Actualité', icon: 'bell' },
+  { key: 'entrainement', label: 'Entraînement', icon: 'star' },
   { key: 'groupe', label: 'En groupe', icon: 'users' },
   { key: 'solo', label: 'Solo', icon: 'flame' },
 ] as const;
@@ -41,7 +43,7 @@ function isTab(value: string | null): value is HomeTabKey {
   return HOME_TABS.some((tab) => tab.key === value);
 }
 
-/** Accueil : un systeme d'onglets (Actualite, En groupe, Solo). */
+/** Accueil : un systeme d'onglets (Actualite, Entrainement, En groupe, Solo). */
 @Component({
   selector: 'raf-home',
   imports: [TPipe, 
@@ -55,6 +57,7 @@ function isTab(value: string | null): value is HomeTabKey {
     IconComponent,
     GroupTabComponent,
     SoloTabComponent,
+    PracticeTabComponent,
     NewsTabComponent,
   ],
   template: `
@@ -87,6 +90,9 @@ function isTab(value: string | null): value is HomeTabKey {
           @case ('groupe') {
             <raf-group-tab />
           }
+          @case ('entrainement') {
+            <raf-practice-tab />
+          }
           @case ('solo') {
             <raf-solo-tab />
           }
@@ -109,7 +115,16 @@ function isTab(value: string | null): value is HomeTabKey {
     </ion-content>
   `,
   styles: `
-    .offer { margin: 0; font-weight: 800; text-align: center; line-height: 1.45; }
+    // Fenetre de la visite guidee. Les boutons 3D ont un rebord de 6px sous eux, et le
+    // premier pulse (agrandi de 4,5 %) : sans espace, il chevauchait le second.
+    .popup {
+      margin-top: 30px;
+      padding-top: 26px;
+      display: grid;
+      gap: 16px;
+    }
+    .popup-art { display: grid; place-items: center; margin: 0; }
+    .offer { margin: 0 0 4px; font-weight: 800; text-align: center; line-height: 1.45; }
     .hint { margin: 2px 0 0; font-size: 12.5px; font-weight: 700; text-align: center; color: var(--raf-ink-soft); }
     .hello {
       font-size: 28px;
@@ -153,8 +168,20 @@ function isTab(value: string | null): value is HomeTabKey {
         paint-order: stroke fill;
       }
     }
+    // Telephones : quatre onglets ne tiennent pas sur une ligne (« Entraînement »).
+    // Grille 2 x 2 : tous visibles d'un coup, aucun cache hors de l'ecran.
+    @media (max-width: 480px) {
+      .home-tabs {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin: 0 0 18px;
+        padding: 4px 0 8px;
+        overflow: visible;
+      }
+      .home-tab { min-width: 0; padding: 6px 8px; }
+    }
     @media (max-width: 360px) {
-      .home-tab { padding: 6px 10px; font-size: 14.5px; }
+      .home-tab { font-size: 14.5px; }
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -173,6 +200,7 @@ export class HomePage {
   private readonly newsTab = viewChild(NewsTabComponent);
   private readonly groupTab = viewChild(GroupTabComponent);
   private readonly soloTab = viewChild(SoloTabComponent);
+  private readonly practiceTab = viewChild(PracticeTabComponent);
   /** Le premier affichage charge deja l'onglet (a sa creation) : pas de second appel. */
   private entered = false;
 
@@ -226,6 +254,8 @@ export class HomePage {
         return this.groupTab()?.load() ?? Promise.resolve();
       case 'solo':
         return this.soloTab()?.load() ?? Promise.resolve();
+      case 'entrainement':
+        return this.practiceTab()?.load() ?? Promise.resolve();
     }
   }
 }

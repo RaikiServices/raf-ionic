@@ -473,6 +473,13 @@ ion-header.raf-header::after {
     --rc2: #3aa51c;
     --redge: #1d630b;
   }
+
+  // Petits telephones : un titre de ruban plus long (kreyol) tient sans etre coupe.
+  @media (max-width: 380px) {
+    padding: 6px 16px 8px;
+    font-size: 18px;
+    -webkit-text-stroke-width: 3.5px;
+  }
 }
 
 .panel-with-ribbon {

@@ -80,6 +80,8 @@ const QUIET_ROUTES = [/^\/quiz\/[^/]+\/jouer/, /^\/verification-email/, /^\/prof
   `,
   styles: `
     .popup { margin-top: 30px; padding-top: 26px; }
+    // Boutons 3D empiles : leur rebord de 6px chevaucherait le bouton suivant.
+    .btn3d.block + .btn3d.block { margin-top: 14px; }
     .help { display: block; margin: 10px auto 0; }
     .popup-art { display: grid; place-items: center; margin: 4px 0 10px; }
     .lead { text-align: center; font-weight: 800; margin: 0; }

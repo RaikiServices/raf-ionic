@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { IonRouterOutlet, NavController } from '@ionic/angular/standalone';
 
 import { AuthService } from '../core/auth.service';
-import { formatNumber, initials } from '../core/format';
+import { formatCompact, formatNumber, initials } from '../core/format';
 import { PlayerStateService } from '../core/player-state.service';
 import { IconComponent } from './icon.component';
 import { TPipe } from '../core/i18n';
@@ -16,7 +16,7 @@ import { TPipe } from '../core/i18n';
   selector: 'raf-top-bar',
   imports: [TPipe, IconComponent],
   template: `
-    <div class="topbar">
+    <div class="topbar" [class.has-back]="!!back()">
       <button class="logo" type="button" [attr.aria-label]="'Accueil' | t" (click)="router.navigateByUrl('/accueil')">
         <img src="assets/logo-raf.png" alt="RAF" />
       </button>
@@ -39,12 +39,14 @@ import { TPipe } from '../core/i18n';
 
       @if (showWallet()) {
         <div class="wallet">
-          <button class="pill" type="button" data-guide="credits" (click)="router.navigateByUrl('/portefeuille')" [attr.aria-label]="'Crédits de jeu' | t">
+          <button class="pill" type="button" data-guide="credits" (click)="router.navigateByUrl('/portefeuille')"
+                  [attr.aria-label]="('Crédits de jeu' | t) + ' : ' + creditsFull()">
             <raf-icon class="pill-icon" name="coin" [size]="34" />
-            {{ state.wallet()?.creditBalance ?? '…' }}
+            {{ credits() }}
             <span class="pill-plus">+</span>
           </button>
-          <button class="pill" type="button" data-guide="gains" (click)="router.navigateByUrl('/portefeuille')" [attr.aria-label]="'Gains en HTG' | t">
+          <button class="pill" type="button" data-guide="gains" (click)="router.navigateByUrl('/portefeuille')"
+                  [attr.aria-label]="('Gains en HTG' | t) + ' : ' + winningsFull()">
             <raf-icon class="pill-icon" name="cash" [size]="34" />
             {{ winningsHtg() }}
           </button>
@@ -106,8 +108,22 @@ import { TPipe } from '../core/i18n';
     }
     // Petits telephones : le logo retrecit pour laisser la place au titre et aux compteurs.
     @media (max-width: 380px) {
+      .topbar { gap: 6px; }
       .logo img { height: 26px; }
       .title { font-size: 19px; }
+      .avatar { width: 40px; height: 40px; font-size: 16px; }
+      .wallet { gap: 2px; }
+      .pill { font-size: 14.5px; padding-right: 8px; }
+    }
+    // Tres petits ecrans : l'avatar laisse la place aux compteurs (le Profil reste dans la
+    // barre du bas).
+    @media (max-width: 360px) {
+      .avatar { display: none; }
+    }
+    // Sous-pages (retour + titre + compteurs) sur petit ecran : le logo cede sa place, le
+    // bouton retour et la barre du bas suffisent pour naviguer.
+    @media (max-width: 380px) {
+      .has-back .logo { display: none; }
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -129,12 +145,24 @@ export class TopBarComponent {
     return initials(user?.firstName, user?.lastName);
   }
 
+  /** Pastilles : montant court (« 12,5 k ») pour tenir sur les petits ecrans. */
+  protected credits(): string {
+    const wallet = this.state.wallet();
+    return wallet ? formatCompact(wallet.creditBalance) : '…';
+  }
+
   protected winningsHtg(): string {
     const wallet = this.state.wallet();
-    if (!wallet) {
-      return '…';
-    }
-    return formatNumber(wallet.winningsBalanceHtg);
+    return wallet ? formatCompact(wallet.winningsBalanceHtg) : '…';
+  }
+
+  /** Montants exacts, lus par les lecteurs d'ecran. */
+  protected creditsFull(): string {
+    return formatNumber(this.state.wallet()?.creditBalance);
+  }
+
+  protected winningsFull(): string {
+    return formatNumber(this.state.wallet()?.winningsBalanceHtg) + ' HTG';
   }
 
   protected goBack(): void {

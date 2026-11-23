@@ -593,3 +593,93 @@ export interface PayoutTerms {
   required: boolean;
   version: number;
 }
+
+// --- Progression et entrainement --------------------------------------------------
+
+export type MissionId = 'PLAY_ONE' | 'CORRECT_TEN' | 'TWO_SUBJECTS';
+export type BadgeId =
+  | 'FIRST_GAME' | 'PRACTICE_5' | 'GAMES_10' | 'GAMES_50' | 'GAMES_200' | 'CORRECT_100' | 'CORRECT_1000'
+  | 'STREAK_3' | 'STREAK_7' | 'STREAK_30' | 'SUBJECTS_5' | 'PERFECT' | 'PODIUM' | 'LEVEL_10' | 'LEVEL_25';
+export type PlayerTitle = 'BEGINNER' | 'APPRENTICE' | 'CONNOISSEUR' | 'EXPERT' | 'MASTER' | 'LEGEND';
+
+export interface Mission {
+  id: MissionId;
+  progress: number;
+  target: number;
+  xp: number;
+  done: boolean;
+}
+
+export interface Badge {
+  id: BadgeId;
+  progress: number;
+  target: number;
+  achieved: boolean;
+}
+
+/** Progression : XP, niveau, missions du jour, badges. Ne rapporte ni credit ni gourde. */
+export interface Progress {
+  totalXp: number;
+  level: number;
+  title: PlayerTitle;
+  /** XP dans le niveau en cours, et ce qu'il faut pour le suivant. */
+  levelXp: number;
+  levelXpNeeded: number;
+  todayXp: number;
+  currentStreakDays: number;
+  bestStreakDays: number;
+  playedToday: boolean;
+  missions: Mission[];
+  allMissionsBonusXp: number;
+  allMissionsDone: boolean;
+  badges: Badge[];
+}
+
+export interface PracticeSubject {
+  id: number;
+  name: string;
+  imageUrl: string | null;
+  questionCount: number;
+  practicedCount: number;
+}
+
+export interface PracticeOverview {
+  dailyLimit: number;
+  playedToday: number;
+  remainingToday: number;
+  ongoingSessionId: number | null;
+  subjects: PracticeSubject[];
+}
+
+export interface PracticeQuestion {
+  position: number;
+  id: number;
+  text: string;
+  imageUrl: string | null;
+  type: 'SINGLE_CHOICE' | 'TRUE_FALSE';
+  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
+  choices: { id: number; text: string; imageUrl: string | null }[];
+  /** Renseignes une fois la question repondue. */
+  chosenChoiceId: number | null;
+  correct: boolean | null;
+  correctChoiceId: number | null;
+  explanation: string | null;
+}
+
+export interface PracticeSession {
+  sessionId: number;
+  categoryId: number;
+  categoryName: string;
+  total: number;
+  answered: number;
+  correct: number;
+  finished: boolean;
+  questions: PracticeQuestion[];
+}
+
+export interface PracticeAnswerResult {
+  correct: boolean;
+  correctChoiceId: number;
+  explanation: string | null;
+  session: PracticeSession;
+}
