@@ -11,7 +11,7 @@
  * Les boutons cites entre « » sont ceux de l'ecran, en francais ici.
  */
 
-export type GuideId = 'demarrage' | 'recharger' | 'retirer' | 'jouer' | 'compte';
+export type GuideId = 'demarrage' | 'progresser' | 'recharger' | 'retirer' | 'jouer' | 'compte';
 
 export interface GuideStep {
   route?: string;
@@ -47,7 +47,7 @@ export const GUIDES: Guide[] = [
     summary: 'Le tour de l’app en une minute : soldes, onglets et façons de jouer.',
     steps: [
       {
-        route: '/accueil',
+        route: '/accueil?onglet=actualite',
         title: 'Bienvenue dans RAF !',
         text: 'Voici une visite rapide de l’app. Tu peux la quitter à tout moment avec la croix.',
       },
@@ -65,9 +65,23 @@ export const GUIDES: Guide[] = [
       },
       {
         element: 'home-tabs',
-        title: 'Trois façons de suivre RAF',
-        text: 'Actualité : les nouvelles et tes statistiques. En groupe : les quiz avec classement. Solo : un sans-faute et tu gagnes le prix.',
+        title: 'Quatre onglets',
+        text: 'Actualité : ta progression et les nouvelles. Entraînement : des parties gratuites pour apprendre. En groupe : les quiz avec classement. Solo : un sans-faute et tu gagnes le prix.',
         side: 'bottom',
+      },
+      {
+        element: 'start-practice',
+        optional: true,
+        title: 'Commence ici',
+        text: 'Pour ta première partie, fais un entraînement gratuit : 5 questions, et la bonne réponse après chacune.',
+        side: 'bottom',
+      },
+      {
+        element: 'progress',
+        optional: true,
+        title: 'Ta progression',
+        text: 'Chaque partie te rapporte de l’XP pour monter de niveau. Les missions du jour et les badges te donnent des objectifs.',
+        side: 'top',
       },
       {
         element: 'tab-tickets',
@@ -96,6 +110,51 @@ export const GUIDES: Guide[] = [
       {
         title: 'À toi de jouer !',
         text: 'Pense à confirmer ton email : c’est nécessaire pour prendre un ticket. Tu retrouveras ce guide et les autres dans Profil, « Aide et support ».',
+      },
+    ],
+  },
+  {
+    id: 'progresser',
+    icon: 'star',
+    title: 'S’entraîner et progresser',
+    summary: 'Entraînement gratuit, XP, niveaux, missions du jour et badges.',
+    steps: [
+      {
+        route: '/accueil?onglet=entrainement',
+        element: 'practice-how',
+        title: 'L’entraînement',
+        text: 'Des parties gratuites de 5 questions, des plus faciles aux plus dures. Après chaque réponse, tu vois la bonne réponse et l’explication. Rien à payer, rien à gagner : tu apprends.',
+        side: 'bottom',
+      },
+      {
+        element: 'practice-subjects',
+        optional: true,
+        title: 'Choisis un sujet',
+        text: 'Touche un sujet pour lancer un entraînement. Tu en as quelques-uns par jour : le compteur est juste au-dessus.',
+        side: 'top',
+      },
+      {
+        route: '/accueil?onglet=actualite',
+        element: 'progress',
+        title: 'Ton niveau',
+        text: 'Chaque partie, même perdue, te rapporte de l’XP : plus pour chaque bonne réponse, encore plus pour un sans-faute. L’XP te fait monter de niveau.',
+        side: 'bottom',
+      },
+      {
+        element: 'progress-missions',
+        title: 'Les missions du jour',
+        text: 'Trois objectifs chaque jour, avec un bonus d’XP si tu les fais tous. L’entraînement gratuit compte aussi : jouer chaque jour ne coûte rien.',
+        side: 'bottom',
+      },
+      {
+        element: 'progress-badges',
+        title: 'Tes badges',
+        text: 'Joue plusieurs jours de suite, trouve des bonnes réponses, explore les sujets : chaque exploit débloque un badge.',
+        side: 'top',
+      },
+      {
+        title: 'Prêt pour le vrai jeu ?',
+        text: 'L’XP et les badges ne se retirent pas : ils montrent tes progrès. Quand tu te sens prêt, tente un défi Solo ou un quiz en groupe pour gagner de l’argent.',
       },
     ],
   },
@@ -231,7 +290,11 @@ export const GUIDES: Guide[] = [
       },
       {
         title: 'Pendant la partie',
-        text: 'Chaque question a son chrono : réponds avant la fin. Pas de retour en arrière, et l’app ne dit pas si ta réponse est juste avant la fin du quiz.',
+        text: 'Les questions vont des plus faciles aux plus difficiles, et chacune a son chrono : réponds avant la fin. Pas de retour en arrière, et l’app ne dit pas si ta réponse est juste avant la fin du quiz.',
+      },
+      {
+        title: 'Envie de t’entraîner d’abord ?',
+        text: 'L’onglet « Entraînement » propose des parties gratuites avec la correction tout de suite. Le guide « S’entraîner et progresser » t’explique tout.',
       },
       {
         route: '/tickets',

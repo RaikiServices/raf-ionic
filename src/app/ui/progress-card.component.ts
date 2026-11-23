@@ -37,7 +37,7 @@ import { NumPipe } from './pipes';
           </div>
         </div>
 
-        <h3 class="missions-title">
+        <h3 class="missions-title" data-guide="progress-missions">
           {{ 'Missions du jour' | t }}
           @if (p.allMissionsDone) {
             <span class="all-done"><raf-icon name="check" [size]="18" /> {{ 'Toutes faites !' | t }}</span>
@@ -65,7 +65,7 @@ import { NumPipe } from './pipes';
           }
         </p>
         @if (showBadgesLink()) {
-          <button class="btn3d purple block" type="button" routerLink="/progression">
+          <button class="btn3d purple block" type="button" routerLink="/progression" data-guide="progress-badges">
             <raf-icon name="trophy" [size]="24" /> {{ 'Mes badges ({n}/{total})' | t: { n: achieved(), total: p.badges.length } }}
           </button>
         }

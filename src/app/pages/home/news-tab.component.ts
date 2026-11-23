@@ -25,7 +25,7 @@ const PAGE_SIZE = 10;
   template: `
     @if (progress(); as p) {
       @if (p.totalXp === 0) {
-        <section class="panel start-here pop-in">
+        <section class="panel start-here pop-in" data-guide="start-practice">
           <raf-icon class="float" name="star" [size]="56" />
           <div class="start-body">
             <strong>{{ 'Nouveau ? Commence ici !' | t }}</strong>

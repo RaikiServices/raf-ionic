@@ -20,7 +20,7 @@ import { IconComponent } from '../../ui/icon.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p class="lead">{{ 'Entraîne-toi gratuitement, sans rien risquer !' | t }}</p>
-    <section class="glass how">
+    <section class="glass how" data-guide="practice-how">
       <div><raf-icon name="gift" [size]="26" /> {{ 'Gratuit : aucun crédit, aucun gain' | t }}</div>
       <div><raf-icon name="check" [size]="26" /> {{ 'La bonne réponse et l’explication tout de suite' | t }}</div>
       <div><raf-icon name="star" [size]="26" /> {{ '5 questions, des plus faciles aux plus dures' | t }}</div>
@@ -48,7 +48,7 @@ import { IconComponent } from '../../ui/icon.component';
           <div class="empty-text">{{ 'De nouveaux sujets arrivent bientôt.' | t }}</div>
         </div>
       } @else {
-        <div class="list stagger">
+        <div class="list stagger" data-guide="practice-subjects">
           @for (s of o.subjects; track s.id) {
             <button class="card" type="button" [disabled]="o.remainingToday === 0 && o.ongoingSessionId === null" (click)="open(s)">
               <div class="thumb" [style.background]="s.imageUrl ? null : gradient(s)">
