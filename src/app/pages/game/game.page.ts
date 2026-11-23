@@ -97,6 +97,8 @@ export class GamePage implements OnDestroy {
   /** Solo : premiere partie offerte (interrupteur du back-office), jouable sans credits. */
   protected readonly firstGameOffered = signal(false);
   protected readonly countdown = signal(3);
+  /** Solo : les regles ont change pendant que l'ecran etait ouvert (nouvelles valeurs affichees). */
+  protected readonly rulesChanged = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly quitOpen = signal(false);
   /**
@@ -284,7 +286,11 @@ export class GamePage implements OnDestroy {
   private async begin(): Promise<void> {
     this.phase.set('starting');
     try {
-      const game = await firstValueFrom(this.apiService.startGame(this.quizId));
+      const q = this.quiz();
+      const seen = q && q.gameMode === 'SOLO'
+        ? { expectedPriceCredits: q.ticketPriceCredits, expectedPrizeHtg: q.soloPrizeHtg ?? null, expectedQuestions: q.questionsPerGame }
+        : undefined;
+      const game = await firstValueFrom(this.apiService.startGame(this.quizId, seen));
       this.game.set(game);
       void this.state.refreshWallet();
 
@@ -304,6 +310,19 @@ export class GamePage implements OnDestroy {
         this.termsChecked.set(false);
         this.termsOpen.set(true);
         return;
+      }
+      // Prix, prime ou nombre de questions changes depuis l'ouverture de l'ecran : rien n'a
+      // ete debite. On affiche les nouvelles valeurs, le joueur relance s'il est d'accord.
+      if (errorCode(e) === 'SOLO_TERMS_CHANGED') {
+        try {
+          this.quiz.set(await firstValueFrom(this.apiService.quiz(this.quizId)));
+          void this.state.refreshWallet();
+          this.rulesChanged.set(true);
+          this.phase.set('intro');
+          return;
+        } catch {
+          // Rechargement impossible : message d'erreur classique ci-dessous.
+        }
       }
       this.fail(errorMessage(e), errorCode(e));
     }

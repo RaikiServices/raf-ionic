@@ -205,8 +205,13 @@ export class ApiService {
 
   // --- Parties -----------------------------------------------------------------
 
-  startGame(quizId: number): Observable<GameStart> {
-    return this.http.post<GameStart>(api('/game/start'), { quizId });
+  /**
+   * Solo : {@code seen} = prix, prime et nombre de questions affiches au joueur. S'ils ont
+   * change entre-temps, le serveur refuse (SOLO_TERMS_CHANGED) sans rien debiter.
+   */
+  startGame(quizId: number,
+    seen?: { expectedPriceCredits: number; expectedPrizeHtg: number | null; expectedQuestions: number }): Observable<GameStart> {
+    return this.http.post<GameStart>(api('/game/start'), { quizId, ...(seen ?? {}) });
   }
 
   submitGame(sessionId: number, answers: GameAnswer[], clientDurationMs: number): Observable<GameResult> {

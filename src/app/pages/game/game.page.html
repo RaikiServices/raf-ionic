@@ -53,6 +53,9 @@
                 </button>
               }
 
+              @if (rulesChanged()) {
+                <div class="alert-box warn">{{ 'Les règles de ce quiz viennent de changer : vérifie le prix, la prime et le nombre de questions ci-dessus. Rien n’a été débité.' | t }}</div>
+              }
               @if (hasOngoing()) {
                 <div class="alert-box info">{{ "Une partie est déjà en cours : tu reprends là où tu t'étais arrêté." | t }}</div>
                 <button class="btn3d lg block pulse" type="button" (click)="launch()"><raf-icon name="play" [size]="26" /> {{ 'Reprendre' | t }}</button>

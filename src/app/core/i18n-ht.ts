@@ -255,7 +255,7 @@ export const HT: Record<string, string> = {
   "Guides interactifs : recharger, retirer, jouer…": "Gid ki montre w : rechaje, retire, jwe…",
   "hier": "yè",
   "Historique": "Istorik",
-  "HTG gagnés": "HTG ou genyen",
+  "HTG gagnés": "HTG an tou",
   "Ici, l’état de chaque demande : en attente, approuvée, versée.": "La a, eta chak demann : ap tann, apwouve, peye.",
   "Identifiant joueur": "Idantifyan jwè",
   "Il fallait un sans-faute pour gagner. Reviens demain pour retenter ce sujet !": "Ou te bezwen pa fè okenn fot pou genyen. Tounen demen pou eseye sijè sa a ankò !",
@@ -846,4 +846,5 @@ export const HT: Record<string, string> = {
   "M’entraîner gratuitement": "Antrene m gratis",
   "Presque !": "Prèske !",
   "Il fallait un sans-faute pour gagner. Ta partie compte quand même pour ton XP et tes missions. Reviens demain pour retenter ce sujet, ou entraîne-toi gratuitement !": "Se te pou fè yon san fot pou genyen. Pati ou a konte kanmenm pou XP ou ak misyon ou. Tounen demen pou eseye sijè sa a ankò, oswa antrene w gratis !",
+  "Les règles de ce quiz viennent de changer : vérifie le prix, la prime et le nombre de questions ci-dessus. Rien n’a été débité.": "Règ quiz sa a fèk chanje : verifye pri a, prim lan ak kantite kesyon yo anlè a. Nou pa retire anyen nan kont ou.",
 };
