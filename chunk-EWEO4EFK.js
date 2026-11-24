@@ -1,1 +1,0 @@
-import{a as i}from"./chunk-7LUUJRU5.js";import{e as r}from"./chunk-TD3CGJKS.js";import{f as a}from"./chunk-EQDQRRRY.js";function E(t,e,m){return a(this,null,function*(){try{yield r(t.verifyEmailCode(m))}catch(o){if(i(o)!=="EMAIL_ALREADY_VERIFIED")throw o}try{yield e.setUser(yield r(t.me()))}catch{}})}export{E as a};
