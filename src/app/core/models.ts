@@ -180,6 +180,8 @@ export interface Quiz {
   pointsPerCorrect: number;
   /** Solo : prix d'un sans-faute, en HTG (ticketPrice* = prix d'une partie). */
   soloPrizeHtg: number | null;
+  /** Solo : % du prix rendu en credits pour une seule erreur (9/10...) ; absent ou null sans cashback. */
+  cashbackPercent?: number | null;
   minScoreThreshold: number;
   closingCountdownMinutes: number;
   startDelayMinutes: number;
@@ -288,6 +290,8 @@ export interface GameResult {
   /** Solo : sans-faute, prix verse. */
   won: boolean;
   prizeHtg: number | null;
+  /** Solo : credits rendus pour une seule erreur ; null sans cashback. */
+  cashbackCredits?: number | null;
 }
 
 /** Resultat d'une question au corrige : jamais l'enonce ni la bonne reponse. */
@@ -399,6 +403,8 @@ export type TransactionType =
   | 'TICKET_PURCHASE'
   | 'SOLO_ENTRY'
   | 'PRIZE'
+  /** Une seule erreur en solo : part du prix rendue en credits. */
+  | 'SOLO_CASHBACK'
   /** Commission d'un leader sur les parties perdues de ses joueurs (solde des gains). */
   | 'COMMISSION'
   | 'LEADER_TRANSFER_OUT'

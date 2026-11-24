@@ -6,6 +6,11 @@
  * avant la mise en production.
  */
 export const HT: Record<string, string> = {
+  "{a}/{b} = {p} % remboursés": "{a}/{b} = {p} % ranbouse",
+  ", en crédits, si tu fais une seule erreur": ", an kredi, si ou fè yon sèl erè",
+  "+{n} crédits rendus": "+{n} kredi remèt ou",
+  "Une seule erreur : une partie du prix de ta partie te revient en crédits. Le sans-faute, ce sera pour la prochaine fois !": "Yon sèl erè : nou remèt ou yon pati nan pri pati a an kredi. San fòt la, se pou pwochen fwa a !",
+  "Cashback (une erreur)": "Cashback (yon erè)",
   " et ": " ak ",
   "+ {n} HTG repris de ta retenue": "+ {n} HTG nou pran nan sa ki te rete a",
   "+{n} crédits": "+{n} kredi",

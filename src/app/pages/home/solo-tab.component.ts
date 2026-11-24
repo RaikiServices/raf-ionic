@@ -90,6 +90,9 @@ interface SoloGroup {
                       <span class="chip"><raf-icon name="coin" [size]="18" />{{ q.ticketPriceCredits }}</span>
                     }
                     <span class="chip"><raf-icon name="question" [size]="18" />{{ q.questionsPerGame }} × {{ q.questionDurationSeconds }} s</span>
+                    @if (q.cashbackPercent) {
+                      <span class="chip cashback"><raf-icon name="coin" [size]="18" />{{ '{a}/{b} = {p} % remboursés' | t: { a: q.questionsPerGame - 1, b: q.questionsPerGame, p: q.cashbackPercent } }}</span>
+                    }
                   </div>
                 </div>
                 <!-- La carte entiere lance la partie : pas de bouton en double. -->
@@ -259,6 +262,7 @@ interface SoloGroup {
     .tile-count { font-weight: 800; font-size: 13px; color: var(--raf-ink-soft); }
     .tile-body .chip { font-size: 12px; padding: 3px 8px; white-space: normal; }
     .chip.today { background: #e4f9d9; color: #1d630b; }
+    .chip.cashback { background: #e4f9d9; color: #1d630b; }
     .tile-prize {
       display: flex;
       align-items: center;

@@ -40,6 +40,9 @@
                 <li><raf-icon name="clock" [size]="28" /><span><strong>{{ '{n} s par question' | t: { n: q.questionDurationSeconds } }}</strong> {{ ': tu passes à la suivante dès ta réponse, ou à la fin du chrono' | t }}</span></li>
                 @if (solo()) {
                   <li><raf-icon name="crown" [size]="28" /><span><strong>{{ 'Sans-faute = {n} HTG' | t: { n: q.soloPrizeHtg | num } }}</strong>{{ ', versés aussitôt sur tes gains' | t }}</span></li>
+                  @if (q.cashbackPercent) {
+                    <li><raf-icon name="coin" [size]="28" /><span><strong>{{ '{a}/{b} = {p} % remboursés' | t: { a: q.questionsPerGame - 1, b: q.questionsPerGame, p: q.cashbackPercent } }}</strong>{{ ', en crédits, si tu fais une seule erreur' | t }}</span></li>
+                  }
                   <li><raf-icon name="lock" [size]="28" /><span>{{ 'Une seule partie par sujet et par jour' | t }}</span></li>
                 } @else {
                   <li><raf-icon name="lock" [size]="28" /><span>{{ 'Pas de retour en arrière : une question sans réponse compte comme fausse' | t }}</span></li>
@@ -184,6 +187,9 @@
                 @if (r.won) {
                   <div class="prize-won"><raf-icon name="cash" [size]="34" /> +{{ quiz()?.soloPrizeHtg | num }} HTG</div>
                   <p class="note">{{ 'Ton prix est déjà sur ton solde de gains, retirable vers MonCash, NatCash ou au guichet.' | t }}</p>
+                } @else if (r.cashbackCredits) {
+                  <div class="prize-won"><raf-icon name="coin" [size]="34" /> {{ '+{n} crédits rendus' | t: { n: r.cashbackCredits } }}</div>
+                  <p class="note">{{ 'Une seule erreur : une partie du prix de ta partie te revient en crédits. Le sans-faute, ce sera pour la prochaine fois !' | t }}</p>
                 } @else {
                   <p class="note">{{ 'Il fallait un sans-faute pour gagner. Ta partie compte quand même pour ton XP et tes missions. Reviens demain pour retenter ce sujet, ou entraîne-toi gratuitement !' | t }}</p>
                 }
