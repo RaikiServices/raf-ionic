@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1795538342344,
+  "timestamp": 1795721064684,
   "index": "/index.html",
   "assetGroups": [
     {
@@ -109,7 +109,7 @@
         "/chunk-Z5QCTHOB.js",
         "/chunk-ZP74WLSZ.js",
         "/index.html",
-        "/main-43P5YBMM.js",
+        "/main-635KLHOF.js",
         "/manifest.webmanifest",
         "/media/lilita-one-latin-400-normal-IALOTHHY.woff",
         "/media/lilita-one-latin-400-normal-NEBCEEUE.woff2",
@@ -259,8 +259,8 @@
     "/icons/icon-512x512.png": "67415ea32ad08740783b25d00ae1402eba2d8aa7",
     "/icons/icon-72x72.png": "54d954fb7990a5a57f44fbb9eb521ed932704045",
     "/icons/icon-96x96.png": "b93af4429e919edc5cb9ccd9249d1592b313c837",
-    "/index.html": "ca09d505efe18fafa3ef1af18bfdade7ea758375",
-    "/main-43P5YBMM.js": "51a81f566caa24c0092460d5c0817584a31f1e1c",
+    "/index.html": "e3067d0768294073431439eb3d15f964477b34c0",
+    "/main-635KLHOF.js": "e9c134248f0ff46750ad21be4c6b8a337b64055b",
     "/manifest.webmanifest": "f5677d36cb622f136879b839f39f4b5035e0e5a6",
     "/media/lilita-one-latin-400-normal-IALOTHHY.woff": "98011760301cf7028b0263bb7ebae0452a4b04da",
     "/media/lilita-one-latin-400-normal-NEBCEEUE.woff2": "3b71f6c24c7e1301971abb9a80a74b118188fda4",
