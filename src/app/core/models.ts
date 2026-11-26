@@ -473,6 +473,8 @@ export interface WinningsConversion {
 /** Comportements de l'app choisis dans le back-office (lu sans connexion). */
 export interface AppConfig {
   emailReminderEnabled: boolean;
+  /** Secondes entre deux rappels, apres fermeture de la fenetre (10 par defaut). */
+  emailReminderDelaySeconds?: number;
   leaderTransferEnabled: boolean;
   winningsConversionEnabled: boolean;
   onlineTopUpEnabled?: boolean;

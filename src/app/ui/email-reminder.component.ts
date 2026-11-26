@@ -16,8 +16,11 @@ import { GuideService } from '../core/guides/guide.service';
 import { closeModal } from './modal';
 import { TPipe, t } from '../core/i18n';
 
-/** Delai entre deux rappels (et entre deux verifications du profil). */
-const REMINDER_DELAY_MS = 10_000;
+/** Delai par defaut entre deux rappels (et deux verifications), tant que le back-office n'a pas ete lu. */
+const DEFAULT_DELAY_SECONDS = 10;
+/** Bornes du back-office (PlayerAppService) : une valeur hors bornes y est ramenee. */
+const MIN_DELAY_SECONDS = 5;
+const MAX_DELAY_SECONDS = 86_400;
 
 /**
  * Ecrans ou le rappel ne s'affiche pas : partie en cours (chronometree), lien de
@@ -28,13 +31,15 @@ const QUIET_ROUTES = [/^\/quiz\/[^/]+\/jouer/, /^\/verification-email/, /^\/prof
 /*
  * Rappel de confirmation de l'email.
  *
- * Tant que l'email du joueur connecte n'est pas confirme, une fenetre le guide
- * toutes les 10 secondes apres sa fermeture. Le profil est relu a chaque passage :
+ * Tant que l'email du joueur connecte n'est pas confirme, une fenetre le guide et revient
+ * apres sa fermeture, au bout du delai choisi dans le back-office (10 s par defaut).
+ * Le profil est relu a chaque passage :
  * des que le lien a ete ouvert (dans le navigateur, sur un autre appareil...),
  * la fenetre se ferme d'elle-meme et ne revient plus.
  *
- * Le rappel peut etre coupe depuis le back-office (App joueur) : le reglage est
- * relu a chaque passage, une fenetre ouverte se ferme alors au passage suivant.
+ * Le rappel peut etre coupe depuis le back-office (App joueur) et son delai y est
+ * reglable : les deux sont relus a chaque passage, une fenetre ouverte se ferme
+ * alors au passage suivant.
  */
 @Component({
   selector: 'raf-email-reminder',
@@ -142,6 +147,11 @@ export class EmailReminderComponent {
   private timer: ReturnType<typeof setTimeout> | null = null;
   /** Dernier reglage connu du back-office ; actif tant qu'il n'a pas pu etre lu. */
   private reminderEnabled = true;
+  /** Dernier delai connu du back-office, en secondes. */
+  private delaySeconds = DEFAULT_DELAY_SECONDS;
+  /** Le premier rappel attend la lecture du reglage, pour respecter le delai choisi des l'ouverture. */
+  private configRead = false;
+  private readingConfig = false;
 
   constructor() {
     // Rappels actifs seulement pour un joueur connecte dont l'email n'est pas confirme.
@@ -166,7 +176,7 @@ export class EmailReminderComponent {
     void closeModal(this.open, this.modal());
   }
 
-  /** Fenetre fermee : le prochain rappel arrive 10 secondes plus tard, pas avant. */
+  /** Fenetre fermee : le prochain rappel arrive au bout du delai, pas avant. */
   protected dismissed(): void {
     this.open.set(false);
     this.cancel();
@@ -230,13 +240,24 @@ export class EmailReminderComponent {
   }
 
   private schedule(): void {
-    if (this.timer) {
+    if (this.timer || this.readingConfig) {
+      return;
+    }
+    if (!this.configRead) {
+      this.readingConfig = true;
+      void this.refreshEnabled().finally(() => {
+        this.readingConfig = false;
+        this.configRead = true;
+        if (this.pending()) {
+          this.schedule();
+        }
+      });
       return;
     }
     this.timer = setTimeout(() => {
       this.timer = null;
       void this.tick();
-    }, REMINDER_DELAY_MS);
+    }, this.delaySeconds * 1000);
   }
 
   private cancel(): void {
@@ -271,7 +292,12 @@ export class EmailReminderComponent {
   /** Relit le reglage du back-office ; hors ligne, garde le dernier connu. */
   private async refreshEnabled(): Promise<boolean> {
     try {
-      this.reminderEnabled = (await firstValueFrom(this.apiService.appConfig())).emailReminderEnabled;
+      const config = await firstValueFrom(this.apiService.appConfig());
+      this.reminderEnabled = config.emailReminderEnabled;
+      const delay = config.emailReminderDelaySeconds;
+      if (typeof delay === 'number' && Number.isFinite(delay)) {
+        this.delaySeconds = Math.min(MAX_DELAY_SECONDS, Math.max(MIN_DELAY_SECONDS, Math.round(delay)));
+      }
     } catch {
       // Hors ligne : dernier reglage connu.
     }
